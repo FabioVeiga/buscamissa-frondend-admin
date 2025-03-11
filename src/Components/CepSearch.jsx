@@ -89,15 +89,24 @@ const BuscaPorCEP = () => {
       {/* Grid para os campos do endereço */}
       <Grid container spacing={2}>
         {/* Primeira linha */}
-        <Grid size={12}>
+        <Grid size={10}>
           <TextField
             disabled
             id="outlined-disabled"
-            label="Logradouro"
             value={endereco.logradouro}
             fullWidth
           />
         </Grid>
+
+        <Grid size={2}>
+          <TextField
+            label="Número"
+            id="outlined-disabled"
+            value={endereco.numero}
+            fullWidth
+          />
+        </Grid>
+        
         <Grid size={6}>
           <TextField
             label="Complemento"
@@ -113,7 +122,6 @@ const BuscaPorCEP = () => {
           <TextField
             id="outlined-basic"
             variant="outlined"
-            label="Bairro"
             value={endereco.bairro}
             fullWidth
             disabled
@@ -121,7 +129,6 @@ const BuscaPorCEP = () => {
         </Grid>
         <Grid size={4}>
           <TextField
-            label="Localidade"
             value={endereco.localidade}
             fullWidth
             disabled
@@ -130,11 +137,14 @@ const BuscaPorCEP = () => {
 
         {/* Terceira linha */}
         <Grid size={4}>
-          <TextField label="UF" value={endereco.uf} fullWidth disabled />
+          <TextField 
+            value={endereco.uf} 
+            fullWidth 
+            disabled 
+          />
         </Grid>
         <Grid size={4}>
           <TextField
-            label="Estado"
             value={endereco.estado}
             fullWidth
             disabled

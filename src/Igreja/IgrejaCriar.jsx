@@ -171,16 +171,6 @@ const IgrejaCriar = () => {
           var arrayAux = [error.response.data.data?.messagemAplicacao]
           setMessage(arrayAux);
         }
-        // if (error.response.data.data?.messagemAplicacao) {
-        //   setMessage({ message: error.response.data.data, severity: "error" });
-        // } else {
-        //   console.log("else",error.response.data.errors)
-        //   setMessage({
-        //     message: error.response.data.errors,
-        //     severity: "error",
-        //   });
-        //   console.log("else",message)
-        // }
       });
   };
 
@@ -288,6 +278,9 @@ const IgrejaCriar = () => {
             onChange={(e) => handleChangeMissa("horario", e.target.value)}
             fullWidth
             InputLabelProps={{ shrink: true }}
+            inputProps={{
+              step: 900,
+            }}
           />
 
           {/* Dia da Semana */}
