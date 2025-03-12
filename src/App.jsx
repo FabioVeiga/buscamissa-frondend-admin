@@ -1,13 +1,13 @@
-import { lazy } from 'react';
-const Home = lazy(() => ('./Home'));
-const LoginPage = lazy(() => ('./LoginPage'));
-const Igreja = lazy(() => ('./Igreja/Igreja'));
-const Usuario = lazy(() => ('./Usuario'));
-const IgrejaNovo = lazy(() => ('./Igreja/IgrejaNovo'));
-const IgrejaEditar = lazy(() => ('./Igreja/IgrejaEditar'));
-const PrivateRoute = lazy(() => ('./PrivateRoute'));
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useAuth } from "./Context/AuthContext";
+import LoginPage from './LoginPage';
+import Home from './Home';
+import Igreja from './Igreja/Igreja';
+import Usuario from './Usuario';
+import IgrejaNovo from './Igreja/IgrejaNovo';
+import IgrejaEditar from './Igreja/IgrejaEditar';
+import PrivateRoute from './PrivateRoute'
+
 
 const App = () => {
   const { isAuthenticated } = useAuth();
