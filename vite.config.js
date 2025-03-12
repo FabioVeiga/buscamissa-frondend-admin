@@ -13,6 +13,7 @@ export default defineConfig({
     visualizer({ open: true }),
   ],
   build: {
+    outDir: 'build',
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
         output:{
