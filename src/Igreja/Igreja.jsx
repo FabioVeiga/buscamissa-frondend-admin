@@ -1,20 +1,6 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Stack,
-  TableFooter,
-  Tooltip,
-  IconButton,
-} from "@mui/material";
-import Menu from "../Components/Menu";
-//import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { CircularProgress, Box, Typography } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Stack, TableFooter, Tooltip, IconButton, CircularProgress, Box, Typography } from "@mui/material";
+import Menu from "../Components/Menu";
 import Pagination from "../Components/Paginacao";
 import IgrejaSearchForm from "./IgrejaSearchForm";
 import IgrejaDetalheModal from "./IgrejaDetalhesModal";
@@ -28,7 +14,6 @@ const IgrejaPage = () => {
   const [paginacao, setPaginacao] = useState({});  
   const [igrejaModal, setIgrejaModal] = useState({});
   const navigate = useNavigate()
-  
 
   const useModal = () => {
     const [open, setOpen] = useState(false);
