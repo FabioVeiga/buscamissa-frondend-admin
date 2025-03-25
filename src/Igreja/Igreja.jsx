@@ -95,8 +95,6 @@ const IgrejaPage = () => {
                             <IconButton
                               color="primary"
                               onClick={() => {handleOpen(row)}
-                                //navigate("/igrejaDetalhe", { state: { row } })
-                                //console.log(row)
                               }
                             >
                               <OpenInNewIcon />
@@ -107,7 +105,6 @@ const IgrejaPage = () => {
                               color="primary"
                               onClick={() =>
                                 navigate("/IgrejaEditar", { state: { row }} )
-                                //console.log("Botão Editar de ícone clicado!")
                               }
                             >
                               <EditIcon />
