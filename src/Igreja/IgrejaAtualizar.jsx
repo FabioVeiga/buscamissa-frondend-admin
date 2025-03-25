@@ -16,74 +16,87 @@ import { Delete } from "@mui/icons-material";
 import api from "../services/apiService";
 import { diasDaSemana } from "../utils";
 import ErrorSpan from "../ErrorSpan";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useEndereco } from "../Context/EnderecoContext";
-import { useNavigate } from "react-router-dom";
 
-const IgrejaCriar = () => {
-  const [message, setMessage] = useState("");
-
-  const [formData, setFormData] = useState({
-    nome: "",
-    paroco: "",
-    imagem: "",
-    contato: {
-      emailContato: "",
-      ddd: "",
-      telefone: "",
-      dddWhatsApp: "",
-      telefoneWhatsApp: "",
-    },
-  });
-
-  const [formDataMissa, setFormDataMissa] = useState({
-    horario: "",
-    diaSemana: "",
-    observacao: "",
-  });
-
-  const [formDataRedeSociais, setFormDataRedeSociais] = useState({
+const IgrejaAtualizar = () => {
+  const { endereco, setEndereco } = useEndereco();
+  const location = useLocation();
+  const { state } = location || {};
+  const [formData, setFormData] = useState(state?.row);
+  const [redeSociais, setRedeSociais] = useState({
     tipoRedeSocial: "",
     nomeDoPerfil: "",
   });
+  const [formDataRedeSociais, setFormDataRedeSociais] = useState(
+    formData.redesSociais
+  );
+  //const [formDataContato, setFormDataContato] = useState(formData.contato);
+  //const [formDataEndereco, setFormDataEndereco] = useState(formData.endereco);
 
+  const errorMensage = () => ({
+    mensagem: "",
+    severity: "",
+    show: false,
+  });
+  const [message, setMessage] = useState(errorMensage);
+  const [formDatamissas, setformDataMissas] = useState(formData.missas);
   const [missas, setMissas] = useState([]);
-  const [redeSociais, setRedeSociais] = useState([]);
   const [base64, setBase64] = useState("");
   const [fileName, setFileName] = useState("");
-  const { endereco } = useEndereco();
   const navigate = useNavigate();
 
   const handleAddMissa = () => {
-    const { horario, diaSemana, observacao } = formDataMissa;
+    const { horario, diaSemana, observacao } = missas;
     // Validação
     if (!horario || diaSemana === "") {
-      setMessage("Os campos Horário e Dia da Semana são obrigatórios!");
+      setMessage({
+        mensagem:
+          "Os campos Horário e Dia da Semana são obrigatórios!",
+        severity: "error",
+        show: true,
+      });
       return;
     }
 
-    setMissas((prev) => [
+    setformDataMissas((prev) => [
       ...prev,
       { horario, diaSemana: diasDaSemana[diaSemana].value, observacao },
     ]);
 
     // Limpar os campos
-    setFormDataMissa({ horario: "", diaSemana: "", observacao: "" });
+    setMissas({ horario: "", diaSemana: "", observacao: "" });
+  };
+
+  const verificarTipoRedeSocial = (tipo) => {
+    return formDataRedeSociais.some((rede) => rede.tipoRedeSocial === tipo);
   };
 
   const handleAddRedeSocial = () => {
-    const { tipoRedeSocial, nomeDoPerfil } = formDataRedeSociais;
+    const { tipoRedeSocial, nomeDoPerfil } = redeSociais;
     // Validação
     if (tipoRedeSocial === "" || nomeDoPerfil === "") {
-      setMessage(
-        "Os campos Tipo de Rede Social e Nome do Perfil são obrigatórios!"
-      );
-      return;
+      setMessage({
+        mensagem: "Os campos Tipo de Rede Social e Nome do Perfil são obrigatórios!",
+        severity: "error",
+        show: true,
+      });
+    } else {
+      if (verificarTipoRedeSocial(tipoRedeSocial)) {
+        setMessage({
+          mensagem: "Já existe uma rede social com o tipo selecionado!",
+          severity: "error",
+          show: true,
+        });
+      } else {
+        setFormDataRedeSociais((prev) => [
+          ...prev,
+          { tipoRedeSocial, nomeDoPerfil },
+        ]);
+      }
     }
-
-    setRedeSociais((prev) => [...prev, { tipoRedeSocial, nomeDoPerfil }]);
-
     // Limpar os campos
-    setFormDataRedeSociais({ tipoRedeSocial: "", nomeDoPerfil: "" });
+    setRedeSociais({ tipoRedeSocial: "", nomeDoPerfil: "" });
   };
 
   const handleChange = (field, value) => {
@@ -91,19 +104,21 @@ const IgrejaCriar = () => {
   };
 
   const handleChangeMissa = (field, value) => {
-    setFormDataMissa((prev) => ({ ...prev, [field]: value }));
+    setMissas((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleChangeRedeSociais = (field, value) => {
-    setFormDataRedeSociais((prev) => ({ ...prev, [field]: value }));
+    setRedeSociais((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleDeleteMissa = (indexToDelete) => {
-    setMissas((prev) => prev.filter((_, index) => index !== indexToDelete));
+    setformDataMissas((prev) => prev.filter((_, index) => index !== indexToDelete));
   };
 
+  setEndereco(formData.endereco);
+
   const handleDeleteRedeSocial = (indexToDelete) => {
-    setRedeSociais((prev) =>
+    setFormDataRedeSociais((prev) =>
       prev.filter((_, index) => index !== indexToDelete)
     );
   };
@@ -128,48 +143,70 @@ const IgrejaCriar = () => {
     navigate(path);
   };
 
+  const obterPrimeiroErro = (erros) => {
+    // Obtem todas as chaves do objeto
+    const chaves = Object.keys(erros);
+  
+    // Verifica se existem erros
+    if (chaves.length > 0) {
+      // Retorna o primeiro erro encontrado
+      return erros[chaves[0]][0];
+    }
+  
+    return null; // Retorna null se não houver erros
+  };
+
   const handleSubmit = () => {
     //Validação
-    var arrayAux = []
+    var arrayAux = [];
     if (formData.nome === "") {
-      arrayAux.push("O campo Nome é obrigatório!")
+      arrayAux.push("O campo Nome é obrigatório!");
     }
 
-    if (missas.length === 0) {
-      arrayAux.push("É necessário adicionar ao menos uma missa!")
+    if (formDatamissas.length === 0) {
+      arrayAux.push("É necessário adicionar ao menos uma missa!");
     }
 
     if (endereco === undefined) {
-      arrayAux.push("É necessário ter o endereço preenchido!")
-
+      arrayAux.push("É necessário ter o endereço preenchido!");
     }
 
-    if(arrayAux.length > 0)
-    {
+    if (arrayAux.length > 0) {
       setMessage(arrayAux);
       return;
     }
 
-    formData.missas = missas;
+    formData.missas = formDatamissas;
     formData.imagem = base64;
     formData.endereco = endereco;
+    formData.RedeSociais = formDataRedeSociais;
     //console.log(formData);
     api
-      .post("/api/Admin/igreja/criar", formData)
+      .put("/api/Admin/igreja/atualizar", formData)
       .then((response) => {
         console.log(response);
-        setMessage("Igreja criada com sucesso!");
+        setMessage({
+          mensagem: obterPrimeiroErro("Igreja atualizada com sucesso!"),
+          severity: "success",
+          show: true,
+        });
         handleNavigate("/igreja");
       })
       .catch((error) => {
-        //console.error("Erro ao criar a igreja:", error);
-        var data = error.response.data;
-        console.error("Erro ao criar a igreja:", error);
-        if (data.errors) {
-          setMessage(data.errors);
+        var data = error.response.data.errors;
+        if (data) {
+          setMessage({
+            mensagem: obterPrimeiroErro(data),
+            severity: "error",
+            show: true,
+          });
         } else {
-          var arrayAux = [error.response.data.data?.messagemAplicacao]
-          setMessage(arrayAux);
+          var arrayAux = [error.response.data.data?.messagemAplicacao];
+          setMessage({
+            mensagem: arrayAux,
+            severity: "error",
+            show: true,
+          });
         }
       });
   };
@@ -247,10 +284,12 @@ const IgrejaCriar = () => {
           />
 
           {/* Imagem preview (opcional) */}
-          {base64 && (
+          {(base64 || formData.imagemUrl) && (
             <Box
               component="img"
-              src={`data:image/png;base64,${base64}`}
+              src={
+                base64 ? `data:image/png;base64,${base64}` : formData.imagemUrl
+              }
               alt="Preview"
               sx={{
                 maxWidth: "100%",
@@ -274,7 +313,7 @@ const IgrejaCriar = () => {
           <TextField
             label="Horário"
             type="time"
-            value={formDataMissa.horario}
+            value={missas.horario}
             onChange={(e) => handleChangeMissa("horario", e.target.value)}
             fullWidth
             InputLabelProps={{ shrink: true }}
@@ -287,7 +326,7 @@ const IgrejaCriar = () => {
           <TextField
             label="Dia da Semana"
             select
-            value={formDataMissa.diaSemana}
+            value={missas.diaSemana}
             onChange={(e) => handleChangeMissa("diaSemana", e.target.value)}
             fullWidth
           >
@@ -301,7 +340,7 @@ const IgrejaCriar = () => {
           {/* Observação */}
           <TextField
             label="Observação"
-            value={formDataMissa.observacao}
+            value={missas.observacao}
             onChange={(e) => handleChangeMissa("observacao", e.target.value)}
             fullWidth
           />
@@ -312,9 +351,9 @@ const IgrejaCriar = () => {
           </Button>
 
           {/* Lista de Missas */}
-          {missas.length > 0 && (
+          {formDatamissas.length > 0 && (
             <List>
-              {missas.map((missa, index) => (
+              {formDatamissas.map((missa, index) => (
                 <ListItem
                   key={index}
                   sx={{
@@ -409,7 +448,7 @@ const IgrejaCriar = () => {
             </InputLabel>
             <Select
               labelId="tipoRedeSocial-label"
-              value={formDataRedeSociais.tipoRedeSocial}
+              value={redeSociais.tipoRedeSocial}
               onChange={(e) =>
                 handleChangeRedeSociais("tipoRedeSocial", e.target.value)
               }
@@ -422,7 +461,7 @@ const IgrejaCriar = () => {
           </FormControl>
           <TextField
             label="Nome do Perfil"
-            value={formDataRedeSociais.nomeDoPerfil}
+            value={redeSociais.nomeDoPerfil}
             onChange={(e) =>
               handleChangeRedeSociais("nomeDoPerfil", e.target.value)
             }
@@ -432,9 +471,9 @@ const IgrejaCriar = () => {
             Adicionar Rede Social
           </Button>
           {/* Lista de Rede Social */}
-          {redeSociais.length > 0 && (
+          {formDataRedeSociais.length > 0 && (
             <List>
-              {redeSociais.map((rede, index) => (
+              {formDataRedeSociais.map((rede, index) => (
                 <ListItem
                   key={index}
                   sx={{
@@ -444,7 +483,8 @@ const IgrejaCriar = () => {
                   }}
                 >
                   <Typography>
-                    {rede.tipoRedeSocial} - {rede.nomeDoPerfil}
+                    {`[${rede.tipoRedeSocial}] ${rede.nomeRedeSocial}`} -{" "}
+                    {rede.nomeDoPerfil}
                   </Typography>
                   <IconButton
                     color="error"
@@ -460,22 +500,19 @@ const IgrejaCriar = () => {
 
         {/* Botão de Submissão */}
         <Button variant="contained" color="primary" onClick={handleSubmit}>
-          Criar Igreja
+          Editar Igreja
         </Button>
-
-        {Object.keys(message).length > 0 && (
-          <div className="bg-red-100 text-red-700 p-4 rounded">
-            <h3 className="font-bold mb-2">Erros de Validação:</h3>
-            <ul className="list-disc ml-5">
-              {Object.entries(message).map(([field, messages]) => (
-                <ErrorSpan errorMessage={messages} field={field} severity="error" />
-              ))}
-            </ul>
-          </div>
-        )}
+        <Box display="flex">
+          {message.show && (
+            <ErrorSpan
+              errorMessage={message.mensagem}
+              severity={message.severity}
+            />
+          )}
+        </Box>
       </Box>
     </>
   );
 };
 
-export default IgrejaCriar;
+export default IgrejaAtualizar;

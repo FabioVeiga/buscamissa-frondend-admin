@@ -2,7 +2,8 @@ import axios from 'axios';
 
 // Configuração base do Axios
 const api = axios.create({
-  baseURL: 'https://busca-missa-api-dev.azurewebsites.net', // Substitua pela URL da sua API
+  //baseURL: 'https://busca-missa-api-dev.azurewebsites.net', // Substitua pela URL da sua API
+  baseURL: 'https://localhost:7129', // Substitua pela URL da sua API
   timeout: 10000, // Tempo limite para as requisições
   headers: {
     'Content-Type': 'application/json',

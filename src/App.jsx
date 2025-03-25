@@ -5,7 +5,7 @@ import Home from './Home';
 import Igreja from './Igreja/Igreja';
 import Usuario from './Usuario';
 import IgrejaNovo from './Igreja/IgrejaNovo';
-import IgrejaEditar from './Igreja/IgrejaEditar';
+import IgrejaEdita from './Igreja/IgrejaEdita';
 import PrivateRoute from './PrivateRoute'
 
 
@@ -52,7 +52,7 @@ const App = () => {
           path="/igrejaEditar"
           element={
             <PrivateRoute isAuthenticated={isAuthenticated}>
-              <IgrejaEditar />
+              <IgrejaEdita />
             </PrivateRoute>
           }
         />
