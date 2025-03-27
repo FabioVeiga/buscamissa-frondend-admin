@@ -13,6 +13,7 @@ const Home = () => {
     api.get('/api/admin/igreja/infos')
       .then(response => {
         setData(response.data.data);
+        //console.log(response.data.data);
       })
       .catch(error => {
         console.error('Error fetching data:', error);
@@ -56,7 +57,46 @@ const Home = () => {
               </CardContent>
             </Card>
           </Grid>
-        </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <Card elevation={3}>
+              <CardContent>
+                <Typography variant="h5" gutterBottom>
+                  Quandidade de Denuncias não atendida
+                </Typography>
+                <Typography variant="h4" color="primary">
+                  {data.quantidadeIgrejaDenunciaNaoAtendida}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <Card elevation={3}>
+              <CardContent>
+                <Typography variant="h5" gutterBottom>
+                  Quandidade de Solicitações não atendida
+                </Typography>
+                <Typography variant="h4" color="primary">
+                  {data.quantidadeSolicitacoesNaoAtendida}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <Card elevation={3}>
+              <CardContent>
+                <Typography variant="h5" gutterBottom>
+                  Quandidade de Usuários
+                </Typography>
+                <Typography variant="h4" color="primary">
+                  {data.quantidadeDeUsuarios}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+      </Grid>
     </div>
   );
 };

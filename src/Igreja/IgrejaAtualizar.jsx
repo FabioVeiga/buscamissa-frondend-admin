@@ -4,13 +4,14 @@ import { Delete } from "@mui/icons-material";
 import api from "../services/apiService";
 import { diasDaSemana } from "../utils";
 import ErrorSpan from "../ErrorSpan";
-import { useEndereco } from "../Context/EnderecoContext";
 import  RedirectModal  from "../Components/RedirectModal"
+import { useLocation } from "react-router-dom";
 
 const IgrejaAtualizar = () => {
-  const { endereco, setEndereco } = useEndereco();
+  const location = useLocation();
   const { state } = location || {};
   const [formData, setFormData] = useState(state?.row);
+  console.log(formData)
   const [redeSociais, setRedeSociais] = useState({
     tipoRedeSocial: "",
     nomeDoPerfil: "",
@@ -18,7 +19,6 @@ const IgrejaAtualizar = () => {
   const [formDataRedeSociais, setFormDataRedeSociais] = useState(
     formData.redesSociais || []
   );
-
   const errorMensage = () => ({
     mensagem: "",
     severity: "",
@@ -101,8 +101,6 @@ const IgrejaAtualizar = () => {
     setformDataMissas((prev) => prev.filter((_, index) => index !== indexToDelete));
   };
 
-  setEndereco(formData.endereco);
-
   const handleDeleteRedeSocial = (indexToDelete) => {
     setFormDataRedeSociais((prev) =>
       prev.filter((_, index) => index !== indexToDelete)
@@ -144,10 +142,6 @@ const IgrejaAtualizar = () => {
       arrayAux.push("É necessário adicionar ao menos uma missa!");
     }
 
-    if (endereco === undefined) {
-      arrayAux.push("É necessário ter o endereço preenchido!");
-    }
-
     if (arrayAux.length > 0) {
       setMessage(arrayAux);
       return;
@@ -155,7 +149,6 @@ const IgrejaAtualizar = () => {
 
     formData.missas = formDatamissas;
     formData.imagem = base64;
-    formData.endereco = endereco;
     formData.RedeSociais = formDataRedeSociais;
     //console.log(formData);
     api

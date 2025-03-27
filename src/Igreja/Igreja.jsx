@@ -4,15 +4,19 @@ import Menu from "../Components/Menu";
 import Pagination from "../Components/Paginacao";
 import IgrejaSearchForm from "./IgrejaSearchForm";
 import IgrejaDetalheModal from "./IgrejaDetalhesModal";
-import EditIcon from "@mui/icons-material/Edit";
+import  EditIcon  from "@mui/icons-material/Edit";
+import AnnouncementIcon from '@mui/icons-material/Announcement';
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useNavigate } from "react-router-dom";
+import DenunciaModal from "./Components/DenunciaModal"
 
 const IgrejaPage = () => {
   const [igrejas, setIgrejas] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [paginacao, setPaginacao] = useState({});  
   const [igrejaModal, setIgrejaModal] = useState({});
+  const [denunciaModalOpen, setDenunciaModalOpen] = useState({});
+
   const navigate = useNavigate()
 
   const useModal = () => {
@@ -38,6 +42,20 @@ const IgrejaPage = () => {
   const handlePaginationChange = (pagination) => {
     setPaginacao(pagination);
   };
+
+  const handleOpenModal = () => {
+    setDenunciaModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setDenunciaModalOpen(false);
+  };
+
+  const handleSuccess = (result) => {
+    console.log("Modal saved successfully:", result);
+    setDenunciaModalOpen(false);
+  };
+
 
   return (
     <>
@@ -103,13 +121,32 @@ const IgrejaPage = () => {
                           <Tooltip title="Editar">
                             <IconButton
                               color="primary"
-                              onClick={() =>
-                                navigate("/IgrejaEditar", { state: { row }} )
-                              }
+                              onClick={() => navigate("/IgrejaEditar", { state: { row }} )}
+                              //onClick={() => console.log(row)}
                             >
                               <EditIcon />
                             </IconButton>
                           </Tooltip>
+                          {row.denuncia && (
+                            
+                            <>
+                            <Tooltip title="Denúncia">
+                              <IconButton 
+                                color="warning" 
+                                onClick={handleOpenModal}
+                              >
+                                <AnnouncementIcon />
+                              </IconButton>
+                            </Tooltip>
+                            <DenunciaModal
+                              open={denunciaModalOpen}
+                              onClose={handleCloseModal}
+                              denunciaId={row.denuncia.id}
+                              descricao={row.denuncia.descricao}
+                              onSuccess={handleSuccess} // Passa uma função, não uma chamada direta
+                            />
+                          </>
+                        )}
                         </Stack>
                       </TableCell>
                     </TableRow>

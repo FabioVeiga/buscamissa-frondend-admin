@@ -1,15 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useState } from "react";
-import {
-  Box,
-  TextField,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Select,
-  Switch,
-  FormControlLabel,
-} from "@mui/material";
+import { Box, TextField, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import api from "../services/apiService";
 import { IconButton, Tooltip } from "@mui/material";
@@ -85,6 +76,7 @@ const IgrejaSearchForm = ({
     api
       .get(endPoint)
       .then((response) => {
+        //console.log(response.data.data)
         const fetchedData = response.data.data;
         onDataChange && onDataChange(fetchedData);
 

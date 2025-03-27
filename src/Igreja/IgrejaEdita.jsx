@@ -1,5 +1,4 @@
 import Menu from "../Components/Menu";
-import CepSearch from "../Components/CepSearch";
 import IgrejaAtualizar from "./IgrejaAtualizar";
 import { Box } from "@mui/material";
 import { EnderecoProvider } from "../Context/EnderecoContext";
