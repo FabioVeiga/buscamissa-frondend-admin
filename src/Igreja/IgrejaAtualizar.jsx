@@ -18,6 +18,7 @@ import { diasDaSemana } from "../utils";
 import ErrorSpan from "../ErrorSpan";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEndereco } from "../Context/EnderecoContext";
+import  RedirectModal  from "../Components/RedirectModal"
 
 const IgrejaAtualizar = () => {
   const { endereco, setEndereco } = useEndereco();
@@ -29,10 +30,8 @@ const IgrejaAtualizar = () => {
     nomeDoPerfil: "",
   });
   const [formDataRedeSociais, setFormDataRedeSociais] = useState(
-    formData.redesSociais
+    formData.redesSociais || []
   );
-  //const [formDataContato, setFormDataContato] = useState(formData.contato);
-  //const [formDataEndereco, setFormDataEndereco] = useState(formData.endereco);
 
   const errorMensage = () => ({
     mensagem: "",
@@ -44,7 +43,10 @@ const IgrejaAtualizar = () => {
   const [missas, setMissas] = useState([]);
   const [base64, setBase64] = useState("");
   const [fileName, setFileName] = useState("");
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
+
+  console.log(formData)
 
   const handleAddMissa = () => {
     const { horario, diaSemana, observacao } = missas;
@@ -184,15 +186,16 @@ const IgrejaAtualizar = () => {
     api
       .put("/api/Admin/igreja/atualizar", formData)
       .then((response) => {
-        console.log(response);
+        //console.log(response);
+        setShowModal(true); // Exibe o modal
         setMessage({
           mensagem: obterPrimeiroErro("Igreja atualizada com sucesso!"),
           severity: "success",
           show: true,
         });
-        handleNavigate("/igreja");
       })
       .catch((error) => {
+        console.log(error)
         var data = error.response.data.errors;
         if (data) {
           setMessage({
@@ -213,7 +216,7 @@ const IgrejaAtualizar = () => {
 
   return (
     <>
-      <h4>Igreja</h4>
+      <h2>Editar Igreja</h2>
       <Box
         component="form"
         display="flex"
@@ -511,6 +514,8 @@ const IgrejaAtualizar = () => {
           )}
         </Box>
       </Box>
+      {/* Modal de redirecionamento */}
+      {showModal && <RedirectModal targetPage="/igreja" />}
     </>
   );
 };

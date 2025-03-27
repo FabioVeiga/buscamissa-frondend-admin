@@ -18,7 +18,6 @@ const IgrejaEdita = () => {
             padding: 2, // Adiciona um pouco de padding
           }}
         >
-          <CepSearch />
           <IgrejaAtualizar />
         </Box>
       </div>

@@ -5,6 +5,7 @@ import api from "../services/apiService";
 import ErrorSpan from "../ErrorSpan";
 import { useEndereco } from "../Context/EnderecoContext";
 import { isCepValid } from "../utils";
+import { useNavigate } from "react-router-dom";
 
 const errorMensage = () => ({
   mensagem: "",
@@ -16,6 +17,7 @@ const BuscaPorCEP = () => {
   const [complemento, setComplemento] = useState("");
   const { endereco, setEndereco, resetEndereco } = useEndereco();
   const [message, setMessage] = useState(errorMensage);
+  const navigate = useNavigate()
 
   const handleBuscaCEP = () => {
     if (!cep || !isCepValid(cep)) {
@@ -32,8 +34,9 @@ const BuscaPorCEP = () => {
       .then((response) => {
         const data = response.data?.data;
         if (data) {
-          //console.log("cepSearch",data.response.endereco);
+          var row = data.response;
           setEndereco(data.response.endereco);
+          navigate("/IgrejaEditar", { state: { row }} )
           setMessage({
             mensagem: "Tem igreja, redirecionar para editar!",
             severity: "error",
