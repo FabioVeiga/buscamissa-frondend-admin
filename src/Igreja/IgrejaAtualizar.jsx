@@ -1,28 +1,14 @@
 import { useState } from "react";
-import {
-  Box,
-  TextField,
-  Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  List,
-  ListItem,
-  Typography,
-  IconButton,
-} from "@mui/material";
+import { Box, TextField, Button, FormControl, InputLabel, Select, MenuItem, List, ListItem, Typography, IconButton } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import api from "../services/apiService";
 import { diasDaSemana } from "../utils";
 import ErrorSpan from "../ErrorSpan";
-import { useNavigate, useLocation } from "react-router-dom";
 import { useEndereco } from "../Context/EnderecoContext";
 import  RedirectModal  from "../Components/RedirectModal"
 
 const IgrejaAtualizar = () => {
   const { endereco, setEndereco } = useEndereco();
-  const location = useLocation();
   const { state } = location || {};
   const [formData, setFormData] = useState(state?.row);
   const [redeSociais, setRedeSociais] = useState({
@@ -44,9 +30,7 @@ const IgrejaAtualizar = () => {
   const [base64, setBase64] = useState("");
   const [fileName, setFileName] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const navigate = useNavigate();
 
-  console.log(formData)
 
   const handleAddMissa = () => {
     const { horario, diaSemana, observacao } = missas;
@@ -141,17 +125,9 @@ const IgrejaAtualizar = () => {
     }
   };
 
-  const handleNavigate = (path) => {
-    navigate(path);
-  };
-
   const obterPrimeiroErro = (erros) => {
-    // Obtem todas as chaves do objeto
     const chaves = Object.keys(erros);
-  
-    // Verifica se existem erros
     if (chaves.length > 0) {
-      // Retorna o primeiro erro encontrado
       return erros[chaves[0]][0];
     }
   
@@ -159,7 +135,6 @@ const IgrejaAtualizar = () => {
   };
 
   const handleSubmit = () => {
-    //Validação
     var arrayAux = [];
     if (formData.nome === "") {
       arrayAux.push("O campo Nome é obrigatório!");
@@ -185,9 +160,8 @@ const IgrejaAtualizar = () => {
     //console.log(formData);
     api
       .put("/api/Admin/igreja/atualizar", formData)
-      .then((response) => {
-        //console.log(response);
-        setShowModal(true); // Exibe o modal
+      .then(() => {
+        setShowModal(true);
         setMessage({
           mensagem: obterPrimeiroErro("Igreja atualizada com sucesso!"),
           severity: "success",

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Modal, Box, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-const RedirectModal = ({ targetPage }) => {
+const RedirectModal = ({ targetPage, state }) => {
   const [open, setOpen] = useState(true);
   const navigate = useNavigate();
 
@@ -12,7 +12,7 @@ const RedirectModal = ({ targetPage }) => {
   };
 
   const handleRedirect = () => {
-    navigate(targetPage); // Redireciona para a página recebida como parâmetro
+    navigate(targetPage, { state }); // Redireciona com o estado
   };
 
   return (
@@ -48,9 +48,6 @@ const RedirectModal = ({ targetPage }) => {
           </Button>
           <Button variant="contained" color="primary" onClick={handleRedirect}>
             Ir para outra página
-          </Button>
-          <Button variant="contained" color="success" onClick={handleClose}>
-            Ficar nesta página
           </Button>
         </Box>
       </Box>

@@ -5,7 +5,8 @@ import api from "../services/apiService";
 import ErrorSpan from "../ErrorSpan";
 import { useEndereco } from "../Context/EnderecoContext";
 import { isCepValid } from "../utils";
-import { useNavigate } from "react-router-dom";
+//import { useNavigate } from "react-router-dom";
+import  RedirectModal  from "../Components/RedirectModal"
 
 const errorMensage = () => ({
   mensagem: "",
@@ -15,9 +16,11 @@ const errorMensage = () => ({
 const BuscaPorCEP = () => {
   const [cep, setCep] = useState("");
   const [complemento, setComplemento] = useState("");
+  const [row, setRow] = useState({});
   const { endereco, setEndereco, resetEndereco } = useEndereco();
   const [message, setMessage] = useState(errorMensage);
-  const navigate = useNavigate()
+  const [showModal, setShowModal] = useState(false);
+  //const navigate = useNavigate()
 
   const handleBuscaCEP = () => {
     if (!cep || !isCepValid(cep)) {
@@ -34,12 +37,13 @@ const BuscaPorCEP = () => {
       .then((response) => {
         const data = response.data?.data;
         if (data) {
-          var row = data.response;
+          setRow(data.response);
           setEndereco(data.response.endereco);
-          navigate("/IgrejaEditar", { state: { row }} )
+          setShowModal(true);
+          
           setMessage({
             mensagem: "Tem igreja, redirecionar para editar!",
-            severity: "error",
+            severity: "info",
           });
         } else {
           setMessage({
@@ -160,6 +164,12 @@ const BuscaPorCEP = () => {
         <ErrorSpan
           errorMessage={message.mensagem}
           severity={message.severity}
+        />
+      )}
+      {showModal && (
+        <RedirectModal
+          targetPage="/IgrejaEditar"
+          state={row ? { row } : undefined}
         />
       )}
     </Box>
