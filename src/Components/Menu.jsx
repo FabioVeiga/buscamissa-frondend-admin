@@ -5,6 +5,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ChurchIcon from '@mui/icons-material/Church';
 import LogoutIcon from '@mui/icons-material/Logout';
+import BuildIcon from '@mui/icons-material/Build';
 
 const Menu = () => {
   const navigate = useNavigate();
@@ -51,6 +52,14 @@ const Menu = () => {
           </ListItemIcon>
           <ListItemText primary="Igreja" />
         </ListItem>
+        
+        <ListItem button onClick={() => handleNavigate('/solicitacoes')}>
+          <ListItemIcon>
+            <BuildIcon />
+          </ListItemIcon>
+          <ListItemText primary="Solicitações" />
+        </ListItem>
+
         <ListItem button onClick={handleLogout}>
           <ListItemIcon>
             <LogoutIcon />

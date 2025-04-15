@@ -6,6 +6,7 @@ import Igreja from './Igreja/Igreja';
 import Usuario from './Usuario';
 import IgrejaNovo from './Igreja/IgrejaNovo';
 import IgrejaEdita from './Igreja/IgrejaEdita';
+import SolicitacoesPage from './Solicitacoes';
 import PrivateRoute from './PrivateRoute'
 
 
@@ -53,6 +54,14 @@ const App = () => {
           element={
             <PrivateRoute isAuthenticated={isAuthenticated}>
               <IgrejaEdita />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/solicitacoes"
+          element={
+            <PrivateRoute isAuthenticated={isAuthenticated}>
+              <SolicitacoesPage />
             </PrivateRoute>
           }
         />
