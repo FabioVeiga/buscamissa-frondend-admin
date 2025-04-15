@@ -35,6 +35,7 @@ const IgrejaSearchForm = ({
     diaSemana: "",
     horario: "",
     ativo: true,
+    denuncia: false,
   });
 
   const [localidades, setLocalidades] = useState([]);
@@ -56,8 +57,12 @@ const IgrejaSearchForm = ({
 
     onLoadingChange && onLoadingChange(true);
 
-    let endPoint = `/api/igreja/buscar-por-filtro?uf=${formData.uf}`;
+    let endPoint = `/api/admin/igreja/buscar-por-filtro?`;
 
+    if (formData.ativo !== "") 
+      endPoint += `ativo=${formData.ativo}`;
+    if (formData.uf !== "")
+      endPoint += `&uf=${formData.uf}`;
     if (formData.localidade !== "")
       endPoint += `&localidade=${formData.localidade}`;
     if (formData.nome !== "") 
@@ -65,7 +70,7 @@ const IgrejaSearchForm = ({
     if (formData.diaSemana !== "")
       endPoint += `&diadasemana=${formData.diaSemana}`;
     if (formData.horario !== "") endPoint += `&horario=${formData.horario}`;
-    if (formData.ativo !== "") endPoint += `&ativo=${formData.ativo}`;
+    if (formData.denuncia !== "") endPoint += `&denuncia=${formData.denuncia}`;
 
     let paginacao = `&Paginacao.PageIndex=1&Paginacao.PageSize=10`;
     endPoint += paginacao;
@@ -219,6 +224,17 @@ const IgrejaSearchForm = ({
                 />
               }
               label="Ativo"
+            />
+          </Grid>
+          <Grid>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.denuncia}
+                  onChange={(e) => handleChange("denuncia", e.target.checked)}
+                />
+              }
+              label="Denuncia"
             />
           </Grid>
           <Grid>

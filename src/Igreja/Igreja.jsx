@@ -15,7 +15,7 @@ const IgrejaPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [paginacao, setPaginacao] = useState({});  
   const [igrejaModal, setIgrejaModal] = useState({});
-  const [denunciaModalOpen, setDenunciaModalOpen] = useState({});
+  const [denunciaModalOpen, setDenunciaModalOpen] = useState(null); // Armazena o ID da denúncia aberta
 
   const navigate = useNavigate()
 
@@ -43,19 +43,18 @@ const IgrejaPage = () => {
     setPaginacao(pagination);
   };
 
-  const handleOpenModal = () => {
-    setDenunciaModalOpen(true);
+  const handleOpenModal = (denunciaId) => {
+    setDenunciaModalOpen(denunciaId); // Define o ID da denúncia
   };
 
   const handleCloseModal = () => {
-    setDenunciaModalOpen(false);
+    setDenunciaModalOpen(null); // Reseta o estado para fechar a modal
   };
 
   const handleSuccess = (result) => {
     console.log("Modal saved successfully:", result);
     setDenunciaModalOpen(false);
   };
-
 
   return (
     <>
@@ -122,13 +121,11 @@ const IgrejaPage = () => {
                             <IconButton
                               color="primary"
                               onClick={() => navigate("/IgrejaEditar", { state: { row }} )}
-                              //onClick={() => console.log(row)}
                             >
                               <EditIcon />
                             </IconButton>
                           </Tooltip>
                           {row.denuncia && (
-                            
                             <>
                             <Tooltip title="Denúncia">
                               <IconButton 

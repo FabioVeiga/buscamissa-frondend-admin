@@ -1,21 +1,17 @@
 import { useState } from "react";
-import { Box, TextField, Button, FormControl, InputLabel, Select, MenuItem, List, ListItem, Typography, IconButton } from "@mui/material";
+import { Box, TextField, Button, FormControl, InputLabel, MenuItem, List, ListItem, Typography, IconButton } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import api from "../services/apiService";
 import { diasDaSemana } from "../utils";
 import ErrorSpan from "../ErrorSpan";
 import  RedirectModal  from "../Components/RedirectModal"
+import RedeSocialForm from "./Components/RedeSocialForm";
 import { useLocation } from "react-router-dom";
 
 const IgrejaAtualizar = () => {
   const location = useLocation();
   const { state } = location || {};
   const [formData, setFormData] = useState(state?.row);
-  console.log(formData)
-  const [redeSociais, setRedeSociais] = useState({
-    tipoRedeSocial: "",
-    nomeDoPerfil: "",
-  });
   const [formDataRedeSociais, setFormDataRedeSociais] = useState(
     formData.redesSociais || []
   );
@@ -54,37 +50,6 @@ const IgrejaAtualizar = () => {
     setMissas({ horario: "", diaSemana: "", observacao: "" });
   };
 
-  const verificarTipoRedeSocial = (tipo) => {
-    return formDataRedeSociais.some((rede) => rede.tipoRedeSocial === tipo);
-  };
-
-  const handleAddRedeSocial = () => {
-    const { tipoRedeSocial, nomeDoPerfil } = redeSociais;
-    // Validação
-    if (tipoRedeSocial === "" || nomeDoPerfil === "") {
-      setMessage({
-        mensagem: "Os campos Tipo de Rede Social e Nome do Perfil são obrigatórios!",
-        severity: "error",
-        show: true,
-      });
-    } else {
-      if (verificarTipoRedeSocial(tipoRedeSocial)) {
-        setMessage({
-          mensagem: "Já existe uma rede social com o tipo selecionado!",
-          severity: "error",
-          show: true,
-        });
-      } else {
-        setFormDataRedeSociais((prev) => [
-          ...prev,
-          { tipoRedeSocial, nomeDoPerfil },
-        ]);
-      }
-    }
-    // Limpar os campos
-    setRedeSociais({ tipoRedeSocial: "", nomeDoPerfil: "" });
-  };
-
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -93,18 +58,9 @@ const IgrejaAtualizar = () => {
     setMissas((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleChangeRedeSociais = (field, value) => {
-    setRedeSociais((prev) => ({ ...prev, [field]: value }));
-  };
 
   const handleDeleteMissa = (indexToDelete) => {
     setformDataMissas((prev) => prev.filter((_, index) => index !== indexToDelete));
-  };
-
-  const handleDeleteRedeSocial = (indexToDelete) => {
-    setFormDataRedeSociais((prev) =>
-      prev.filter((_, index) => index !== indexToDelete)
-    );
   };
 
   const handleFileChange = (event) => {
@@ -150,7 +106,7 @@ const IgrejaAtualizar = () => {
     formData.missas = formDatamissas;
     formData.imagem = base64;
     formData.RedeSociais = formDataRedeSociais;
-    //console.log(formData);
+    console.log(formData);
     api
       .put("/api/Admin/igreja/atualizar", formData)
       .then(() => {
@@ -416,56 +372,18 @@ const IgrejaAtualizar = () => {
             <InputLabel id="tipoRedeSocial-label">
               Tipo de Rede Social
             </InputLabel>
-            <Select
-              labelId="tipoRedeSocial-label"
-              value={redeSociais.tipoRedeSocial}
-              onChange={(e) =>
-                handleChangeRedeSociais("tipoRedeSocial", e.target.value)
+            <RedeSocialForm
+              redesSociaisExistentes={formDataRedeSociais}
+              onAddRedeSocial={(novaRede) =>
+                setFormDataRedeSociais((prev) => [...prev, novaRede])
               }
-            >
-              <MenuItem value={1}>Facebook</MenuItem>
-              <MenuItem value={2}>Instagram</MenuItem>
-              <MenuItem value={3}>Twitter</MenuItem>
-              <MenuItem value={4}>LinkedIn</MenuItem>
-            </Select>
+              onDeleteRedeSocial={(indexToDelete) =>
+                setFormDataRedeSociais((prev) =>
+                  prev.filter((_, index) => index !== indexToDelete)
+                )
+              }
+            />
           </FormControl>
-          <TextField
-            label="Nome do Perfil"
-            value={redeSociais.nomeDoPerfil}
-            onChange={(e) =>
-              handleChangeRedeSociais("nomeDoPerfil", e.target.value)
-            }
-            fullWidth
-          />
-          <Button variant="text" color="primary" onClick={handleAddRedeSocial}>
-            Adicionar Rede Social
-          </Button>
-          {/* Lista de Rede Social */}
-          {formDataRedeSociais.length > 0 && (
-            <List>
-              {formDataRedeSociais.map((rede, index) => (
-                <ListItem
-                  key={index}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Typography>
-                    {`[${rede.tipoRedeSocial}] ${rede.nomeRedeSocial}`} -{" "}
-                    {rede.nomeDoPerfil}
-                  </Typography>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDeleteRedeSocial(index)}
-                  >
-                    <Delete />
-                  </IconButton>
-                </ListItem>
-              ))}
-            </List>
-          )}
         </Box>
 
         {/* Botão de Submissão */}

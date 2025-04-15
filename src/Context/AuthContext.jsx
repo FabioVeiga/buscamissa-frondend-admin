@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
           setAuthToken(response.data.data.usuario.acessToken.token);
         }
       } catch (err) {
-        console(err)
+        console.log(err)
         if (err.response.data.data?.mensagemTela) {
           setError(err.response.data.data);
         } else {
