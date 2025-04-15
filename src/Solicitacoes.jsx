@@ -23,8 +23,9 @@ const SolicitacoesPage = () => {
           }`
         );
         setSolicitacoes(response.data.data);
-      } catch (error) {
-        console.error("Erro ao buscar solicitações:", error);
+      } catch {
+        //console.error("Erro ao buscar solicitações:", error);
+        setSolicitacoes([]);
       } finally {
         setIsLoading(false);
       }
@@ -175,7 +176,7 @@ const SolicitacoesPage = () => {
                 <TableRow>
                   <TableCell colSpan={7} align="right">
                     Total de registros:{" "}
-                    {solicitacoes.items ? solicitacoes.items.length : 0}
+                    {solicitacoes ? solicitacoes.length : 0}
                   </TableCell>
                 </TableRow>
               </TableFooter>
