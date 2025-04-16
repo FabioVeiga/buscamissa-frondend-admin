@@ -1,13 +1,17 @@
 /* eslint-disable react/prop-types */
 import { useState } from "react";
-import { Box, FormControl, InputLabel, Select, MenuItem, TextField, Button, List, ListItem, Typography, IconButton } from "@mui/material";
+import { Box, FormControl, InputLabel, Select, MenuItem, TextField, Button, List, ListItem, Typography, IconButton, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import { Delete } from "@mui/icons-material";
+import api from "../../services/apiService"; // Certifique-se de importar o serviço da API
 
-const RedeSocialForm = ({ redesSociaisExistentes, onAddRedeSocial, onDeleteRedeSocial }) => {
+const RedeSocialForm = ({ redesSociaisExistentes, onAddRedeSocial, onDeleteRedeSocial, igrejaId }) => {
   const [redeSocial, setRedeSocial] = useState({
-    tipoRedeSocial: "",
+    tipoRedeSocial: 0,
     nomeDoPerfil: "",
   });
+  const [openModal, setOpenModal] = useState(false); // Estado para controlar o modal
+  const [selectedRede, setSelectedRede] = useState(null); // Armazena a rede social selecionada para exclusão
+  
 
   const handleChange = (field, value) => {
     setRedeSocial((prev) => ({ ...prev, [field]: value }));
@@ -25,9 +29,35 @@ const RedeSocialForm = ({ redesSociaisExistentes, onAddRedeSocial, onDeleteRedeS
       alert("Já existe uma rede social com o tipo selecionado!");
       return;
     }
-
     onAddRedeSocial(redeSocial);
     setRedeSocial({ tipoRedeSocial: "", nomeDoPerfil: "" });
+  };
+
+  const handleOpenModal = (rede) => {
+    setSelectedRede(rede);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedRede(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedRede) return;
+
+    try {
+      const response = await api.delete(`/api/Admin/igreja/deletar/redesocial/${igrejaId}/${selectedRede.tipoRedeSocial}`);
+      if (response.status === 200) {
+        alert("Rede social deletada com sucesso!");
+        onDeleteRedeSocial(selectedRede.tipoRedeSocial); // Atualiza a lista local após a exclusão
+      }
+    } catch (error) {
+      console.error("Erro ao deletar rede social:", error);
+      alert("Erro ao deletar a rede social. Tente novamente.");
+    } finally {
+      handleCloseModal();
+    }
   };
 
   return (
@@ -39,10 +69,10 @@ const RedeSocialForm = ({ redesSociaisExistentes, onAddRedeSocial, onDeleteRedeS
           value={redeSocial.tipoRedeSocial}
           onChange={(e) => handleChange("tipoRedeSocial", e.target.value)}
         >
-          <MenuItem value="1">Facebook</MenuItem>
-          <MenuItem value="2">Instagram</MenuItem>
-          <MenuItem value="3">Youtube</MenuItem>
-          <MenuItem value="4">Tiktok</MenuItem>
+          <MenuItem value={1}>Facebook</MenuItem>
+          <MenuItem value={2}>Instagram</MenuItem>
+          <MenuItem value={3}>Youtube</MenuItem>
+          <MenuItem value={4}>Tiktok</MenuItem>
         </Select>
       </FormControl>
       <TextField
@@ -68,13 +98,35 @@ const RedeSocialForm = ({ redesSociaisExistentes, onAddRedeSocial, onDeleteRedeS
               <Typography>
                 {rede.tipoRedeSocial}: {rede.nomeDoPerfil}
               </Typography>
-              <IconButton color="error" onClick={() => onDeleteRedeSocial(index)}>
+              <IconButton
+                color="error"
+                onClick={() => handleOpenModal(rede)}
+              >
                 <Delete />
               </IconButton>
             </ListItem>
           ))}
         </List>
       )}
+
+      {/* Modal de confirmação */}
+      <Dialog open={openModal} onClose={handleCloseModal}>
+        <DialogTitle>Confirmar Exclusão</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Tem certeza de que deseja excluir a rede social{" "}
+            <strong>{selectedRede?.nomeDoPerfil}</strong>?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseModal} color="secondary">
+            Cancelar
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error">
+            Confirmar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

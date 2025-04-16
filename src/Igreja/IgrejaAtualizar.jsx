@@ -15,6 +15,7 @@ const IgrejaAtualizar = () => {
   const [formDataRedeSociais, setFormDataRedeSociais] = useState(
     formData.redesSociais || []
   );
+  console.log(formData)
   const errorMensage = () => ({
     mensagem: "",
     severity: "",
@@ -106,9 +107,18 @@ const IgrejaAtualizar = () => {
     formData.missas = formDatamissas;
     formData.imagem = base64;
     formData.RedeSociais = formDataRedeSociais;
-    console.log(formData);
+    let req  ={
+      id: formData.id,
+      nome: formData.nome,
+      paroco: formData.paroco,
+      missas: formData.missas,
+      contato: formData.contato ? formData.contato : null,
+      imagem: base64,
+      redeSociais: formDataRedeSociais,
+    }
+    console.log(req);
     api
-      .put("/api/Admin/igreja/atualizar", formData)
+      .put("/api/Admin/igreja/atualizar", req)
       .then(() => {
         setShowModal(true);
         setMessage({
@@ -374,12 +384,13 @@ const IgrejaAtualizar = () => {
             </InputLabel>
             <RedeSocialForm
               redesSociaisExistentes={formDataRedeSociais}
+              igrejaId={formData.id} // Passando o formData.id como prop
               onAddRedeSocial={(novaRede) =>
                 setFormDataRedeSociais((prev) => [...prev, novaRede])
               }
-              onDeleteRedeSocial={(indexToDelete) =>
+              onDeleteRedeSocial={(tipoRedeSocial) =>
                 setFormDataRedeSociais((prev) =>
-                  prev.filter((_, index) => index !== indexToDelete)
+                  prev.filter((rede) => rede.tipoRedeSocial !== tipoRedeSocial)
                 )
               }
             />
