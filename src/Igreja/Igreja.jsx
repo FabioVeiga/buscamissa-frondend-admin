@@ -1,30 +1,51 @@
 import { useState } from "react";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Stack, TableFooter, Tooltip, IconButton, CircularProgress, Box, Typography } from "@mui/material";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Stack,
+  TableFooter,
+  Tooltip,
+  IconButton,
+  CircularProgress,
+  Box,
+  Typography,
+} from "@mui/material";
 import Menu from "../Components/Menu";
 import Pagination from "../Components/Paginacao";
 import IgrejaSearchForm from "./IgrejaSearchForm";
 import IgrejaDetalheModal from "./IgrejaDetalhesModal";
-import  EditIcon  from "@mui/icons-material/Edit";
-import AnnouncementIcon from '@mui/icons-material/Announcement';
+import EditIcon from "@mui/icons-material/Edit";
+import HideSourceIcon from "@mui/icons-material/HideSource";
+import AnnouncementIcon from "@mui/icons-material/Announcement";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { useNavigate } from "react-router-dom";
-import DenunciaModal from "./Components/DenunciaModal"
+import DenunciaModal from "./Components/DenunciaModal";
+import ConfirmModal from "../Components/ConfirmModal";
+import api from "../services/apiService";
+
 
 const IgrejaPage = () => {
   const [igrejas, setIgrejas] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [paginacao, setPaginacao] = useState({});  
+  const [paginacao, setPaginacao] = useState({});
   const [igrejaModal, setIgrejaModal] = useState({});
   const [denunciaModalOpen, setDenunciaModalOpen] = useState(null); // Armazena o ID da denúncia aberta
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [selectedIgrejaId, setSelectedIgrejaId] = useState(null);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const useModal = () => {
     const [open, setOpen] = useState(false);
     const handleOpen = (row) => {
       setOpen(true);
-      setIgrejaModal(row)
-    } 
+      setIgrejaModal(row);
+    };
     const handleClose = () => setOpen(false);
     return { open, handleOpen, handleClose, igrejaModal };
   };
@@ -56,9 +77,62 @@ const IgrejaPage = () => {
     setDenunciaModalOpen(false);
   };
 
+  const handleOpenConfirmModal = (igrejaId) => {
+    setSelectedIgrejaId(igrejaId);
+    setConfirmModalOpen(true);
+  };
+
+  const handleCloseConfirmModal = () => {
+    setConfirmModalOpen(false);
+    setSelectedIgrejaId(null);
+  };
+
+  const handleConfirmActivation = () => {
+    if (selectedIgrejaId) {
+      api
+        .put(`/api/Admin/igreja/ativar/${selectedIgrejaId}/usuario/${JSON.parse(localStorage.getItem("user")).id}`)
+        .then(() => {
+          console.log("Igreja ativada com sucesso!");
+          fetchIgrejas(); // Recarrega a lista de igrejas após a ativação
+        })
+        .catch((error) => {
+          console.error("Erro ao ativar a igreja:", error);
+        })
+        .finally(() => {
+          handleCloseConfirmModal();
+        });
+    }
+  };
+
+  const fetchIgrejas = () => {
+    setIsLoading(true);
+    api
+      .get("/api/admin/igreja/buscar-por-filtro?ativo=false") // Substitua pela URL correta da sua API
+      .then((response) => {
+        handleDataChange(response.data.data); // Atualiza o estado com os dados da API
+      })
+      .catch((error) => {
+        console.error("Erro ao buscar igrejas:", error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+
   return (
     <>
-    <IgrejaDetalheModal open={open} handleClose={handleClose} igreja={igrejaModal} />
+      <IgrejaDetalheModal
+        open={open}
+        handleClose={handleClose}
+        igreja={igrejaModal}
+      />
+      <ConfirmModal
+        open={confirmModalOpen}
+        onClose={handleCloseConfirmModal}
+        onConfirm={handleConfirmActivation}
+        title="Confirmar Ativação"
+        message="Você tem certeza que deseja ativar esta igreja?"
+      />
       <div style={{ display: "flex" }}>
         <Menu />
         <TableContainer
@@ -111,8 +185,9 @@ const IgrejaPage = () => {
                           <Tooltip title="Detalhes">
                             <IconButton
                               color="primary"
-                              onClick={() => {handleOpen(row)}
-                              }
+                              onClick={() => {
+                                handleOpen(row);
+                              }}
                             >
                               <OpenInNewIcon />
                             </IconButton>
@@ -120,30 +195,47 @@ const IgrejaPage = () => {
                           <Tooltip title="Editar">
                             <IconButton
                               color="primary"
-                              onClick={() => navigate("/IgrejaEditar", { state: { row }} )}
+                              onClick={() =>
+                                navigate("/IgrejaEditar", { state: { row } })
+                              }
                             >
                               <EditIcon />
                             </IconButton>
                           </Tooltip>
                           {row.denuncia && (
                             <>
-                            <Tooltip title="Denúncia">
-                              <IconButton 
-                                color="warning" 
-                                onClick={handleOpenModal}
-                              >
-                                <AnnouncementIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <DenunciaModal
-                              open={denunciaModalOpen}
-                              onClose={handleCloseModal}
-                              denunciaId={row.denuncia.id}
-                              descricao={row.denuncia.descricao}
-                              onSuccess={handleSuccess} // Passa uma função, não uma chamada direta
-                            />
-                          </>
-                        )}
+                              <Tooltip title="Denúncia">
+                                <IconButton
+                                  color="warning"
+                                  onClick={handleOpenModal}
+                                >
+                                  <AnnouncementIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <DenunciaModal
+                                open={denunciaModalOpen}
+                                onClose={handleCloseModal}
+                                denunciaId={row.denuncia.id}
+                                descricao={row.denuncia.descricao}
+                                onSuccess={handleSuccess} // Passa uma função, não uma chamada direta
+                              />
+                            </>
+                          )}
+                          {!row.ativo ? (
+                           <Tooltip title="Ativar">
+                           <IconButton
+                             color="primary"
+                             onClick={() => {
+                               handleOpenConfirmModal(row.id);
+                             }}
+                           >
+                             <HideSourceIcon />
+                           </IconButton>
+                         </Tooltip>
+                          ) : (
+                            ""
+                          )}
+                          
                         </Stack>
                       </TableCell>
                     </TableRow>
