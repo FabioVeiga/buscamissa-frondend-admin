@@ -73,6 +73,7 @@ const IgrejaCriar = () => {
 
   const handleAddRedeSocial = () => {
     const { tipoRedeSocial, nomeDoPerfil } = formDataRedeSociais;
+    console.log(tipoRedeSocial, nomeDoPerfil);
     // Validação
     if (tipoRedeSocial === "" || nomeDoPerfil === "") {
       setMessage(
@@ -158,7 +159,8 @@ const IgrejaCriar = () => {
     formData.missas = missas;
     formData.imagem = base64;
     formData.endereco = endereco;
-    //console.log(formData);
+    formData.redeSociais = redeSociais;
+    console.log(formData);
     api
      .post("/api/Admin/igreja/criar", formData)
      .then((response) => {
@@ -436,8 +438,8 @@ const IgrejaCriar = () => {
             >
               <MenuItem value={1}>Facebook</MenuItem>
               <MenuItem value={2}>Instagram</MenuItem>
-              <MenuItem value={3}>Twitter</MenuItem>
-              <MenuItem value={4}>LinkedIn</MenuItem>
+              <MenuItem value={3}>Youtube</MenuItem>
+              <MenuItem value={4}>Tiktok</MenuItem>
             </Select>
           </FormControl>
           <TextField
