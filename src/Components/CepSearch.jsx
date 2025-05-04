@@ -15,9 +15,9 @@ const errorMensage = () => ({
 
 const BuscaPorCEP = () => {
   const [cep, setCep] = useState("");
-  const [complemento, setComplemento] = useState("");
   const [row, setRow] = useState({});
   const { endereco, setEndereco, resetEndereco } = useEndereco();
+
   const [message, setMessage] = useState(errorMensage);
   const [showModal, setShowModal] = useState(false);
   //const navigate = useNavigate()
@@ -54,7 +54,6 @@ const BuscaPorCEP = () => {
       })
       .catch((error) => {
         const data = error.response.data?.data;
-        data.endereco.complemento = complemento;
         setEndereco(data.endereco);
         setMessage({
           mensagem:
@@ -96,7 +95,7 @@ const BuscaPorCEP = () => {
       {/* Grid para os campos do endereço */}
       <Grid container spacing={2}>
         {/* Primeira linha */}
-        <Grid size={10}>
+        <Grid size={12}>
           <TextField
             disabled
             id="outlined-disabled"
@@ -104,28 +103,9 @@ const BuscaPorCEP = () => {
             fullWidth
           />
         </Grid>
-
-        <Grid size={2}>
-          <TextField
-            label="Número"
-            id="outlined-disabled"
-            value={endereco.numero}
-            fullWidth
-          />
-        </Grid>
         
-        <Grid size={6}>
-          <TextField
-            label="Complemento"
-            value={complemento}
-            onChange={(e) => setComplemento(e.target.value)}
-            fullWidth
-            id="outlined-disabled"
-          />
-        </Grid>
-
         {/* Segunda linha */}
-        <Grid size={6}>
+        <Grid size={7}>
           <TextField
             id="outlined-basic"
             variant="outlined"
@@ -134,7 +114,7 @@ const BuscaPorCEP = () => {
             disabled
           />
         </Grid>
-        <Grid size={4}>
+        <Grid size={5}>
           <TextField
             value={endereco.localidade}
             fullWidth
@@ -143,14 +123,14 @@ const BuscaPorCEP = () => {
         </Grid>
 
         {/* Terceira linha */}
-        <Grid size={4}>
+        <Grid size={2}>
           <TextField 
             value={endereco.uf} 
             fullWidth 
             disabled 
           />
         </Grid>
-        <Grid size={4}>
+        <Grid size={10}>
           <TextField
             value={endereco.estado}
             fullWidth

@@ -50,7 +50,8 @@ const IgrejaCriar = () => {
   const [redeSociais, setRedeSociais] = useState([]);
   const [base64, setBase64] = useState("");
   const [fileName, setFileName] = useState("");
-  const { endereco } = useEndereco();
+
+  const { endereco, setEndereco } = useEndereco();
   const navigate = useNavigate();
 
   const handleAddMissa = () => {
@@ -72,6 +73,7 @@ const IgrejaCriar = () => {
 
   const handleAddRedeSocial = () => {
     const { tipoRedeSocial, nomeDoPerfil } = formDataRedeSociais;
+    console.log(tipoRedeSocial, nomeDoPerfil);
     // Validação
     if (tipoRedeSocial === "" || nomeDoPerfil === "") {
       setMessage(
@@ -128,6 +130,10 @@ const IgrejaCriar = () => {
     navigate(path);
   };
 
+  const handlaComplementoEndereco = (field, value) => {
+    setEndereco((prev) => ({ ...prev, [field]: value }));
+  };
+
   const handleSubmit = () => {
     //Validação
     var arrayAux = []
@@ -153,25 +159,26 @@ const IgrejaCriar = () => {
     formData.missas = missas;
     formData.imagem = base64;
     formData.endereco = endereco;
-    //console.log(formData);
+    formData.redeSociais = redeSociais;
+    console.log(formData);
     api
-      .post("/api/Admin/igreja/criar", formData)
-      .then((response) => {
-        console.log(response);
-        setMessage("Igreja criada com sucesso!");
-        handleNavigate("/igreja");
-      })
-      .catch((error) => {
-        //console.error("Erro ao criar a igreja:", error);
-        var data = error.response.data;
-        console.error("Erro ao criar a igreja:", error);
-        if (data.errors) {
-          setMessage(data.errors);
-        } else {
-          var arrayAux = [error.response.data.data?.messagemAplicacao]
-          setMessage(arrayAux);
-        }
-      });
+     .post("/api/Admin/igreja/criar", formData)
+     .then((response) => {
+       //console.log(response);
+       setMessage("Igreja criada com sucesso!");
+       handleNavigate("/igreja");
+     })
+     .catch((error) => {
+       //console.error("Erro ao criar a igreja:", error);
+       var data = error.response.data;
+       console.error("Erro ao criar a igreja:", error);
+       if (data.errors) {
+         setMessage(data.errors);
+       } else {
+         var arrayAux = [error.response.data.data?.messagemAplicacao]
+         setMessage(arrayAux);
+       }
+     });
   };
 
   return (
@@ -192,6 +199,21 @@ const IgrejaCriar = () => {
         }}
       >
         {/* Dados da Igreja */}
+        <TextField
+          label="Endereço - Complemento"
+          value={endereco.complemento}
+          onChange={(e) => handlaComplementoEndereco("complemento",e.target.value)}
+          fullWidth
+          id="outlined-disabled"
+          />
+        <TextField
+          label="Endereço - Número"
+          id="outlined-disabled"
+          value={endereco.numero}
+          onChange={(e) => handlaComplementoEndereco("numero",e.target.value)}
+          fullWidth
+        />
+        
         <TextField
           label="Nome da Igreja"
           value={formData.nome}
@@ -416,8 +438,8 @@ const IgrejaCriar = () => {
             >
               <MenuItem value={1}>Facebook</MenuItem>
               <MenuItem value={2}>Instagram</MenuItem>
-              <MenuItem value={3}>Twitter</MenuItem>
-              <MenuItem value={4}>LinkedIn</MenuItem>
+              <MenuItem value={3}>Youtube</MenuItem>
+              <MenuItem value={4}>Tiktok</MenuItem>
             </Select>
           </FormControl>
           <TextField

@@ -116,7 +116,7 @@ const IgrejaAtualizar = () => {
       imagem: base64,
       redeSociais: formDataRedeSociais,
     }
-    console.log(req);
+    //console.log(req);
     api
       .put("/api/Admin/igreja/atualizar", req)
       .then(() => {
