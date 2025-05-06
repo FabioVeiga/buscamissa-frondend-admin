@@ -6,7 +6,7 @@ import ErrorSpan from "../ErrorSpan";
 import { useEndereco } from "../Context/EnderecoContext";
 import { isCepValid } from "../utils";
 //import { useNavigate } from "react-router-dom";
-import  RedirectModal  from "../Components/RedirectModal"
+import RedirectModal from "../Components/RedirectModal";
 
 const errorMensage = () => ({
   mensagem: "",
@@ -40,7 +40,7 @@ const BuscaPorCEP = () => {
           setRow(data.response);
           setEndereco(data.response.endereco);
           setShowModal(true);
-          
+
           setMessage({
             mensagem: "Tem igreja, redirecionar para editar!",
             severity: "info",
@@ -97,44 +97,47 @@ const BuscaPorCEP = () => {
         {/* Primeira linha */}
         <Grid size={12}>
           <TextField
-            disabled
+            disabled={!endereco.logradouro}
             id="outlined-disabled"
-            value={endereco.logradouro}
+            value={endereco.logradouro || ""}
+            onChange={(e) =>
+              setEndereco((prev) => ({ ...prev, logradouro: e.target.value }))
+            }
             fullWidth
           />
         </Grid>
-        
+
         {/* Segunda linha */}
         <Grid size={7}>
           <TextField
             id="outlined-basic"
             variant="outlined"
-            value={endereco.bairro}
+            value={endereco.bairro || ""}
             fullWidth
-            disabled
+            disabled={!endereco.bairro}
           />
         </Grid>
         <Grid size={5}>
-          <TextField
-            value={endereco.localidade}
-            fullWidth
-            disabled
+          <TextField 
+            value={endereco.localidade || ""} 
+            fullWidth 
+            disabled={!endereco.localidade}
           />
         </Grid>
 
         {/* Terceira linha */}
         <Grid size={2}>
           <TextField 
-            value={endereco.uf} 
+            value={endereco.uf || ""} 
             fullWidth 
-            disabled 
+            disabled ={!endereco.uf} 
           />
         </Grid>
         <Grid size={10}>
-          <TextField
-            value={endereco.estado}
-            fullWidth
-            disabled
+          <TextField 
+            value={endereco.estado || ""} 
+            fullWidth 
+            disabled ={!endereco.estado}
           />
         </Grid>
       </Grid>
