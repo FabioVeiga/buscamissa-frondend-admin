@@ -96,32 +96,41 @@ const BuscaPorCEP = () => {
       <Grid container spacing={2}>
         {/* Primeira linha */}
         <Grid size={12}>
-          <TextField
-            disabled={!endereco.logradouro}
-            id="outlined-disabled"
-            value={endereco.logradouro || ""}
-            onChange={(e) =>
-              setEndereco((prev) => ({ ...prev, logradouro: e.target.value }))
-            }
-            fullWidth
-          />
+        Logradouro
+        <TextField
+          disabled={!endereco && endereco.logradouro} // Desabilita se endereco for null ou logradouro estiver vazio
+          id="outlined-disabled"
+          value={endereco?.logradouro || ""} // Usa optional chaining para evitar erros se endereco for null
+          onChange={(e) =>
+            setEndereco((prev) => ({ ...prev, logradouro: e.target.value }))
+          }
+          fullWidth
+        />
         </Grid>
 
         {/* Segunda linha */}
         <Grid size={7}>
+          Bairro
           <TextField
             id="outlined-basic"
             variant="outlined"
             value={endereco.bairro || ""}
             fullWidth
-            disabled={!endereco.bairro}
+            disabled={!endereco && endereco.bairro}
+            onChange={(e) =>
+              setEndereco((prev) => ({ ...prev, bairro: e.target.value }))
+            }
           />
         </Grid>
         <Grid size={5}>
+        Localidade
           <TextField 
             value={endereco.localidade || ""} 
             fullWidth 
-            disabled={!endereco.localidade}
+            disabled={!endereco.localidade && endereco.localidade}
+            onChange={(e) =>
+              setEndereco((prev) => ({ ...prev, localidade: e.target.value }))
+            }
           />
         </Grid>
 
@@ -130,14 +139,20 @@ const BuscaPorCEP = () => {
           <TextField 
             value={endereco.uf || ""} 
             fullWidth 
-            disabled ={!endereco.uf} 
+            disabled ={!endereco.uf && endereco.uf}
+            onChange={(e) =>
+              setEndereco((prev) => ({ ...prev, uf: e.target.value }))
+            }
           />
         </Grid>
         <Grid size={10}>
           <TextField 
             value={endereco.estado || ""} 
             fullWidth 
-            disabled ={!endereco.estado}
+            disabled ={!endereco.estado && endereco.estado}
+            onChange={(e) =>
+              setEndereco((prev) => ({ ...prev, estado: e.target.value }))
+            }
           />
         </Grid>
       </Grid>
