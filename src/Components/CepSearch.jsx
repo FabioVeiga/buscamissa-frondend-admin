@@ -6,7 +6,7 @@ import ErrorSpan from "../ErrorSpan";
 import { useEndereco } from "../Context/EnderecoContext";
 import { isCepValid } from "../utils";
 //import { useNavigate } from "react-router-dom";
-import  RedirectModal  from "../Components/RedirectModal"
+import RedirectModal from "../Components/RedirectModal";
 
 const errorMensage = () => ({
   mensagem: "",
@@ -40,7 +40,7 @@ const BuscaPorCEP = () => {
           setRow(data.response);
           setEndereco(data.response.endereco);
           setShowModal(true);
-          
+
           setMessage({
             mensagem: "Tem igreja, redirecionar para editar!",
             severity: "info",
@@ -96,45 +96,63 @@ const BuscaPorCEP = () => {
       <Grid container spacing={2}>
         {/* Primeira linha */}
         <Grid size={12}>
-          <TextField
-            disabled
-            id="outlined-disabled"
-            value={endereco.logradouro}
-            fullWidth
-          />
+        Logradouro
+        <TextField
+          disabled={!endereco && endereco.logradouro} // Desabilita se endereco for null ou logradouro estiver vazio
+          id="outlined-disabled"
+          value={endereco?.logradouro || ""} // Usa optional chaining para evitar erros se endereco for null
+          onChange={(e) =>
+            setEndereco((prev) => ({ ...prev, logradouro: e.target.value }))
+          }
+          fullWidth
+        />
         </Grid>
-        
+
         {/* Segunda linha */}
         <Grid size={7}>
+          Bairro
           <TextField
             id="outlined-basic"
             variant="outlined"
-            value={endereco.bairro}
+            value={endereco.bairro || ""}
             fullWidth
-            disabled
+            disabled={!endereco && endereco.bairro}
+            onChange={(e) =>
+              setEndereco((prev) => ({ ...prev, bairro: e.target.value }))
+            }
           />
         </Grid>
         <Grid size={5}>
-          <TextField
-            value={endereco.localidade}
-            fullWidth
-            disabled
+        Localidade
+          <TextField 
+            value={endereco.localidade || ""} 
+            fullWidth 
+            disabled={!endereco.localidade && endereco.localidade}
+            onChange={(e) =>
+              setEndereco((prev) => ({ ...prev, localidade: e.target.value }))
+            }
           />
         </Grid>
 
         {/* Terceira linha */}
         <Grid size={2}>
           <TextField 
-            value={endereco.uf} 
+            value={endereco.uf || ""} 
             fullWidth 
-            disabled 
+            disabled ={!endereco.uf && endereco.uf}
+            onChange={(e) =>
+              setEndereco((prev) => ({ ...prev, uf: e.target.value }))
+            }
           />
         </Grid>
         <Grid size={10}>
-          <TextField
-            value={endereco.estado}
-            fullWidth
-            disabled
+          <TextField 
+            value={endereco.estado || ""} 
+            fullWidth 
+            disabled ={!endereco.estado && endereco.estado}
+            onChange={(e) =>
+              setEndereco((prev) => ({ ...prev, estado: e.target.value }))
+            }
           />
         </Grid>
       </Grid>
