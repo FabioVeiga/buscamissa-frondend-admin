@@ -54,6 +54,9 @@ const BuscaPorCEP = () => {
       })
       .catch((error) => {
         const data = error.response.data?.data;
+        if(data.endereco.cep === null){
+          data.endereco.cep = cep;
+        }
         setEndereco(data.endereco);
         setMessage({
           mensagem:
@@ -136,6 +139,7 @@ const BuscaPorCEP = () => {
 
         {/* Terceira linha */}
         <Grid size={2}>
+          UF
           <TextField 
             value={endereco.uf || ""} 
             fullWidth 
@@ -145,7 +149,19 @@ const BuscaPorCEP = () => {
             }
           />
         </Grid>
-        <Grid size={10}>
+        <Grid size={2}>
+          Regiao
+          <TextField 
+            value={endereco.regiao || ""} 
+            fullWidth 
+            disabled ={!endereco.regiao && endereco.regiao}
+            onChange={(e) =>
+              setEndereco((prev) => ({ ...prev, regiao: e.target.value }))
+            }
+          />
+        </Grid>
+        <Grid size={8}>
+          Estado
           <TextField 
             value={endereco.estado || ""} 
             fullWidth 
