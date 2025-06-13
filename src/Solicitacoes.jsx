@@ -187,6 +187,8 @@ const SolicitacoesPage = () => {
       <Dialog open={openModal} onClose={handleCloseModal}>
         <DialogTitle>Resolver Solicitação</DialogTitle>
         <DialogContent>
+          <p>Solicitação ID: {selectedSolicitacao?.id}</p>
+          <p>Mensagem: {selectedSolicitacao?.mensagem}</p>
           <TextField
             label="Solução"
             fullWidth
@@ -196,7 +198,7 @@ const SolicitacoesPage = () => {
             onChange={(e) => setSolucao(e.target.value)}
           />
           <TextField
-            label="Responsta para email"
+            label="Resposta para email"
             fullWidth
             multiline
             rows={4}
