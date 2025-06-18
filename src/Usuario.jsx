@@ -119,7 +119,7 @@ const UsuarioPage = () => {
     }
   };
 
-  console.log(selectedUser);
+  //console.log(selectedUser);
 
   useEffect(() => {
     api
