@@ -1,13 +1,27 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "./Context/AuthContext";
 import Menu from "./Components/Menu";
-import { Card, CardContent, Typography, Grid } from "@mui/material";
+import { Card, CardContent, Typography, Grid , Button} from "@mui/material";
 import { useState, useEffect } from "react";
 import api from "./services/apiService";
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
   const [data, setData] = useState({ quantidadesIgrejas: 0, quantidadeMissas: 0 });
+
+  const fetchData = () => {
+    api.get('/api/admin/igreja/infos')
+      .then(response => {
+        setData(response.data.data);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   useEffect(() => {
     api.get('/api/admin/igreja/infos')
@@ -30,6 +44,11 @@ const Home = () => {
     <div style={{ display: "flex" }}>
       <Menu />
       <Grid container spacing={2} style={{ padding: "20px" }}>
+         <Grid item xs={12}>
+          <Button variant="contained" color="primary" onClick={fetchData}>
+            Atualizar dados
+          </Button>
+        </Grid>
           {/* Card for Quantidade de Igrejas */}
           <Grid item xs={12} sm={6}>
             <Card elevation={3}>
