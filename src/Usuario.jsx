@@ -1,4 +1,21 @@
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Stack, Tooltip, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  Stack,
+  Tooltip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Checkbox,
+} from "@mui/material";
 import Menu from "./Components/Menu";
 import api from "./services/apiService";
 import { useState, useEffect } from "react";
@@ -72,12 +89,15 @@ const UsuarioPage = () => {
 
   const handleConfirmBloquearDesbloquear = async () => {
     if (!selectedUser) return;
-  
+
     try {
-      await api.put(`/api/Admin/usuario/bloquear-desbloquear/${selectedUser.id}`, {
-        bloqueado: !selectedUser.bloqueado,
-        motivoBloqueio: !selectedUser.bloqueado ? motivo : null,
-      });
+      await api.put(
+        `/api/Admin/usuario/bloquear-desbloquear/${selectedUser.id}`,
+        {
+          bloqueado: !selectedUser.bloqueado,
+          motivoBloqueio: !selectedUser.bloqueado ? motivo : null,
+        }
+      );
       alert(
         `Usuário ${
           !selectedUser.bloqueado ? "bloqueado" : "desbloqueado"
@@ -98,6 +118,8 @@ const UsuarioPage = () => {
       handleCloseModal();
     }
   };
+
+  //console.log(selectedUser);
 
   useEffect(() => {
     api
@@ -203,14 +225,61 @@ const UsuarioPage = () => {
         <DialogTitle>Detalhes do Usuário</DialogTitle>
         <DialogContent>
           {selectedUser && (
-            <div>
-              <Typography>ID: {selectedUser.id}</Typography>
-              <Typography>Nome: {selectedUser.nome}</Typography>
-              <Typography>Perfil: {perfil(selectedUser.perfil)}</Typography>
-              <Typography>
-                Bloqueado: {selectedUser.bloqueado ? "Sim" : "Não"}
-              </Typography>
-            </div>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell>
+                    <strong>ID</strong>
+                  </TableCell>
+                  <TableCell>{selectedUser.id}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <strong>Nome</strong>
+                  </TableCell>
+                  <TableCell>{selectedUser.nome}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <strong>Perfil</strong>
+                  </TableCell>
+                  <TableCell>{perfil(selectedUser.perfil)}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <strong>Email</strong>
+                  </TableCell>
+                  <TableCell>{selectedUser.email}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <strong>Bloqueado</strong>
+                  </TableCell>
+                  <TableCell>
+                    {selectedUser.bloqueado ? "Sim" : "Não"}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <strong>Aceita Promoção</strong>
+                  </TableCell>
+                  <TableCell>
+                    <Checkbox
+                      checked={!!selectedUser.aceitarPromocao}
+                      disabled
+                    />
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>
+                    <strong>Aceita Termo</strong>
+                  </TableCell>
+                  <TableCell>
+                    <Checkbox checked={!!selectedUser.aceitarTermo} disabled />
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           )}
         </DialogContent>
         <DialogActions>

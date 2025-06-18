@@ -11,6 +11,9 @@ import {
   ListItem,
   Typography,
   IconButton,
+  Checkbox,
+  FormGroup,
+  FormControlLabel
 } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import api from "../services/apiService";
@@ -18,6 +21,7 @@ import { diasDaSemana } from "../utils";
 import ErrorSpan from "../ErrorSpan";
 import { useEndereco } from "../Context/EnderecoContext";
 import { useNavigate } from "react-router-dom";
+import { formatarHorario } from "../utils";
 
 const IgrejaCriar = () => {
   const [message, setMessage] = useState("");
@@ -37,7 +41,7 @@ const IgrejaCriar = () => {
 
   const [formDataMissa, setFormDataMissa] = useState({
     horario: "",
-    diaSemana: "",
+    diasSelecionados: [], // Corrigido: inicialize como array vazio
     observacao: "",
   });
 
@@ -52,23 +56,48 @@ const IgrejaCriar = () => {
   const [fileName, setFileName] = useState("");
 
   const { endereco, setEndereco } = useEndereco();
+
+  
+
   const navigate = useNavigate();
 
+  const handleToggleDiaSemana = (diaValue) => {
+    setFormDataMissa((prev) => {
+      const { diasSelecionados } = prev;
+      if (diasSelecionados.includes(diaValue)) {
+        return {
+          ...prev,
+          diasSelecionados: diasSelecionados.filter((d) => d !== diaValue),
+        };
+      } else {
+        return {
+          ...prev,
+          diasSelecionados: [...diasSelecionados, diaValue],
+        };
+      }
+    });
+  };
+
   const handleAddMissa = () => {
-    const { horario, diaSemana, observacao } = formDataMissa;
+    const { horario, diasSelecionados, observacao } = formDataMissa;
     // Validação
-    if (!horario || diaSemana === "") {
-      setMessage("Os campos Horário e Dia da Semana são obrigatórios!");
+    if (!horario || diasSelecionados.length === 0) {
+      setMessage("Os campos Horário e pelo menos um Dia da Semana são obrigatórios!");
       return;
     }
 
+    // Adiciona uma missa para cada dia selecionado
     setMissas((prev) => [
       ...prev,
-      { horario, diaSemana: diasDaSemana[diaSemana].value, observacao },
+      ...diasSelecionados.map((dia) => ({
+        horario,
+        diaSemana: dia,
+        observacao,
+      })),
     ]);
 
     // Limpar os campos
-    setFormDataMissa({ horario: "", diaSemana: "", observacao: "" });
+    setFormDataMissa({ horario: "", diasSelecionados: [], observacao: "" });
   };
 
   const handleAddRedeSocial = () => {
@@ -305,20 +334,21 @@ const IgrejaCriar = () => {
             }}
           />
 
-          {/* Dia da Semana */}
-          <TextField
-            label="Dia da Semana"
-            select
-            value={formDataMissa.diaSemana}
-            onChange={(e) => handleChangeMissa("diaSemana", e.target.value)}
-            fullWidth
-          >
+          {/* Seleção de Dias da Semana */}
+          <FormGroup row>
             {diasDaSemana.map((dia) => (
-              <MenuItem key={dia.value} value={dia.value}>
-                {dia.label}
-              </MenuItem>
+              <FormControlLabel
+                key={dia.value}
+                control={
+                  <Checkbox
+                    checked={formDataMissa.diasSelecionados.includes(dia.value)}
+                    onChange={() => handleToggleDiaSemana(dia.value)}
+                  />
+                }
+                label={dia.label}
+              />
             ))}
-          </TextField>
+          </FormGroup>
 
           {/* Observação */}
           <TextField
@@ -346,7 +376,7 @@ const IgrejaCriar = () => {
                   }}
                 >
                   <Typography>
-                    {missa.horario} - {diasDaSemana[missa.diaSemana].label} (
+                    {formatarHorario(missa.horario)} - {diasDaSemana.find(d => d.value === missa.diaSemana)?.label} (
                     {missa.observacao || "Sem observação"})
                   </Typography>
                   <IconButton
