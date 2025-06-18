@@ -15,7 +15,7 @@ const IgrejaAtualizar = () => {
   const [formDataRedeSociais, setFormDataRedeSociais] = useState(
     formData.redesSociais || []
   );
-  console.log(formData)
+  //console.log(formData)
   const errorMensage = () => ({
     mensagem: "",
     severity: "",
