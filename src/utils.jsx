@@ -52,3 +52,31 @@ export const isCepValid = (cep) => {
   const regex = /^\d{5}-?\d{3}$/;
   return regex.test(cep);
 };
+
+/**
+ * Formata uma string ou número de horário para o formato HH:mm.
+ * @param {string|number} horario - Horário (ex: "930", "0930", "9:30", 930).
+ * @returns {string} Horário formatado em HH:mm.
+ */
+export const formatarHorario = (horario) => {
+  if (typeof horario === "number") {
+    horario = horario.toString().padStart(4, "0");
+  }
+  if (typeof horario === "string") {
+    // Remove caracteres não numéricos
+    const clean = horario.replace(/\D/g, "");
+    if (clean.length === 4) {
+      return `${clean.slice(0, 2)}:${clean.slice(2)}`;
+    }
+    if (clean.length === 3) {
+      return `0${clean[0]}:${clean.slice(1)}`;
+    }
+    if (clean.length === 2) {
+      return `00:${clean}`;
+    }
+    if (clean.length === 1) {
+      return `00:0${clean}`;
+    }
+  }
+  return horario;
+};
