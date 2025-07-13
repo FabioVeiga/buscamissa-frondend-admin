@@ -48,7 +48,8 @@ const Home = () => {
   return (
     <div style={{ display: "flex" }}>
       <Menu />
-      <Grid container spacing={2} style={{ padding: "20px" }}>
+      <div style={{ flex: 1, overflow: "auto" }}>
+        <Grid container spacing={2} style={{ padding: 20, margin: 0, width: "100%" }}>
         <Grid item xs={12}>
           <Button variant="contained" color="primary" onClick={fetchData}>
             Atualizar dados
@@ -121,7 +122,7 @@ const Home = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={12} sm={8}>
           <Card elevation={3}>
             <CardContent>
               <Typography variant="h5" gutterBottom>
@@ -134,7 +135,9 @@ const Home = () => {
             </CardContent>
           </Card>
         </Grid>
-      </Grid>      
+      </Grid>   
+      </div>
+         
     </div>
   );
 };
