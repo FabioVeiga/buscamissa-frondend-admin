@@ -121,7 +121,7 @@ const Home = () => {
           </Card>
         </Grid>
 
-        <Grid item xs={12} sm={10}>
+        <Grid item xs={12} sm={8}>
           <Card elevation={3}>
             <CardContent>
               <Typography variant="h5" gutterBottom>
