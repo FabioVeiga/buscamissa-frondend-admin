@@ -27,12 +27,20 @@ import { useNavigate } from "react-router-dom";
 import DenunciaModal from "./Components/DenunciaModal";
 import ConfirmModal from "../Components/ConfirmModal";
 import api from "../services/apiService";
+import { useEffect } from "react";
 
 
 const IgrejaPage = () => {
   const [igrejas, setIgrejas] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [paginacao, setPaginacao] = useState({});
+  const [paginacao, setPaginacao] = useState({
+    pageIndex: 1,
+    pageSize: 10,
+    totalPages: 1,
+    hasPreviousPage: false,
+    hasNextPage: false,
+    totalItems: 0,
+  });
   const [igrejaModal, setIgrejaModal] = useState({});
   const [denunciaModalOpen, setDenunciaModalOpen] = useState(null); // Armazena o ID da denúncia aberta
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -104,12 +112,21 @@ const IgrejaPage = () => {
     }
   };
 
-  const fetchIgrejas = () => {
+  const fetchIgrejas = (pageIndex = 1, pageSize = 10) => {
     setIsLoading(true);
     api
-      .get("/api/admin/igreja/buscar-por-filtro?ativo=false") // Substitua pela URL correta da sua API
+      .get(`/api/admin/igreja/buscar-por-filtro?ativo=false&Paginacao.PageIndex=${pageIndex}&Paginacao.PageSize=${pageSize}`)
       .then((response) => {
-        handleDataChange(response.data.data); // Atualiza o estado com os dados da API
+        const resp = response.data.data;
+        setIgrejas(resp);
+        setPaginacao({
+          pageIndex: resp.pageIndex,
+          pageSize: resp.pageSize,
+          totalPages: resp.totalPages,
+          hasPreviousPage: resp.hasPreviousPage,
+          hasNextPage: resp.hasNextPage,
+          totalItems: resp.totalItems,
+        });
       })
       .catch((error) => {
         console.error("Erro ao buscar igrejas:", error);
@@ -117,6 +134,17 @@ const IgrejaPage = () => {
       .finally(() => {
         setIsLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchIgrejas(paginacao.pageIndex, paginacao.pageSize);
+  }, [paginacao.pageIndex, paginacao.pageSize]);
+
+  const handlePageChange = (newPageIndex) => {
+    setPaginacao((prev) => ({
+      ...prev,
+      pageIndex: newPageIndex,
+    }));
   };
 
   return (
@@ -258,7 +286,13 @@ const IgrejaPage = () => {
               </TableFooter>
             </Table>
           )}
-          <Pagination {...paginacao} />
+          <Pagination
+            pageIndex={paginacao.pageIndex}
+            totalPages={paginacao.totalPages}
+            hasPreviousPage={paginacao.hasPreviousPage}
+            hasNextPage={paginacao.hasNextPage}
+            onPageChange={handlePageChange}
+          />
         </TableContainer>
       </div>
     </>
