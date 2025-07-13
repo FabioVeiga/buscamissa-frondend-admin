@@ -119,8 +119,6 @@ const UsuarioPage = () => {
     }
   };
 
-  //console.log(selectedUser);
-
   useEffect(() => {
     api
       .get(
@@ -146,6 +144,42 @@ const UsuarioPage = () => {
         setIsLoading(false);
       });
   }, []);
+
+  const fetchUsuarios = async (pageIndex = 1, pageSize = 10) => {
+    setIsLoading(true);
+    try {
+      const response = await api.get(
+        `/api/Admin/usuario/buscar-por-filtro?Paginacao.PageIndex=${pageIndex}&Paginacao.PageSize=${pageSize}`
+      );
+      setData(response.data.data.usuarios);
+      setPaginacao({
+        pageIndex: response.data.data.usuarios.pageIndex,
+        pageSize: response.data.data.usuarios.pageSize,
+        totalItems: response.data.data.usuarios.totalItems,
+        hasPreviousPage: response.data.data.usuarios.hasPreviousPage,
+        hasNextPage: response.data.data.usuarios.hasNextPage,
+        nextPage: response.data.data.usuarios.nextPage,
+        previousPage: response.data.data.usuarios.previousPage,
+        totalPages: response.data.data.usuarios.totalPages,
+      });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsuarios(paginacao.pageIndex, paginacao.pageSize);
+     
+  }, [paginacao.pageIndex, paginacao.pageSize]);
+
+  const handlePageChange = (newPageIndex) => {
+    setPaginacao((prev) => ({
+      ...prev,
+      pageIndex: newPageIndex,
+    }));
+  };
 
   return (
     <div style={{ display: "flex" }}>
@@ -218,7 +252,10 @@ const UsuarioPage = () => {
             </TableBody>
           </Table>
         )}
-        <Pagination {...paginacao} />
+        <Pagination
+          {...paginacao}
+          onPageChange={handlePageChange}
+        />
       </TableContainer>
 
       <Dialog open={openDetailsModal} onClose={handleCloseDetailsModal}>
