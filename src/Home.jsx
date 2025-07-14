@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "./Context/AuthContext";
 import Menu from "./Components/Menu";
-import { Card, CardContent, Typography, Grid, Button } from "@mui/material";
+import { Card, CardContent, Typography, Button, Stack, Grid } from "@mui/material";
 import { useState, useEffect } from "react";
 import api from "./services/apiService";
 import MissaCardHome from "./Components/MissaCardHome";
@@ -46,100 +46,95 @@ const Home = () => {
   }
 
   return (
-    <div style={{ display: "flex" }}>
-      <Menu />
-      <div style={{ flex: 1, overflow: "auto" }}>
-        <Grid container spacing={2} style={{ padding: 20, margin: 0, width: "100%" }}>
-        <Grid item xs={12}>
-          <Button variant="contained" color="primary" onClick={fetchData}>
-            Atualizar dados
-          </Button>
-        </Grid>
-        {/* Card for Quantidade de Igrejas */}
-        <Grid item xs={12} sm={6}>
-          <Card elevation={3}>
-            <CardContent>
-              <Typography variant="h5" gutterBottom>
-                Quantidade de Igrejas
-              </Typography>
-              <Typography variant="h4" color="primary">
-                {data.quantidadesIgrejas}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Card for Quantidade de Missas */}
-        <Grid item xs={12} sm={6}>
-          <Card elevation={3}>
-            <CardContent>
-              <Typography variant="h5" gutterBottom>
-                Quantidade de Missas
-              </Typography>
-              <Typography variant="h4" color="secondary">
-                {data.quantidadeMissas}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6}>
-          <Card elevation={3}>
-            <CardContent>
-              <Typography variant="h5" gutterBottom>
-                Quandidade de Denuncias não atendida
-              </Typography>
-              <Typography variant="h4" color="primary">
-                {data.quantidadeIgrejaDenunciaNaoAtendida}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6}>
-          <Card elevation={3}>
-            <CardContent>
-              <Typography variant="h5" gutterBottom>
-                Quandidade de Solicitações não atendida
-              </Typography>
-              <Typography variant="h4" color="primary">
-                {data.quantidadeSolicitacoesNaoAtendida}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6}>
-          <Card elevation={3}>
-            <CardContent>
-              <Typography variant="h5" gutterBottom>
-                Quandidade de Usuários
-              </Typography>
-              <Typography variant="h4" color="primary">
-                {data.quantidadeDeUsuarios}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={8}>
-          <Card elevation={3}>
-            <CardContent>
-              <Typography variant="h5" gutterBottom>
-                Texto para divulgar o Busca Missa
-              </Typography>
-              <MissaCardHome
-                  churchesCount={data.quantidadesIgrejas}
-                  massesCount={data.quantidadeMissas}
-                />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>   
-      </div>
-         
+  <div style={{ display: "flex", minHeight: "100vh" }}>
+    <Menu />
+    <div style={{ flex: 1, overflow: "auto" }}>
+      <Stack spacing={2} sx={{ p: { xs: 1, sm: 2 }, width: "100%" }}>
+  <Button
+    variant="contained"
+    color="primary"
+    onClick={fetchData}
+    fullWidth
+  >
+    Atualizar dados
+  </Button>
+  <Grid container spacing={2}>
+    <Grid item xs={12} sm={6}>
+      <Card elevation={3}>
+        <CardContent>
+          <Typography variant="h5" gutterBottom>
+            Quantidade de Igrejas
+          </Typography>
+          <Typography variant="h4" color="primary">
+            {data.quantidadesIgrejas}
+          </Typography>
+        </CardContent>
+      </Card>
+    </Grid>
+    <Grid item xs={12} sm={6}>
+      <Card elevation={3}>
+        <CardContent>
+          <Typography variant="h5" gutterBottom>
+            Quantidade de Missas
+          </Typography>
+          <Typography variant="h4" color="secondary">
+            {data.quantidadeMissas}
+          </Typography>
+        </CardContent>
+      </Card>
+    </Grid>
+    <Grid item xs={12} sm={6}>
+      <Card elevation={3}>
+        <CardContent>
+          <Typography variant="h5" gutterBottom>
+            Quandidade de Denuncias não atendida
+          </Typography>
+          <Typography variant="h4" color="primary">
+            {data.quantidadeIgrejaDenunciaNaoAtendida}
+          </Typography>
+        </CardContent>
+      </Card>
+    </Grid>
+    <Grid item xs={12} sm={6}>
+      <Card elevation={3}>
+        <CardContent>
+          <Typography variant="h5" gutterBottom>
+            Quandidade de Solicitações não atendida
+          </Typography>
+          <Typography variant="h4" color="primary">
+            {data.quantidadeSolicitacoesNaoAtendida}
+          </Typography>
+        </CardContent>
+      </Card>
+    </Grid>
+    <Grid item xs={12} sm={6}>
+      <Card elevation={3}>
+        <CardContent>
+          <Typography variant="h5" gutterBottom>
+            Quandidade de Usuários
+          </Typography>
+          <Typography variant="h4" color="primary">
+            {data.quantidadeDeUsuarios}
+          </Typography>
+        </CardContent>
+      </Card>
+    </Grid>
+  </Grid>
+  <Card elevation={3}>
+    <CardContent>
+      <Typography variant="h5" gutterBottom>
+        Texto para divulgar o Busca Missa
+      </Typography>
+      <MissaCardHome
+        churchesCount={data.quantidadesIgrejas}
+        massesCount={data.quantidadeMissas}
+      />
+    </CardContent>
+  </Card>
+</Stack>
     </div>
-  );
+  </div>
+);
 };
 
 export default Home;

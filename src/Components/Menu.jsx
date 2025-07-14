@@ -28,7 +28,7 @@ const Menu = ({ children }) => {
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box>
       <Drawer
         anchor="left"
         open={open}
