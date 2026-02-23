@@ -24,8 +24,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, senha) => {
     try {
         const response = await api.post("/api/Usuario/autenticar", {
-          email,
-          senha,
+          Email: email,
+          Senha: senha,
         });
   
         if (response.status === 200) {
