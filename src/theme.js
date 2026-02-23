@@ -66,9 +66,11 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 16,
-          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+          border: '1px solid',
+          borderColor: 'rgba(0,0,0,0.06)',
           '&:hover': {
-            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
           },
         },
       },
@@ -77,15 +79,17 @@ const theme = createTheme({
       styleOverrides: {
         paper: {
           borderRight: '1px solid',
-          borderColor: 'divider',
-          boxShadow: '4px 0 24px rgba(0,0,0,0.06)',
+          borderColor: 'rgba(0,0,0,0.06)',
+          boxShadow: '2px 0 16px rgba(0,0,0,0.04)',
+          background: 'linear-gradient(180deg, #ffffff 0%, #fafbfc 100%)',
         },
       },
     },
     MuiAppBar: {
       styleOverrides: {
         root: {
-          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+          boxShadow: '0 1px 0 rgba(0,0,0,0.06)',
+          background: 'linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%)',
         },
       },
     },

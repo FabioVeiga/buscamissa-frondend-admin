@@ -27,8 +27,8 @@ import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 
-const DRAWER_WIDTH = 280;
-const DRAWER_WIDTH_COLLAPSED = 72;
+const DRAWER_WIDTH = 260;
+const DRAWER_WIDTH_COLLAPSED = 68;
 
 const navItems = [
   { path: "/home", label: "Home", icon: HomeIcon },
@@ -63,16 +63,16 @@ const Menu = ({ children }) => {
     <>
       <Box
         sx={{
-          py: 2,
-          px: 2,
+          py: 1.5,
+          px: 1.5,
           display: "flex",
           alignItems: "center",
           justifyContent: isMobile || desktopOpen ? "space-between" : "center",
-          minHeight: 56,
+          minHeight: 52,
         }}
       >
         {!isMobile && desktopOpen && (
-          <Typography variant="h6" noWrap sx={{ fontWeight: 700, color: "primary.main" }}>
+          <Typography variant="subtitle1" noWrap sx={{ fontWeight: 700, color: "primary.main", letterSpacing: "-0.02em" }}>
             Busca Missa
           </Typography>
         )}
@@ -80,55 +80,64 @@ const Menu = ({ children }) => {
           <IconButton
             onClick={() => setDesktopOpen(!desktopOpen)}
             size="small"
-            sx={{ ml: desktopOpen ? 0 : "auto" }}
+            sx={{ ml: desktopOpen ? 0 : "auto", color: "text.secondary" }}
             aria-label={desktopOpen ? "Recolher menu" : "Expandir menu"}
           >
-            {desktopOpen ? <ChevronLeftIcon /> : <MenuOpenIcon />}
+            {desktopOpen ? <ChevronLeftIcon fontSize="small" /> : <MenuOpenIcon fontSize="small" />}
           </IconButton>
         )}
       </Box>
-      <Divider />
-      <List sx={{ px: 1, py: 1 }}>
+      <Divider sx={{ opacity: 0.6 }} />
+      <List sx={{ px: 1, py: 0.5 }}>
         {navItems.map(({ path, label, icon: Icon }) => (
-          <ListItem key={path} disablePadding sx={{ mb: 0.5 }}>
+          <ListItem key={path} disablePadding sx={{ mb: 0.25 }}>
             <ListItemButton
               onClick={() => handleNavigate(path)}
               selected={location.pathname === path}
               sx={{
-                borderRadius: 2,
-                py: 1.5,
+                borderRadius: 1.5,
+                py: 1.25,
+                px: 1.5,
                 "&.Mui-selected": {
                   bgcolor: "primary.main",
                   color: "primary.contrastText",
                   "&:hover": { bgcolor: "primary.dark" },
                   "& .MuiListItemIcon-root": { color: "inherit" },
                 },
+                "&:hover": {
+                  bgcolor: "action.hover",
+                },
               }}
             >
-              <ListItemIcon sx={{ minWidth: desktopOpen || isMobile ? 40 : 32 }}>
+              <ListItemIcon sx={{ minWidth: desktopOpen || isMobile ? 36 : 28 }}>
                 <Icon fontSize="small" />
               </ListItemIcon>
-              {(desktopOpen || isMobile) && <ListItemText primary={label} primaryTypographyProps={{ fontWeight: 500 }} />}
+              {(desktopOpen || isMobile) && (
+                <ListItemText primary={label} primaryTypographyProps={{ fontWeight: 500, variant: "body2" }} />
+              )}
             </ListItemButton>
           </ListItem>
         ))}
       </List>
-      <Divider />
-      <List sx={{ px: 1, py: 1 }}>
+      <Divider sx={{ opacity: 0.6 }} />
+      <List sx={{ px: 1, py: 0.5 }}>
         <ListItem disablePadding>
           <ListItemButton
             onClick={handleLogout}
             sx={{
-              borderRadius: 2,
-              py: 1.5,
+              borderRadius: 1.5,
+              py: 1.25,
+              px: 1.5,
               color: "error.main",
               "&:hover": { bgcolor: "error.light", color: "error.contrastText" },
             }}
           >
-            <ListItemIcon sx={{ minWidth: desktopOpen || isMobile ? 40 : 32 }}>
+            <ListItemIcon sx={{ minWidth: desktopOpen || isMobile ? 36 : 28 }}>
               <LogoutIcon fontSize="small" />
             </ListItemIcon>
-            {(desktopOpen || isMobile) && <ListItemText primary="Sair" primaryTypographyProps={{ fontWeight: 500 }} />}
+            {(desktopOpen || isMobile) && (
+              <ListItemText primary="Sair" primaryTypographyProps={{ fontWeight: 500, variant: "body2" }} />
+            )}
           </ListItemButton>
         </ListItem>
       </List>
@@ -200,7 +209,7 @@ const Menu = ({ children }) => {
         {drawerContent}
       </Drawer>
 
-      {/* Área de conteúdo */}
+      {/* Área de conteúdo – próxima ao sidebar */}
       <Box
         component="main"
         sx={{
@@ -209,13 +218,26 @@ const Menu = ({ children }) => {
           ml: { md: `${drawerWidth}px` },
           mt: { xs: 7, md: 0 },
           minHeight: "100vh",
-          transition: theme.transitions.create(["margin", "width"], {
+          transition: theme.transitions.create(["width"], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen,
           }),
+          bgcolor: "background.default",
+          borderLeft: { md: "1px solid" },
+          borderColor: { md: "rgba(0,0,0,0.06)" },
         }}
       >
-        <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1600, mx: "auto" }}>{children}</Box>
+        <Box
+          sx={{
+            p: { xs: 2, sm: 2.5 },
+            pl: { md: 2.5 },
+            pr: { md: 2.5 },
+            maxWidth: 1400,
+            width: "100%",
+          }}
+        >
+          {children}
+        </Box>
       </Box>
     </Box>
   );
