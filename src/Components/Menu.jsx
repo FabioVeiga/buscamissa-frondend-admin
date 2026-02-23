@@ -207,13 +207,15 @@ const Menu = ({ children }) => {
 
       <Drawer
         variant="persistent"
-        open={desktopOpen}
+        open={true}
         sx={{
           display: { xs: "none", md: "block" },
           width: drawerWidth,
           flexShrink: 0,
           "& .MuiDrawer-paper": {
             ...drawerPaperSx,
+            position: "fixed",
+            height: "100vh",
             transition: theme.transitions.create("width", {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.enteringScreen,
@@ -229,10 +231,11 @@ const Menu = ({ children }) => {
         component="main"
         sx={{
           flexGrow: 1,
-          width: { md: `calc(100% - ${drawerWidth}px)` },
+          width: { xs: "100%", md: `calc(100% - ${drawerWidth}px)` },
+          ml: { md: `${drawerWidth}px` },
           mt: { xs: TOP_BAR_HEIGHT, md: 0 },
           minHeight: "100vh",
-          transition: theme.transitions.create(["width", "margin"], {
+          transition: theme.transitions.create(["width", "margin-left"], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen,
           }),
