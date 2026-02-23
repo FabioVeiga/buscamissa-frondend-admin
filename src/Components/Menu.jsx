@@ -252,14 +252,9 @@ const Menu = ({ children }) => {
         sx={{
           flexGrow: 1,
           minWidth: 0,
-          width: { xs: "100%", md: `calc(100% - ${drawerWidth}px)` },
-          ml: { md: `${drawerWidth}px` },
+          width: "100%",
           mt: { xs: TOP_BAR_HEIGHT, sm: TOP_BAR_HEIGHT_SM, md: 0 },
           minHeight: "100vh",
-          transition: theme.transitions.create(["width", "margin-left"], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-          }),
           display: "flex",
           flexDirection: "column",
         }}
@@ -270,7 +265,8 @@ const Menu = ({ children }) => {
             flexShrink: 0,
             display: { xs: "none", md: "flex" },
             alignItems: "center",
-            px: 3,
+            px: { xs: 2, md: 3 },
+            pl: { md: drawerWidth + 24 },
             bgcolor: "background.paper",
             borderBottom: "1px solid",
             borderColor: "divider",
@@ -285,6 +281,7 @@ const Menu = ({ children }) => {
             flex: 1,
             minWidth: 0,
             p: { xs: 1.5, sm: 2, md: 3 },
+            pl: { md: drawerWidth + 24 },
             overflow: "auto",
             WebkitOverflowScrolling: "touch",
           }}
