@@ -6,20 +6,11 @@ import { EnderecoProvider } from "../Context/EnderecoContext";
 const IgrejaEdita = () => {
   return (
     <EnderecoProvider>
-      <div style={{ display: "flex" }}>
-        <Menu />
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column", // Alinha os componentes verticalmente
-            gap: 2, // Adiciona um espaçamento entre os componentes
-            width: "100%", // Define a largura dos componentes filhos
-            padding: 2, // Adiciona um pouco de padding
-          }}
-        >
+      <Menu>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2, width: "100%" }}>
           <IgrejaAtualizar />
         </Box>
-      </div>
+      </Menu>
     </EnderecoProvider>
   );
 };

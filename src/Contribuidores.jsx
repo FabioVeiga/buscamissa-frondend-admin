@@ -69,29 +69,23 @@ const ContribuidoresPage = () => {
   };
 
   return (
-    <div style={{ display: "flex" }}>
-      <Menu />
+    <Menu>
       <TableContainer
         component={Paper}
-        style={{ margin: "20px", padding: "20px" }}
+        sx={{ p: 2, borderRadius: 2, overflow: "auto" }}
       >
         <Box
           display="flex"
           justifyContent="space-between"
           alignItems="center"
-          margin="20px"
+          flexWrap="wrap"
+          gap={2}
+          sx={{ mb: 2 }}
         >
-          <Typography variant="h5">Contribuidores</Typography>
-        </Box>
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          margin="20px"
-        >
+          <Typography variant="h5" fontWeight={600}>Contribuidores</Typography>
           <Button variant="contained" color="primary" onClick={handleOpenModal}>
-          Inserir Contribuidores
-        </Button>
+            Inserir Contribuidores
+          </Button>
         </Box>
         {isLoading ? (
           <Box

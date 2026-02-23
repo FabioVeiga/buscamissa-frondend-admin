@@ -161,11 +161,10 @@ const IgrejaPage = () => {
         title="Confirmar Ativação"
         message="Você tem certeza que deseja ativar esta igreja?"
       />
-      <div style={{ display: "flex" }}>
-        <Menu />
+      <Menu>
         <TableContainer
           component={Paper}
-          style={{ margin: "20px", padding: "20px" }}
+          sx={{ p: 2, borderRadius: 2, overflow: "auto" }}
         >
           <IgrejaSearchForm
             onDataChange={handleDataChange}
@@ -294,7 +293,7 @@ const IgrejaPage = () => {
             onPageChange={handlePageChange}
           />
         </TableContainer>
-      </div>
+      </Menu>
     </>
   );
 };

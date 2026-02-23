@@ -182,11 +182,10 @@ const UsuarioPage = () => {
   };
 
   return (
-    <div style={{ display: "flex" }}>
-      <Menu />
+    <Menu>
       <TableContainer
         component={Paper}
-        style={{ margin: "20px", padding: "20px" }}
+        sx={{ p: 2, borderRadius: 2, overflow: "auto" }}
       >
         {isLoading ? (
           <Box
@@ -356,7 +355,7 @@ const UsuarioPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Menu>
   );
 };
 

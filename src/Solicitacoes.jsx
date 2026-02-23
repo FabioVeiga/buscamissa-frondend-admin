@@ -88,17 +88,16 @@ const SolicitacoesPage = () => {
   };
 
   return (
-    <div style={{ display: "flex" }}>
-      <Menu />
+    <Menu>
       <TableContainer
         component={Paper}
-        style={{ margin: "20px", padding: "20px" }}
+        sx={{ p: 2, borderRadius: 2, overflow: "auto" }}
       >
         <Box
           display="flex"
           justifyContent="space-between"
           alignItems="center"
-          margin="20px"
+          sx={{ mb: 2 }}
         >
           <Typography variant="h5">Solicitações</Typography>
           <Select
@@ -224,7 +223,7 @@ const SolicitacoesPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Menu>
   );
 };
 
