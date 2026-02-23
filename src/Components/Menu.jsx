@@ -198,7 +198,7 @@ const Menu = ({ children }) => {
       >
         <Box sx={{ pt: 1 }} />
         {drawerContent}
-      </Box>
+      </Drawer>
 
       {/* Área de conteúdo */}
       <Box
