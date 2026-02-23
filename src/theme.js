@@ -4,9 +4,9 @@ const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#2563eb',
+      main: '#3b82f6',
       light: '#60a5fa',
-      dark: '#1d4ed8',
+      dark: '#2563eb',
       contrastText: '#fff',
     },
     secondary: {
@@ -16,72 +16,56 @@ const theme = createTheme({
       contrastText: '#fff',
     },
     background: {
-      default: '#f8fafc',
+      default: '#f1f5f9',
       paper: '#ffffff',
     },
-    success: {
-      main: '#10b981',
+    text: {
+      primary: '#0f172a',
+      secondary: '#64748b',
     },
-    warning: {
-      main: '#f59e0b',
-    },
-    error: {
-      main: '#ef4444',
-    },
+    success: { main: '#22c55e' },
+    warning: { main: '#f59e0b' },
+    error: { main: '#ef4444' },
   },
   shape: {
-    borderRadius: 12,
+    borderRadius: 10,
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    h4: {
-      fontWeight: 700,
-      letterSpacing: '-0.02em',
-    },
-    h5: {
-      fontWeight: 600,
-    },
-    h6: {
-      fontWeight: 600,
-    },
-    button: {
-      textTransform: 'none',
-      fontWeight: 600,
-    },
+    h4: { fontWeight: 700, letterSpacing: '-0.02em' },
+    h5: { fontWeight: 600, letterSpacing: '-0.01em' },
+    h6: { fontWeight: 600 },
+    subtitle1: { fontWeight: 600 },
+    body2: { color: '#64748b' },
+    button: { textTransform: 'none', fontWeight: 600 },
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 10,
-          padding: '10px 20px',
+          borderRadius: 8,
+          padding: '8px 16px',
           boxShadow: 'none',
-          '&:hover': {
-            boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-          },
+          '&:hover': { boxShadow: '0 2px 8px rgba(59, 130, 246, 0.35)' },
         },
       },
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
-          boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-          border: '1px solid',
-          borderColor: 'rgba(0,0,0,0.06)',
-          '&:hover': {
-            boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
-          },
+          borderRadius: 12,
+          boxShadow: '0 1px 3px 0 rgba(0,0,0,0.06)',
+          border: '1px solid rgba(0,0,0,0.04)',
+          overflow: 'hidden',
         },
       },
     },
-    MuiDrawer: {
+    MuiPaper: {
       styleOverrides: {
-        paper: {
-          borderRight: '1px solid',
-          borderColor: 'rgba(0,0,0,0.06)',
-          boxShadow: '2px 0 16px rgba(0,0,0,0.04)',
-          background: 'linear-gradient(180deg, #ffffff 0%, #fafbfc 100%)',
+        root: {
+          borderRadius: 12,
+          boxShadow: '0 1px 3px 0 rgba(0,0,0,0.06)',
+          border: '1px solid rgba(0,0,0,0.04)',
         },
       },
     },
@@ -89,7 +73,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           boxShadow: '0 1px 0 rgba(0,0,0,0.06)',
-          background: 'linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%)',
+          backgroundColor: '#1e293b',
         },
       },
     },
@@ -97,3 +81,13 @@ const theme = createTheme({
 });
 
 export default theme;
+
+// Cores do sidebar (uso em Menu.jsx)
+export const SIDEBAR = {
+  bg: '#1e293b',
+  bgHover: 'rgba(255,255,255,0.06)',
+  bgActive: 'rgba(59, 130, 246, 0.2)',
+  borderActive: '#3b82f6',
+  text: 'rgba(255,255,255,0.88)',
+  textMuted: 'rgba(255,255,255,0.6)',
+};

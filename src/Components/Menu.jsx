@@ -6,7 +6,6 @@ import {
   ListItemButton,
   ListItemText,
   ListItemIcon,
-  Divider,
   IconButton,
   Box,
   AppBar,
@@ -26,17 +25,29 @@ import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
+import { SIDEBAR } from "../theme";
 
 const DRAWER_WIDTH = 260;
-const DRAWER_WIDTH_COLLAPSED = 68;
+const DRAWER_WIDTH_COLLAPSED = 72;
+const TOP_BAR_HEIGHT = 64;
 
 const navItems = [
-  { path: "/home", label: "Home", icon: HomeIcon },
-  { path: "/usuario", label: "Usuário", icon: AccountCircleIcon },
-  { path: "/igreja", label: "Igreja", icon: ChurchIcon },
+  { path: "/home", label: "Dashboard", icon: HomeIcon },
+  { path: "/usuario", label: "Usuários", icon: AccountCircleIcon },
+  { path: "/igreja", label: "Igrejas", icon: ChurchIcon },
   { path: "/solicitacoes", label: "Solicitações", icon: BuildIcon },
   { path: "/contribuidores", label: "Contribuidores", icon: CurrencyExchangeIcon },
 ];
+
+const pageTitles = {
+  "/home": "Dashboard",
+  "/usuario": "Usuários",
+  "/igreja": "Igrejas",
+  "/solicitacoes": "Solicitações",
+  "/contribuidores": "Contribuidores",
+  "/igrejaNovo": "Nova Igreja",
+  "/igrejaEditar": "Editar Igreja",
+};
 
 const Menu = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -48,6 +59,7 @@ const Menu = ({ children }) => {
   const { logout } = useAuth();
 
   const drawerWidth = isMobile ? DRAWER_WIDTH : desktopOpen ? DRAWER_WIDTH : DRAWER_WIDTH_COLLAPSED;
+  const pageTitle = pageTitles[location.pathname] || "Busca Missa Admin";
 
   const handleNavigate = (path) => {
     navigate(path);
@@ -59,20 +71,30 @@ const Menu = ({ children }) => {
     if (isMobile) setMobileOpen(false);
   };
 
+  const drawerPaperSx = {
+    width: drawerWidth,
+    boxSizing: "border-box",
+    top: 0,
+    left: 0,
+    backgroundColor: SIDEBAR.bg,
+    color: SIDEBAR.text,
+    borderRight: "none",
+    boxShadow: "4px 0 24px rgba(0,0,0,0.12)",
+  };
+
   const drawerContent = (
     <>
       <Box
         sx={{
-          py: 1.5,
-          px: 1.5,
+          height: TOP_BAR_HEIGHT,
+          px: 2,
           display: "flex",
           alignItems: "center",
           justifyContent: isMobile || desktopOpen ? "space-between" : "center",
-          minHeight: 52,
         }}
       >
-        {!isMobile && desktopOpen && (
-          <Typography variant="subtitle1" noWrap sx={{ fontWeight: 700, color: "primary.main", letterSpacing: "-0.02em" }}>
+        {(!isMobile && desktopOpen) && (
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#fff", letterSpacing: "-0.02em" }}>
             Busca Missa
           </Typography>
         )}
@@ -80,63 +102,68 @@ const Menu = ({ children }) => {
           <IconButton
             onClick={() => setDesktopOpen(!desktopOpen)}
             size="small"
-            sx={{ ml: desktopOpen ? 0 : "auto", color: "text.secondary" }}
+            sx={{ color: SIDEBAR.textMuted, "&:hover": { color: "#fff", bgcolor: SIDEBAR.bgHover } }}
             aria-label={desktopOpen ? "Recolher menu" : "Expandir menu"}
           >
-            {desktopOpen ? <ChevronLeftIcon fontSize="small" /> : <MenuOpenIcon fontSize="small" />}
+            {desktopOpen ? <ChevronLeftIcon /> : <MenuOpenIcon />}
           </IconButton>
         )}
       </Box>
-      <Divider sx={{ opacity: 0.6 }} />
-      <List sx={{ px: 1, py: 0.5 }}>
-        {navItems.map(({ path, label, icon: Icon }) => (
-          <ListItem key={path} disablePadding sx={{ mb: 0.25 }}>
-            <ListItemButton
-              onClick={() => handleNavigate(path)}
-              selected={location.pathname === path}
-              sx={{
-                borderRadius: 1.5,
-                py: 1.25,
-                px: 1.5,
-                "&.Mui-selected": {
-                  bgcolor: "primary.main",
-                  color: "primary.contrastText",
-                  "&:hover": { bgcolor: "primary.dark" },
-                  "& .MuiListItemIcon-root": { color: "inherit" },
-                },
-                "&:hover": {
-                  bgcolor: "action.hover",
-                },
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: desktopOpen || isMobile ? 36 : 28 }}>
-                <Icon fontSize="small" />
-              </ListItemIcon>
-              {(desktopOpen || isMobile) && (
-                <ListItemText primary={label} primaryTypographyProps={{ fontWeight: 500, variant: "body2" }} />
-              )}
-            </ListItemButton>
-          </ListItem>
-        ))}
+      <List sx={{ px: 1.5, py: 0 }}>
+        {navItems.map(({ path, label, icon: Icon }) => {
+          const selected = location.pathname === path;
+          return (
+            <ListItem key={path} disablePadding sx={{ mb: 0.5 }}>
+              <ListItemButton
+                onClick={() => handleNavigate(path)}
+                selected={selected}
+                sx={{
+                  borderRadius: 2,
+                  py: 1.25,
+                  px: 1.5,
+                  color: SIDEBAR.text,
+                  ...(selected && {
+                    backgroundColor: SIDEBAR.bgActive,
+                    color: "#fff",
+                    borderLeft: "3px solid",
+                    borderLeftColor: SIDEBAR.borderActive,
+                    "& .MuiListItemIcon-root": { color: "#fff" },
+                  }),
+                  "&:hover": {
+                    backgroundColor: selected ? SIDEBAR.bgActive : SIDEBAR.bgHover,
+                  },
+                  "&.Mui-selected": { "&:hover": { backgroundColor: SIDEBAR.bgActive } },
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: desktopOpen || isMobile ? 40 : 36 }}>
+                  <Icon sx={{ fontSize: 22 }} />
+                </ListItemIcon>
+                {(desktopOpen || isMobile) && (
+                  <ListItemText primary={label} primaryTypographyProps={{ fontWeight: 500, fontSize: "0.9375rem" }} />
+                )}
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
       </List>
-      <Divider sx={{ opacity: 0.6 }} />
-      <List sx={{ px: 1, py: 0.5 }}>
+      <Box sx={{ flex: 1 }} />
+      <List sx={{ px: 1.5, py: 1, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
         <ListItem disablePadding>
           <ListItemButton
             onClick={handleLogout}
             sx={{
-              borderRadius: 1.5,
+              borderRadius: 2,
               py: 1.25,
               px: 1.5,
-              color: "error.main",
-              "&:hover": { bgcolor: "error.light", color: "error.contrastText" },
+              color: "rgba(255,255,255,0.85)",
+              "&:hover": { backgroundColor: "rgba(239, 68, 68, 0.2)", color: "#fca5a5" },
             }}
           >
-            <ListItemIcon sx={{ minWidth: desktopOpen || isMobile ? 36 : 28 }}>
-              <LogoutIcon fontSize="small" />
+            <ListItemIcon sx={{ minWidth: desktopOpen || isMobile ? 40 : 36 }}>
+              <LogoutIcon sx={{ fontSize: 22 }} />
             </ListItemIcon>
             {(desktopOpen || isMobile) && (
-              <ListItemText primary="Sair" primaryTypographyProps={{ fontWeight: 500, variant: "body2" }} />
+              <ListItemText primary="Sair" primaryTypographyProps={{ fontWeight: 500, fontSize: "0.9375rem" }} />
             )}
           </ListItemButton>
         </ListItem>
@@ -145,27 +172,26 @@ const Menu = ({ children }) => {
   );
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      {/* AppBar apenas em mobile */}
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
       <AppBar
         position="fixed"
         sx={{
           display: { xs: "block", md: "none" },
           zIndex: (t) => t.zIndex.drawer + 1,
+          backgroundColor: SIDEBAR.bg,
         }}
       >
-        <Toolbar sx={{ justifyContent: "space-between" }}>
+        <Toolbar sx={{ justifyContent: "space-between", minHeight: `${TOP_BAR_HEIGHT}px !important` }}>
           <IconButton color="inherit" edge="start" onClick={() => setMobileOpen(true)} aria-label="Abrir menu">
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" component="span" fontWeight={700}>
-            Busca Missa Admin
+          <Typography variant="subtitle1" fontWeight={700}>
+            Busca Missa
           </Typography>
           <Box sx={{ width: 40 }} />
         </Toolbar>
       </AppBar>
 
-      {/* Drawer mobile: temporário (overlay) */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
@@ -173,18 +199,12 @@ const Menu = ({ children }) => {
         ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: "block", md: "none" },
-          "& .MuiDrawer-paper": {
-            width: DRAWER_WIDTH,
-            boxSizing: "border-box",
-            top: 0,
-            left: 0,
-          },
+          "& .MuiDrawer-paper": { ...drawerPaperSx, width: DRAWER_WIDTH },
         }}
       >
-        {drawerContent}
+        <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>{drawerContent}</Box>
       </Drawer>
 
-      {/* Drawer desktop: persistente */}
       <Drawer
         variant="persistent"
         open={desktopOpen}
@@ -193,10 +213,7 @@ const Menu = ({ children }) => {
           width: drawerWidth,
           flexShrink: 0,
           "& .MuiDrawer-paper": {
-            width: drawerWidth,
-            boxSizing: "border-box",
-            top: 0,
-            left: 0,
+            ...drawerPaperSx,
             transition: theme.transitions.create("width", {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.enteringScreen,
@@ -205,35 +222,46 @@ const Menu = ({ children }) => {
           },
         }}
       >
-        <Box sx={{ pt: 1 }} />
-        {drawerContent}
+        <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>{drawerContent}</Box>
       </Drawer>
 
-      {/* Área de conteúdo – próxima ao sidebar */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           width: { md: `calc(100% - ${drawerWidth}px)` },
           ml: { md: `${drawerWidth}px` },
-          mt: { xs: 7, md: 0 },
+          mt: { xs: TOP_BAR_HEIGHT, md: 0 },
           minHeight: "100vh",
-          transition: theme.transitions.create(["width"], {
+          transition: theme.transitions.create(["width", "margin"], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.enteringScreen,
           }),
-          bgcolor: "background.default",
-          borderLeft: { md: "1px solid" },
-          borderColor: { md: "rgba(0,0,0,0.06)" },
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <Box
           sx={{
-            p: { xs: 2, sm: 2.5 },
-            pl: { md: 2.5 },
-            pr: { md: 2.5 },
-            maxWidth: 1400,
-            width: "100%",
+            height: TOP_BAR_HEIGHT,
+            flexShrink: 0,
+            display: { xs: "none", md: "flex" },
+            alignItems: "center",
+            px: 3,
+            bgcolor: "background.paper",
+            borderBottom: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          <Typography variant="h6" fontWeight={600} color="text.primary">
+            {pageTitle}
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            flex: 1,
+            p: { xs: 2, sm: 3 },
+            overflow: "auto",
           }}
         >
           {children}
@@ -241,6 +269,6 @@ const Menu = ({ children }) => {
       </Box>
     </Box>
   );
-};
+}
 
 export default Menu;
