@@ -230,7 +230,6 @@ const Menu = ({ children }) => {
         sx={{
           flexGrow: 1,
           width: { md: `calc(100% - ${drawerWidth}px)` },
-          ml: { md: `${drawerWidth}px` },
           mt: { xs: TOP_BAR_HEIGHT, md: 0 },
           minHeight: "100vh",
           transition: theme.transitions.create(["width", "margin"], {
