@@ -165,8 +165,8 @@ const ContribuidoresPage = () => {
             Confirmar
           </Button>
         </DialogActions>
-      </Dialog>
-    </div>
+        </Dialog>
+    </Menu>
   );
 };
 
