@@ -23,13 +23,15 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import BuildIcon from "@mui/icons-material/Build";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import { SIDEBAR } from "../theme";
 
 const DRAWER_WIDTH = 260;
 const DRAWER_WIDTH_COLLAPSED = 72;
-const TOP_BAR_HEIGHT = 64;
+const TOP_BAR_HEIGHT = 56;
+const TOP_BAR_HEIGHT_SM = 64;
 
 const navItems = [
   { path: "/home", label: "Dashboard", icon: HomeIcon },
@@ -181,14 +183,20 @@ const Menu = ({ children }) => {
           backgroundColor: SIDEBAR.bg,
         }}
       >
-        <Toolbar sx={{ justifyContent: "space-between", minHeight: `${TOP_BAR_HEIGHT}px !important` }}>
-          <IconButton color="inherit" edge="start" onClick={() => setMobileOpen(true)} aria-label="Abrir menu">
-            <MenuIcon />
+        <Toolbar sx={{ justifyContent: "space-between", minHeight: { xs: TOP_BAR_HEIGHT, sm: TOP_BAR_HEIGHT_SM }, px: { xs: 1, sm: 2 } }}>
+          <IconButton
+            color="inherit"
+            edge="start"
+            onClick={() => setMobileOpen((prev) => !prev)}
+            aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"}
+            sx={{ minWidth: 48, minHeight: 48, mr: 1 }}
+          >
+            {mobileOpen ? <CloseIcon /> : <MenuIcon />}
           </IconButton>
-          <Typography variant="subtitle1" fontWeight={700}>
+          <Typography variant="subtitle1" fontWeight={700} noWrap sx={{ flex: 1, textAlign: "center" }}>
             Busca Missa
           </Typography>
-          <Box sx={{ width: 40 }} />
+          <Box sx={{ minWidth: 48 }} />
         </Toolbar>
       </AppBar>
 
@@ -196,13 +204,25 @@ const Menu = ({ children }) => {
         variant="temporary"
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
-        ModalProps={{ keepMounted: true }}
+        ModalProps={{
+          keepMounted: true,
+          disableScrollLock: false,
+        }}
         sx={{
           display: { xs: "block", md: "none" },
-          "& .MuiDrawer-paper": { ...drawerPaperSx, width: DRAWER_WIDTH },
+          "& .MuiDrawer-paper": {
+            ...drawerPaperSx,
+            width: "min(260px, 85vw)",
+            boxSizing: "border-box",
+            top: 0,
+            left: 0,
+            zIndex: (t) => t.zIndex.drawer,
+          },
         }}
       >
-        <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>{drawerContent}</Box>
+        <Box sx={{ display: "flex", flexDirection: "column", height: "100%", overflow: "auto" }}>
+          {drawerContent}
+        </Box>
       </Drawer>
 
       <Drawer
@@ -231,9 +251,10 @@ const Menu = ({ children }) => {
         component="main"
         sx={{
           flexGrow: 1,
+          minWidth: 0,
           width: { xs: "100%", md: `calc(100% - ${drawerWidth}px)` },
           ml: { md: `${drawerWidth}px` },
-          mt: { xs: TOP_BAR_HEIGHT, md: 0 },
+          mt: { xs: TOP_BAR_HEIGHT, sm: TOP_BAR_HEIGHT_SM, md: 0 },
           minHeight: "100vh",
           transition: theme.transitions.create(["width", "margin-left"], {
             easing: theme.transitions.easing.sharp,
@@ -262,8 +283,10 @@ const Menu = ({ children }) => {
         <Box
           sx={{
             flex: 1,
-            p: { xs: 2, sm: 3 },
+            minWidth: 0,
+            p: { xs: 1.5, sm: 2, md: 3 },
             overflow: "auto",
+            WebkitOverflowScrolling: "touch",
           }}
         >
           {children}
