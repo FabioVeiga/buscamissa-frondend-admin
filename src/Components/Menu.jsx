@@ -281,7 +281,7 @@ const Menu = ({ children }) => {
             flex: 1,
             minWidth: 0,
             minHeight: 0,
-            p: { xs: 1.5, sm: 2, md: 3 },
+            p: 2,
             overflow: "auto",
             WebkitOverflowScrolling: "touch",
           }}
