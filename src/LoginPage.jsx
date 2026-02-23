@@ -6,7 +6,6 @@ import {
   Typography,
   Paper,
   InputAdornment,
-  IconButton,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import ErrorSpan from "./ErrorSpan";
@@ -14,13 +13,10 @@ import ErrorBoundary from "./ErrorBoundary";
 import { useAuth } from "./Context/AuthContext";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login, isAuthenticated, error } = useAuth();
 
@@ -87,7 +83,7 @@ const LoginPage = () => {
             />
             <TextField
               label="Senha"
-              type={showPassword ? "text" : "password"}
+              type="password"
               variant="outlined"
               fullWidth
               margin="normal"
@@ -99,18 +95,6 @@ const LoginPage = () => {
                 startAdornment: (
                   <InputAdornment position="start">
                     <LockOutlinedIcon color="action" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                      onClick={() => setShowPassword(!showPassword)}
-                      edge="end"
-                      size="small"
-                    >
-                      {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                    </IconButton>
                   </InputAdornment>
                 ),
               }}
