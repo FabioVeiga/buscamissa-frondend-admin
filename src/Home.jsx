@@ -68,7 +68,7 @@ const Home = () => {
 
   const fetchData = () => {
     api
-      .get("/api/admin/igreja/infos")
+      .get("/api/v1/admin/igreja/infos")
       .then((response) => setData(response.data.data))
       .catch((error) => console.error("Error fetching data:", error));
   };

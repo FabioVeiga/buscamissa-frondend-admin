@@ -92,7 +92,7 @@ const UsuarioPage = () => {
 
     try {
       await api.put(
-        `/api/Admin/usuario/bloquear-desbloquear/${selectedUser.id}`,
+        `/api/v1/Admin/usuario/bloquear-desbloquear/${selectedUser.id}`,
         {
           bloqueado: !selectedUser.bloqueado,
           motivoBloqueio: !selectedUser.bloqueado ? motivo : null,
@@ -122,7 +122,7 @@ const UsuarioPage = () => {
   useEffect(() => {
     api
       .get(
-        "/api/Admin/usuario/buscar-por-filtro?Paginacao.PageIndex=1&Paginacao.PageSize=10"
+        "/api/v1/Admin/usuario/buscar-por-filtro?Paginacao.PageIndex=1&Paginacao.PageSize=10"
       )
       .then((response) => {
         setData(response.data.data.usuarios);
@@ -149,7 +149,7 @@ const UsuarioPage = () => {
     setIsLoading(true);
     try {
       const response = await api.get(
-        `/api/Admin/usuario/buscar-por-filtro?Paginacao.PageIndex=${pageIndex}&Paginacao.PageSize=${pageSize}`
+        `/api/v1/Admin/usuario/buscar-por-filtro?Paginacao.PageIndex=${pageIndex}&Paginacao.PageSize=${pageSize}`
       );
       setData(response.data.data.usuarios);
       setPaginacao({

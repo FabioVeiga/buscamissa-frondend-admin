@@ -118,7 +118,7 @@ const IgrejaAtualizar = () => {
     }
     //console.log(req);
     api
-      .put("/api/Admin/igreja/atualizar", req)
+      .put("/api/v1/Admin/igreja/atualizar", req)
       .then(() => {
         setShowModal(true);
         setMessage({

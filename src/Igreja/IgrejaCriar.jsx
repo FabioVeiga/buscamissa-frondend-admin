@@ -191,7 +191,7 @@ const IgrejaCriar = () => {
     formData.redeSociais = redeSociais;
     console.log(formData);
     api
-     .post("/api/Admin/igreja/criar", formData)
+     .post("/api/v1/Admin/igreja/criar", formData)
      .then((response) => {
        //console.log(response);
        setMessage("Igreja criada com sucesso!");

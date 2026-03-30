@@ -29,7 +29,7 @@ const ContribuidoresPage = () => {
 
   const getContribuidores = async () => {
     try {
-      const response = await api.get("/api/Contribuidor/do-mes-vigente"); 
+      const response = await api.get("/api/v1/Contribuidor/do-mes-vigente"); 
       setContribuidores(response.data); 
     } catch (error) {
       console.error("Erro ao buscar contribuidores:", error);
