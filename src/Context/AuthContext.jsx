@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
   // Função para simular login
   const login = async (email, senha) => {
     try {
-        const response = await api.post("/api/Usuario/autenticar", {
+        const response = await api.post("/api/v1/Usuario/autenticar", {
           email: email,
           senha: senha,
         });
