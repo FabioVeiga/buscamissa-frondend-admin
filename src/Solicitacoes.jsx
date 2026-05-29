@@ -18,7 +18,7 @@ const SolicitacoesPage = () => {
     const fetchSolicitacoes = async () => {
       try {
         const response = await api.get(
-          `/api/Admin/solicitacao${
+          `/api/v1/Admin/solicitacao${
             filtroResolvida ? `?resolvida=${filtroResolvida}` : ""
           }`
         );
@@ -55,7 +55,7 @@ const SolicitacoesPage = () => {
 
     try {
       const response = await api.post(
-        `/api/admin/solicitacao/${selectedSolicitacao.id}`,
+        `/api/v1/admin/solicitacao/${selectedSolicitacao.id}`,
         {
             resolvido: true,
             solucao,

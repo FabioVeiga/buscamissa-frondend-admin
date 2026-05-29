@@ -98,7 +98,7 @@ const IgrejaPage = () => {
   const handleConfirmActivation = () => {
     if (selectedIgrejaId) {
       api
-        .put(`/api/Admin/igreja/ativar/${selectedIgrejaId}/usuario/${JSON.parse(localStorage.getItem("user")).id}`)
+        .put(`/api/v1/Admin/igreja/ativar/${selectedIgrejaId}/usuario/${JSON.parse(localStorage.getItem("user")).id}`)
         .then(() => {
           console.log("Igreja ativada com sucesso!");
           fetchIgrejas(); // Recarrega a lista de igrejas após a ativação
@@ -115,7 +115,7 @@ const IgrejaPage = () => {
   const fetchIgrejas = (pageIndex = 1, pageSize = 10) => {
     setIsLoading(true);
     api
-      .get(`/api/admin/igreja/buscar-por-filtro?ativo=false&Paginacao.PageIndex=${pageIndex}&Paginacao.PageSize=${pageSize}`)
+      .get(`/api/v1/admin/igreja/buscar-por-filtro?ativo=false&Paginacao.PageIndex=${pageIndex}&Paginacao.PageSize=${pageSize}`)
       .then((response) => {
         const resp = response.data.data;
         setIgrejas(resp);

@@ -47,7 +47,7 @@ const RedeSocialForm = ({ redesSociaisExistentes, onAddRedeSocial, onDeleteRedeS
     if (!selectedRede) return;
 
     try {
-      const response = await api.delete(`/api/Admin/igreja/deletar/redesocial/${igrejaId}/${selectedRede.tipoRedeSocial}`);
+      const response = await api.delete(`/api/v1/Admin/igreja/deletar/redesocial/${igrejaId}/${selectedRede.tipoRedeSocial}`);
       if (response.status === 200) {
         alert("Rede social deletada com sucesso!");
         onDeleteRedeSocial(selectedRede.tipoRedeSocial); // Atualiza a lista local após a exclusão

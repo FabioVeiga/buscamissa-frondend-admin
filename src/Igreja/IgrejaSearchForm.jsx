@@ -57,7 +57,7 @@ const IgrejaSearchForm = ({
 
     onLoadingChange && onLoadingChange(true);
 
-    let endPoint = `/api/admin/igreja/buscar-por-filtro?`;
+    let endPoint = `/api/v1/admin/igreja/buscar-por-filtro?`;
 
     if (formData.ativo !== "") 
       endPoint += `ativo=${formData.ativo}`;
