@@ -33,7 +33,7 @@ const BuscaPorCEP = () => {
     }
 
     api
-      .get(`/api/Igreja/buscar-por-cep?cep=${cep}`)
+      .get(`/api/v1/Igreja/buscar-por-cep?cep=${cep}`)
       .then((response) => {
         const data = response.data?.data;
         if (data) {

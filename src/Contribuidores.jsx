@@ -50,7 +50,7 @@ const ContribuidoresPage = () => {
   // Confirmar solução
   const handleEntradaContribuidores = async () => {
     try {
-      const response = await api.post("/api/Contribuidor/inserir-por-nomes", nomes, {
+      const response = await api.post("/api/v1/Contribuidor/inserir-por-nomes", nomes, {
         headers: {
           "Content-Type": "application/json",
         },
