@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Box, TextField, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import api from "../services/apiService";
@@ -39,6 +39,8 @@ const IgrejaSearchForm = ({
   });
 
   const [localidades, setLocalidades] = useState([]);
+  const [enderecosMap, setEnderecosMap] = useState({});
+  const [ufsOptions, setUfsOptions] = useState([]);
   const resetLocalidades = () => setLocalidades([]);
   const adicionarLocalidade = (novaLocalidade) => {
     setLocalidades((prevLocalidades) => {
@@ -49,8 +51,31 @@ const IgrejaSearchForm = ({
     });
   };
 
+  useEffect(() => {
+    // Busca o mapa de endereços (UF -> Cidades -> Bairros)
+    api
+      .get(`/api/v1/Igreja/v2/obter-enderecos`)
+      .then((response) => {
+        const data = response.data?.data || {};
+        setEnderecosMap(data);
+        setUfsOptions(Object.keys(data));
+      })
+      .catch((err) => {
+        console.warn("Não foi possível carregar endereços:", err);
+      });
+  }, []);
+
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    if (field === "uf") {
+      // Atualiza as localidades (cidades) baseado no mapa de endereços
+      const cidades = enderecosMap[value]
+        ? Object.keys(enderecosMap[value])
+        : [];
+      setLocalidades(cidades);
+      // limpa localidade selecionada quando UF muda
+      setFormData((prev) => ({ ...prev, localidade: "" }));
+    }
   };
 
   const handleSearch = () => {
@@ -145,11 +170,20 @@ const IgrejaSearchForm = ({
                 value={formData.uf}
                 onChange={(e) => handleChange("uf", e.target.value)}
               >
-                {ufs.map((uf) => (
-                  <MenuItem key={uf} value={uf}>
-                    {uf.toUpperCase()}
-                  </MenuItem>
-                ))}
+                <MenuItem value="">
+                  <em>Selecione uma UF</em>
+                </MenuItem>
+                {ufsOptions.length > 0
+                  ? ufsOptions.map((uf) => (
+                      <MenuItem key={uf} value={uf}>
+                        {uf.toUpperCase()}
+                      </MenuItem>
+                    ))
+                  : ufs.map((uf) => (
+                      <MenuItem key={uf} value={uf}>
+                        {uf.toUpperCase()}
+                      </MenuItem>
+                    ))}
               </Select>
             </FormControl>
           </Grid>
