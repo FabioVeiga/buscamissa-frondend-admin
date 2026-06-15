@@ -7,22 +7,27 @@ const Pagination = ({
   hasNextPage,
   onPageChange
 }) => {
+  const current = Number(pageIndex) || 1;
+  const total = Number(totalPages) || 1;
+  const disablePrev = current <= 1 ? true : !(hasPreviousPage ?? true);
+  const disableNext = current >= total ? true : !(hasNextPage ?? true);
+
   return (
     <Box display="flex" justifyContent="center" alignItems="center" sx={{ marginTop: 2 }}>
       <Button
-        onClick={() => onPageChange(pageIndex - 1)}
-        disabled={!hasPreviousPage}
+        onClick={() => onPageChange(Math.max(1, current - 1))}
+        disabled={disablePrev}
         variant="contained"
         sx={{ marginRight: 2 }}
       >
         Anterior
       </Button>
       <Typography sx={{ marginRight: 2 }}>
-        Página {pageIndex} de {totalPages}
+        Página {current} de {total}
       </Typography>
       <Button
-        onClick={() => onPageChange(pageIndex + 1)}
-        disabled={!hasNextPage}
+        onClick={() => onPageChange(Math.min(total, current + 1))}
+        disabled={disableNext}
         variant="contained"
       >
         Próxima

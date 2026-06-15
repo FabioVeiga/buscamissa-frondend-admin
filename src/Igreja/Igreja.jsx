@@ -13,6 +13,7 @@ import {
   IconButton,
   CircularProgress,
   Box,
+  Chip,
   Typography,
 } from "@mui/material";
 import Menu from "../Components/Menu";
@@ -23,9 +24,11 @@ import EditIcon from "@mui/icons-material/Edit";
 import HideSourceIcon from "@mui/icons-material/HideSource";
 import AnnouncementIcon from "@mui/icons-material/Announcement";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useNavigate } from "react-router-dom";
 import DenunciaModal from "./Components/DenunciaModal";
 import ConfirmModal from "../Components/ConfirmModal";
+import DeleteConfirmModal from "../Components/DeleteConfirmModal";
 import api from "../services/apiService";
 import { useEffect } from "react";
 
@@ -45,6 +48,8 @@ const IgrejaPage = () => {
   const [denunciaModalOpen, setDenunciaModalOpen] = useState(null); // Armazena o ID da denúncia aberta
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [selectedIgrejaId, setSelectedIgrejaId] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
 
   const navigate = useNavigate();
 
@@ -90,6 +95,16 @@ const IgrejaPage = () => {
     setConfirmModalOpen(true);
   };
 
+  const handleOpenDeleteModal = (igrejaId) => {
+    setDeleteTargetId(igrejaId);
+    setDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setDeleteTargetId(null);
+  };
+
   const handleCloseConfirmModal = () => {
     setConfirmModalOpen(false);
     setSelectedIgrejaId(null);
@@ -110,6 +125,22 @@ const IgrejaPage = () => {
           handleCloseConfirmModal();
         });
     }
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteTargetId) return;
+    api
+      .delete(`/api/v1/Admin/igreja/deletar/${deleteTargetId}`)
+      .then((response) => {
+        console.log(response.data?.data?.mensagemAplicacao || "Igreja deletada");
+        fetchIgrejas();
+      })
+      .catch((error) => {
+        console.error("Erro ao deletar igreja:", error);
+      })
+      .finally(() => {
+        handleCloseDeleteModal();
+      });
   };
 
   const fetchIgrejas = (pageIndex = 1, pageSize = 10) => {
@@ -164,7 +195,13 @@ const IgrejaPage = () => {
       <Menu>
         <TableContainer
           component={Paper}
-          sx={{ p: 2, borderRadius: 2, overflow: "auto" }}
+          sx={{
+            p: 2,
+            borderRadius: 2,
+            display: "flex",
+            flexDirection: "column",
+            height: "calc(100vh - 160px)",
+          }}
         >
           <IgrejaSearchForm
             onDataChange={handleDataChange}
@@ -185,12 +222,14 @@ const IgrejaPage = () => {
               </Typography>
             </Box>
           ) : (
-            <Table>
+            <Box sx={{ flex: 1, overflow: "auto" }}>
+              <Table stickyHeader sx={{ minWidth: 900 }}>
               <TableHead>
                 <TableRow>
                   <TableCell>ID</TableCell>
                   <TableCell>UF</TableCell>
                   <TableCell>Localidade</TableCell>
+                  <TableCell>CEP</TableCell>
                   <TableCell>Nome</TableCell>
                   <TableCell>Paroco</TableCell>
                   <TableCell>Ativo</TableCell>
@@ -200,13 +239,51 @@ const IgrejaPage = () => {
               <TableBody>
                 {igrejas.items && igrejas.items.length > 0 ? (
                   igrejas.items.map((row) => (
-                    <TableRow key={row.id}>
+                    <TableRow
+                      key={row.id}
+                      sx={{
+                        '&:nth-of-type(odd)': { backgroundColor: 'action.hover' },
+                        '&:hover': { backgroundColor: 'action.selected' },
+                      }}
+                    >
                       <TableCell>{row.id}</TableCell>
-                      <TableCell>{row.endereco.uf}</TableCell>
-                      <TableCell>{row.endereco.localidade}</TableCell>
-                      <TableCell>{row.nome}</TableCell>
+                      <TableCell>{row.endereco?.uf}</TableCell>
+                      <TableCell>{row.endereco?.localidade}</TableCell>
+                      <TableCell>
+                        <Tooltip
+                          title={
+                            row.endereco?.bairro || row.endereco?.logradouro || 'Sem detalhe'
+                          }
+                        >
+                          {row.endereco?.cep ? (
+                            <Chip
+                              label={row.endereco.cep}
+                              size="small"
+                              color="primary"
+                              sx={{ fontWeight: 500 }}
+                            />
+                          ) : (
+                            <Chip
+                              label="false"
+                              size="small"
+                              color="error"
+                              variant="outlined"
+                              sx={{ fontWeight: 600 }}
+                            />
+                          )}
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell>
+                        <Typography sx={{ fontWeight: 600 }}>{row.nome}</Typography>
+                      </TableCell>
                       <TableCell>{row.paroco}</TableCell>
-                      <TableCell>{row.ativo ? "Sim" : "Não"}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={row.ativo ? 'Sim' : 'Não'}
+                          size="small"
+                          color={row.ativo ? 'success' : 'default'}
+                        />
+                      </TableCell>
                       <TableCell>
                         <Stack direction="row" spacing={1}>
                           <Tooltip title="Detalhes">
@@ -262,6 +339,15 @@ const IgrejaPage = () => {
                           ) : (
                             ""
                           )}
+
+                          <Tooltip title="Deletar">
+                            <IconButton
+                              color="error"
+                              onClick={() => handleOpenDeleteModal(row.id)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
                           
                         </Stack>
                       </TableCell>
@@ -269,22 +355,29 @@ const IgrejaPage = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} align="center">
-                      Não há dados disponíveis.
+                    <TableCell colSpan={8} align="center">
+                      <Typography color="text.secondary">Não há dados disponíveis.</Typography>
                     </TableCell>
                   </TableRow>
                 )}
               </TableBody>
               <TableFooter>
                 <TableRow>
-                  <TableCell colSpan={7} align="right">
+                  <TableCell colSpan={8} align="right">
                     Total de registros:{" "}
                     {igrejas.items ? igrejas.items.length : 0}
                   </TableCell>
                 </TableRow>
               </TableFooter>
-            </Table>
+              </Table>
+            </Box>
           )}
+          <DeleteConfirmModal
+            open={deleteModalOpen}
+            onClose={handleCloseDeleteModal}
+            onConfirm={handleConfirmDelete}
+            targetId={deleteTargetId}
+          />
           <Pagination
             pageIndex={paginacao.pageIndex}
             totalPages={paginacao.totalPages}

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Box, TextField, Button, FormControl, InputLabel, MenuItem, List, ListItem, Typography, IconButton } from "@mui/material";
+import { useState, useEffect } from "react";
+import { Box, TextField, Button, FormControl, InputLabel, MenuItem, List, ListItem, Typography, IconButton, Switch, FormControlLabel } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import api from "../services/apiService";
 import { diasDaSemana } from "../utils";
@@ -7,10 +7,13 @@ import ErrorSpan from "../ErrorSpan";
 import  RedirectModal  from "../Components/RedirectModal"
 import RedeSocialForm from "./Components/RedeSocialForm";
 import { useLocation } from "react-router-dom";
+import { useEndereco } from "../Context/EnderecoContext";
+import Grid from "@mui/material/Grid2";
 
 const IgrejaAtualizar = () => {
   const location = useLocation();
   const { state } = location || {};
+  const { endereco, setEndereco } = useEndereco();
   const [formData, setFormData] = useState(state?.row);
   const [formDataRedeSociais, setFormDataRedeSociais] = useState(
     formData.redesSociais || []
@@ -27,6 +30,13 @@ const IgrejaAtualizar = () => {
   const [base64, setBase64] = useState("");
   const [fileName, setFileName] = useState("");
   const [showModal, setShowModal] = useState(false);
+
+  // Carregar endereço do formData quando o componente monta
+  useEffect(() => {
+    if (formData?.endereco) {
+      setEndereco(formData.endereco);
+    }
+  }, []);
 
 
   const handleAddMissa = () => {
@@ -115,6 +125,8 @@ const IgrejaAtualizar = () => {
       contato: formData.contato ? formData.contato : null,
       imagem: base64,
       redeSociais: formDataRedeSociais,
+      endereco: endereco,
+      ativo: formData?.ativo ?? false,
     }
     //console.log(req);
     api
@@ -164,7 +176,149 @@ const IgrejaAtualizar = () => {
           boxSizing: "border-box", // Garantir que padding e border sejam incluídos nas dimensões
         }}
       >
+        {/* Seção de Endereço */}
+        <Box
+          sx={{
+            padding: 2,
+            border: "1px solid #ddd",
+            borderRadius: 2,
+            backgroundColor: "#f9f9f9",
+          }}
+        >
+          <Typography variant="h6" sx={{ marginBottom: 2 }}>
+            Endereço
+          </Typography>
+          <Grid container spacing={2}>
+            {/* CEP */}
+            <Grid size={12}>
+              <TextField
+                label="CEP"
+                value={endereco?.cep || ""}
+                onChange={(e) =>
+                  setEndereco((prev) => ({ ...prev, cep: e.target.value }))
+                }
+                fullWidth
+              />
+            </Grid>
+
+            {/* Logradouro */}
+            <Grid size={8}>
+              <TextField
+                label="Logradouro"
+                value={endereco?.logradouro || ""}
+                onChange={(e) =>
+                  setEndereco((prev) => ({
+                    ...prev,
+                    logradouro: e.target.value,
+                  }))
+                }
+                fullWidth
+              />
+            </Grid>
+
+            {/* Número */}
+            <Grid size={4}>
+              <TextField
+                label="Número"
+                value={endereco?.numero || ""}
+                onChange={(e) =>
+                  setEndereco((prev) => ({ ...prev, numero: e.target.value }))
+                }
+                fullWidth
+              />
+            </Grid>
+
+            {/* Complemento */}
+            <Grid size={12}>
+              <TextField
+                label="Complemento"
+                value={endereco?.complemento || ""}
+                onChange={(e) =>
+                  setEndereco((prev) => ({
+                    ...prev,
+                    complemento: e.target.value,
+                  }))
+                }
+                fullWidth
+              />
+            </Grid>
+
+            {/* Bairro */}
+            <Grid size={6}>
+              <TextField
+                label="Bairro"
+                value={endereco?.bairro || ""}
+                onChange={(e) =>
+                  setEndereco((prev) => ({ ...prev, bairro: e.target.value }))
+                }
+                fullWidth
+              />
+            </Grid>
+
+            {/* Localidade */}
+            <Grid size={6}>
+              <TextField
+                label="Localidade"
+                value={endereco?.localidade || ""}
+                onChange={(e) =>
+                  setEndereco((prev) => ({
+                    ...prev,
+                    localidade: e.target.value,
+                  }))
+                }
+                fullWidth
+              />
+            </Grid>
+
+            {/* UF */}
+            <Grid size={3}>
+              <TextField
+                label="UF"
+                value={endereco?.uf || ""}
+                onChange={(e) =>
+                  setEndereco((prev) => ({ ...prev, uf: e.target.value }))
+                }
+                fullWidth
+              />
+            </Grid>
+
+            {/* Região */}
+            <Grid size={3}>
+              <TextField
+                label="Região"
+                value={endereco?.regiao || ""}
+                onChange={(e) =>
+                  setEndereco((prev) => ({ ...prev, regiao: e.target.value }))
+                }
+                fullWidth
+              />
+            </Grid>
+
+            {/* Estado */}
+            <Grid size={6}>
+              <TextField
+                label="Estado"
+                value={endereco?.estado || ""}
+                onChange={(e) =>
+                  setEndereco((prev) => ({ ...prev, estado: e.target.value }))
+                }
+                fullWidth
+              />
+            </Grid>
+          </Grid>
+        </Box>
+
         {/* Dados da Igreja */}
+        <FormControlLabel
+          control={
+            <Switch
+              checked={formData?.ativo ?? false}
+              onChange={(e) => handleChange("ativo", e.target.checked)}
+              color="primary"
+            />
+          }
+          label="Ativo"
+        />
         <TextField
           label="Nome da Igreja"
           value={formData.nome}
