@@ -25,6 +25,8 @@ import HideSourceIcon from "@mui/icons-material/HideSource";
 import AnnouncementIcon from "@mui/icons-material/Announcement";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import DeleteIcon from '@mui/icons-material/Delete';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import Link from '@mui/material/Link';
 import { useNavigate } from "react-router-dom";
 import DenunciaModal from "./Components/DenunciaModal";
 import ConfirmModal from "../Components/ConfirmModal";
@@ -52,6 +54,50 @@ const IgrejaPage = () => {
   const [deleteTargetId, setDeleteTargetId] = useState(null);
 
   const navigate = useNavigate();
+
+  const PAROQUIA_BASE = import.meta.env.VITE_PAROQUIA_BASE_URL || "";
+
+  const buildParoquiaUrl = (row) => {
+    const base = PAROQUIA_BASE.replace(/\/+$/g, "");
+    const uf = row.endereco?.uf ? String(row.endereco.uf).toLowerCase() : "";
+    const cidade = row.endereco?.cidadeSlug
+      ? row.endereco.cidadeSlug
+      : row.endereco?.localidade
+      ? String(row.endereco.localidade).toLowerCase().replace(/\s+/g, "-")
+      : "";
+    const slug = row.slug || "";
+    const parts = [base, uf, cidade, slug].filter(Boolean);
+    return parts.join("/");
+  };
+
+  const shortParoquiaText = (row) => {
+    const uf = row.endereco?.uf ? String(row.endereco.uf).toLowerCase() : "";
+    const cidade = row.endereco?.cidadeSlug
+      ? row.endereco.cidadeSlug
+      : row.endereco?.localidade
+      ? String(row.endereco.localidade).toLowerCase().replace(/\s+/g, "-")
+      : "";
+    const slug = row.slug || "";
+    const parts = [uf, cidade, slug].filter(Boolean);
+    return parts.length ? parts.join("/") : row.paroco || "—";
+  };
+
+  const handleCopyUrl = (url) => {
+    if (!url) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        console.log("URL copiada:", url);
+      }).catch((err) => console.error("Erro ao copiar:", err));
+    } else {
+      // fallback
+      const el = document.createElement('textarea');
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      try { document.execCommand('copy'); console.log('URL copiada (fallback)'); } catch (e) { console.error(e); }
+      document.body.removeChild(el);
+    }
+  };
 
   const useModal = () => {
     const [open, setOpen] = useState(false);
@@ -231,7 +277,7 @@ const IgrejaPage = () => {
                   <TableCell>Localidade</TableCell>
                   <TableCell>CEP</TableCell>
                   <TableCell>Nome</TableCell>
-                  <TableCell>Paroco</TableCell>
+                  <TableCell>Link</TableCell>
                   <TableCell>Ativo</TableCell>
                   <TableCell>Ações</TableCell>
                 </TableRow>
@@ -276,7 +322,36 @@ const IgrejaPage = () => {
                       <TableCell>
                         <Typography sx={{ fontWeight: 600 }}>{row.nome}</Typography>
                       </TableCell>
-                      <TableCell>{row.paroco}</TableCell>
+                      <TableCell>
+                        {row.slug ? (
+                          <Stack direction="row" spacing={1} alignItems="center">
+                              <Tooltip title={buildParoquiaUrl(row)}>
+                                <Link
+                                  href={buildParoquiaUrl(row)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  underline="hover"
+                                  sx={{
+                                    maxWidth: 200,
+                                    display: 'inline-block',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap'
+                                  }}
+                                >
+                                  {shortParoquiaText(row)}
+                                </Link>
+                              </Tooltip>
+                            <Tooltip title="Copiar URL">
+                              <IconButton size="small" onClick={() => handleCopyUrl(buildParoquiaUrl(row))}>
+                                <ContentCopyIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Stack>
+                        ) : (
+                          row.paroco
+                        )}
+                      </TableCell>
                       <TableCell>
                         <Chip
                           label={row.ativo ? 'Sim' : 'Não'}
