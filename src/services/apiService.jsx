@@ -20,4 +20,31 @@ export const setAuthToken = (token) => {
   }
 };
 
+// Registrar um callback para lidar com logout em caso de token expirado
+let handleUnauthorized = null;
+
+export const setUnauthorizedHandler = (callback) => {
+  handleUnauthorized = callback;
+};
+
+// Interceptor de resposta para lidar com token expirado (401)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expirado ou inválido
+      console.warn('Token expirado ou inválido');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setAuthToken(null);
+      
+      // Chamar o callback de logout se registrado
+      if (handleUnauthorized) {
+        handleUnauthorized();
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

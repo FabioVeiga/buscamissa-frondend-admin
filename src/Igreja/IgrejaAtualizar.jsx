@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
 import { Box, TextField, Button, FormControl, InputLabel, MenuItem, Typography, IconButton, Switch, FormControlLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
-import { Delete } from "@mui/icons-material";
+import { Delete, ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
 import { diasDaSemana, formatarHorario, apenasNumeros } from "../utils";
 import ErrorSpan from "../ErrorSpan";
 import  RedirectModal  from "../Components/RedirectModal"
 import RedeSocialForm from "./Components/RedeSocialForm";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useEndereco } from "../Context/EnderecoContext";
 import Grid from "@mui/material/Grid2";
 
 const IgrejaAtualizar = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const { state } = location || {};
   const { endereco, setEndereco } = useEndereco();
@@ -674,10 +675,20 @@ const IgrejaAtualizar = () => {
           </FormControl>
         </Box>
 
-        {/* Botão de Submissão */}
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
-          Editar Igreja
-        </Button>
+        {/* Botões de Ação */}
+        <Box display="flex" gap={2}>
+          <Button
+            variant="outlined"
+            color="inherit"
+            startIcon={<ArrowBack />}
+            onClick={() => navigate(-1)}
+          >
+            Voltar
+          </Button>
+          <Button variant="contained" color="primary" onClick={handleSubmit}>
+            Editar Igreja
+          </Button>
+        </Box>
         <Box display="flex">
           {message.show && (
             <ErrorSpan

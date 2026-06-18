@@ -20,7 +20,7 @@ import {
   TableRow,
   Paper
 } from "@mui/material";
-import { Delete } from "@mui/icons-material";
+import { Delete, ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
 import { diasDaSemana, formatarHorario, apenasNumeros } from "../utils";
 import ErrorSpan from "../ErrorSpan";
@@ -629,10 +629,20 @@ const IgrejaCriar = () => {
           )}
         </Box>
 
-        {/* Botão de Submissão */}
-        <Button variant="contained" color="primary" onClick={handleSubmit}>
-          Criar Igreja
-        </Button>
+        {/* Botões de Ação */}
+        <Box display="flex" gap={2}>
+          <Button
+            variant="outlined"
+            color="inherit"
+            startIcon={<ArrowBack />}
+            onClick={() => navigate(-1)}
+          >
+            Voltar
+          </Button>
+          <Button variant="contained" color="primary" onClick={handleSubmit}>
+            Criar Igreja
+          </Button>
+        </Box>
 
         {Object.keys(message).length > 0 && (
           <div className="bg-red-100 text-red-700 p-4 rounded">
