@@ -7,21 +7,25 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  List,
-  ListItem,
   Typography,
   IconButton,
   Checkbox,
   FormGroup,
-  FormControlLabel
+  FormControlLabel,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper
 } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import api from "../services/apiService";
-import { diasDaSemana } from "../utils";
+import { diasDaSemana, formatarHorario, apenasNumeros } from "../utils";
 import ErrorSpan from "../ErrorSpan";
 import { useEndereco } from "../Context/EnderecoContext";
 import { useNavigate } from "react-router-dom";
-import { formatarHorario } from "../utils";
 
 const IgrejaCriar = () => {
   const [message, setMessage] = useState("");
@@ -54,8 +58,16 @@ const IgrejaCriar = () => {
   const [redeSociais, setRedeSociais] = useState([]);
   const [base64, setBase64] = useState("");
   const [fileName, setFileName] = useState("");
+  const [urlInput, setUrlInput] = useState("");
 
   const { endereco, setEndereco } = useEndereco();
+
+  const getDiaLabel = (dia) => {
+    if (dia === undefined || dia === null) return "";
+    const found = diasDaSemana.find((d) => d.value === dia || d.value === Number(dia));
+    if (found) return found.label;
+    return diasDaSemana[dia]?.label || String(dia);
+  };
 
   
 
@@ -87,10 +99,11 @@ const IgrejaCriar = () => {
     }
 
     // Adiciona uma missa para cada dia selecionado
+    const horarioDigits = apenasNumeros(horario);
     setMissas((prev) => [
       ...prev,
       ...diasSelecionados.map((dia) => ({
-        horario,
+        horario: horarioDigits,
         diaSemana: dia,
         observacao,
       })),
@@ -155,6 +168,25 @@ const IgrejaCriar = () => {
     }
   };
 
+  // Utilitário: converte Blob para base64 e atualiza estado
+  const blobToBase64 = (blob, name) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const base64String = e.target.result.split(",")[1];
+          setBase64(base64String);
+          setFileName(name || "image");
+          resolve(base64String);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(blob);
+    });
+  };
+
   const handleNavigate = (path) => {
     navigate(path);
   };
@@ -189,6 +221,23 @@ const IgrejaCriar = () => {
     formData.imagem = base64;
     formData.endereco = endereco;
     formData.redeSociais = redeSociais;
+    
+    // Sanitizar contato e endereço
+    if (formData.contato) {
+      formData.contato = {
+        ...formData.contato,
+        ddd: apenasNumeros(formData.contato.ddd),
+        telefone: apenasNumeros(formData.contato.telefone),
+        dddWhatsApp: apenasNumeros(formData.contato.dddWhatsApp),
+        telefoneWhatsApp: apenasNumeros(formData.contato.telefoneWhatsApp),
+      };
+    }
+    if (formData.endereco) {
+      formData.endereco = {
+        ...formData.endereco,
+        cep: apenasNumeros(formData.endereco.cep),
+      };
+    }
     console.log(formData);
     api
      .post("/api/v1/Admin/igreja/criar", formData)
@@ -283,6 +332,73 @@ const IgrejaCriar = () => {
             />
           </Button>
 
+          {/* Colar imagem do clipboard */}
+          <TextField
+            label="Cole uma imagem (Ctrl/Cmd+V)"
+            placeholder="Cole aqui uma imagem"
+            onPaste={async (e) => {
+              const items = e.clipboardData && e.clipboardData.items;
+              if (!items) return;
+              for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (item.kind === "file" && item.type.startsWith("image/")) {
+                  const blob = item.getAsFile();
+                  if (blob) {
+                    try {
+                      await blobToBase64(blob, blob.name || "pasted-image.png");
+                    } catch (err) {
+                      setMessage("Erro ao processar imagem colada.");
+                    }
+                    e.preventDefault();
+                    return;
+                  }
+                }
+                if (item.kind === "string" && item.type === "text/html") {
+                  item.getAsString(async (html) => {
+                    const srcMatch = html.match(/src=\"([^\"]+)\"/i);
+                    if (srcMatch && srcMatch[1]) {
+                      try {
+                        const resp = await fetch(srcMatch[1]);
+                        const blob = await resp.blob();
+                        await blobToBase64(blob, "pasted-from-html.png");
+                      } catch (err) {
+                        setMessage("Erro ao processar imagem colada do HTML.");
+                      }
+                    }
+                  });
+                }
+              }
+            }}
+            fullWidth
+          />
+
+          {/* Converter a partir de URL */}
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            <TextField
+              label="Converter a partir de URL"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              placeholder="Cole URL da imagem aqui"
+              fullWidth
+            />
+            <Button
+              variant="outlined"
+              onClick={async () => {
+                if (!urlInput) return;
+                try {
+                  const resp = await fetch(urlInput);
+                  if (!resp.ok) throw new Error("Falha ao buscar a imagem");
+                  const blob = await resp.blob();
+                  await blobToBase64(blob, urlInput);
+                } catch (err) {
+                  setMessage("Não foi possível converter a URL.");
+                }
+              }}
+            >
+              Converter
+            </Button>
+          </Box>
+
           {/* Mostra o nome do arquivo */}
           {fileName && <Typography>Arquivo selecionado: {fileName}</Typography>}
 
@@ -363,31 +479,34 @@ const IgrejaCriar = () => {
             Adicionar Missa
           </Button>
 
-          {/* Lista de Missas */}
+          {/* Tabela de Missas */}
           {missas.length > 0 && (
-            <List>
-              {missas.map((missa, index) => (
-                <ListItem
-                  key={index}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Typography>
-                    {formatarHorario(missa.horario)} - {diasDaSemana.find(d => d.value === missa.diaSemana)?.label} (
-                    {missa.observacao || "Sem observação"})
-                  </Typography>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDeleteMissa(index)}
-                  >
-                    <Delete />
-                  </IconButton>
-                </ListItem>
-              ))}
-            </List>
+            <TableContainer component={Paper} sx={{ mt: 1 }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Horário</TableCell>
+                    <TableCell>Dia</TableCell>
+                    <TableCell>Observação</TableCell>
+                    <TableCell>Ações</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {missas.map((missa, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{formatarHorario(missa.horario)}</TableCell>
+                      <TableCell>{getDiaLabel(missa.diaSemana)}</TableCell>
+                      <TableCell>{missa.observacao || "Sem observação"}</TableCell>
+                      <TableCell>
+                        <IconButton color="error" onClick={() => handleDeleteMissa(index)}>
+                          <Delete />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
         </Box>
 

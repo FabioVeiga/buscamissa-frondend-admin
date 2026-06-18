@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { Box, TextField, Button, FormControl, InputLabel, MenuItem, List, ListItem, Typography, IconButton, Switch, FormControlLabel } from "@mui/material";
+import { Box, TextField, Button, FormControl, InputLabel, MenuItem, Typography, IconButton, Switch, FormControlLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import api from "../services/apiService";
-import { diasDaSemana } from "../utils";
+import { diasDaSemana, formatarHorario, apenasNumeros } from "../utils";
 import ErrorSpan from "../ErrorSpan";
 import  RedirectModal  from "../Components/RedirectModal"
 import RedeSocialForm from "./Components/RedeSocialForm";
@@ -29,6 +29,7 @@ const IgrejaAtualizar = () => {
   const [missas, setMissas] = useState([]);
   const [base64, setBase64] = useState("");
   const [fileName, setFileName] = useState("");
+  const [urlInput, setUrlInput] = useState("");
   const [showModal, setShowModal] = useState(false);
 
   // Carregar endereço do formData quando o componente monta
@@ -52,9 +53,10 @@ const IgrejaAtualizar = () => {
       return;
     }
 
+    const horarioDigits = apenasNumeros(horario);
     setformDataMissas((prev) => [
       ...prev,
-      { horario, diaSemana: diasDaSemana[diaSemana].value, observacao },
+      { horario: horarioDigits, diaSemana: diasDaSemana[diaSemana].value, observacao },
     ]);
 
     // Limpar os campos
@@ -88,6 +90,33 @@ const IgrejaAtualizar = () => {
 
       reader.readAsDataURL(file); // Lê o arquivo como uma DataURL
     }
+  };
+
+  // Utilitário: converte Blob para base64 e atualiza estado
+  const blobToBase64 = (blob, name) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const base64String = e.target.result.split(",")[1];
+          setBase64(base64String);
+          setFileName(name || "image");
+          resolve(base64String);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const getDiaLabel = (dia) => {
+    if (dia === undefined || dia === null) return "";
+    const found = diasDaSemana.find((d) => d.value === dia || d.value === Number(dia));
+    if (found) return found.label;
+    // fallback: if dia is an index
+    return diasDaSemana[dia]?.label || String(dia);
   };
 
   const obterPrimeiroErro = (erros) => {
@@ -127,6 +156,23 @@ const IgrejaAtualizar = () => {
       redeSociais: formDataRedeSociais,
       endereco: endereco,
       ativo: formData?.ativo ?? false,
+    }
+    
+    // Sanitizar contato e endereço
+    if (req.contato) {
+      req.contato = {
+        ...req.contato,
+        ddd: apenasNumeros(req.contato.ddd),
+        telefone: apenasNumeros(req.contato.telefone),
+        dddWhatsApp: apenasNumeros(req.contato.dddWhatsApp),
+        telefoneWhatsApp: apenasNumeros(req.contato.telefoneWhatsApp),
+      };
+    }
+    if (req.endereco) {
+      req.endereco = {
+        ...req.endereco,
+        cep: apenasNumeros(req.endereco.cep),
+      };
     }
     //console.log(req);
     api
@@ -359,6 +405,80 @@ const IgrejaAtualizar = () => {
             />
           </Button>
 
+            {/* Colar imagem do clipboard */}
+            <TextField
+              label="Cole uma imagem (Ctrl/Cmd+V)"
+              placeholder="Cole aqui uma imagem"
+              onPaste={async (e) => {
+                const items = e.clipboardData && e.clipboardData.items;
+                if (!items) return;
+                for (let i = 0; i < items.length; i++) {
+                  const item = items[i];
+                  if (item.kind === "file" && item.type.startsWith("image/")) {
+                    const blob = item.getAsFile();
+                    if (blob) {
+                      try {
+                        await blobToBase64(blob, blob.name || "pasted-image.png");
+                      } catch (err) {
+                        setMessage({ mensagem: ["Erro ao processar imagem colada."], severity: "error", show: true });
+                      }
+                      e.preventDefault();
+                      return;
+                    }
+                  }
+                  // Alguns navegadores podem fornecer imagens como string via clipboard
+                  if (item.kind === "string" && item.type === "text/html") {
+                    item.getAsString(async (html) => {
+                      const srcMatch = html.match(/src=\"([^\"]+)\"/i);
+                      if (srcMatch && srcMatch[1]) {
+                        try {
+                          const resp = await fetch(srcMatch[1]);
+                          const blob = await resp.blob();
+                          await blobToBase64(blob, "pasted-from-html.png");
+                        } catch (err) {
+                          setMessage({ mensagem: ["Erro ao processar imagem colada do HTML."], severity: "error", show: true });
+                        }
+                      }
+                    });
+                  }
+                }
+              }}
+              fullWidth
+            />
+
+            {/* Converter a partir de URL */}
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <TextField
+                label="Converter a partir de URL"
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                placeholder="Cole URL da imagem aqui"
+                fullWidth
+              />
+              <Button
+                variant="outlined"
+                onClick={async () => {
+                  if (!urlInput) return;
+                  try {
+                    const resp = await fetch(urlInput);
+                    if (!resp.ok) throw new Error("Falha ao buscar a imagem");
+                    const blob = await resp.blob();
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                      const base64String = ev.target.result.split(",")[1];
+                      setBase64(base64String);
+                      setFileName(urlInput);
+                    };
+                    reader.readAsDataURL(blob);
+                  } catch (err) {
+                    setMessage({ mensagem: ["Não foi possível converter a URL."], severity: "error", show: true });
+                  }
+                }}
+              >
+                Converter
+              </Button>
+            </Box>
+
           {/* Mostra o nome do arquivo */}
           {fileName && <Typography>Arquivo selecionado: {fileName}</Typography>}
 
@@ -440,32 +560,35 @@ const IgrejaAtualizar = () => {
             Adicionar Missa
           </Button>
 
-          {/* Lista de Missas */}
-          {formDatamissas.length > 0 && (
-            <List>
-              {formDatamissas.map((missa, index) => (
-                <ListItem
-                  key={index}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Typography>
-                    {missa.horario} - {diasDaSemana[missa.diaSemana].label} (
-                    {missa.observacao || "Sem observação"})
-                  </Typography>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDeleteMissa(index)}
-                  >
-                    <Delete />
-                  </IconButton>
-                </ListItem>
-              ))}
-            </List>
-          )}
+            {/* Tabela de Missas */}
+            {formDatamissas.length > 0 && (
+              <TableContainer component={Paper} sx={{ mt: 1 }}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Horário</TableCell>
+                      <TableCell>Dia</TableCell>
+                      <TableCell>Observação</TableCell>
+                      <TableCell>Ações</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {formDatamissas.map((missa, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{formatarHorario(missa.horario)}</TableCell>
+                        <TableCell>{getDiaLabel(missa.diaSemana)}</TableCell>
+                        <TableCell>{missa.observacao || "Sem observação"}</TableCell>
+                        <TableCell>
+                          <IconButton color="error" onClick={() => handleDeleteMissa(index)}>
+                            <Delete />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
         </Box>
 
         {/* Contato */}
