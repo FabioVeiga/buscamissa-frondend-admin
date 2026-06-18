@@ -1,11 +1,12 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from "react";
-import { Box, TextField, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel } from "@mui/material";
+import { Box, TextField, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel, Button, Autocomplete } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import api from "../services/apiService";
 import { IconButton, Tooltip } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
 import { useNavigate } from "react-router-dom";
 import { diaDaSemana, ufs } from "../utils";
 import ErrorSpan from "../ErrorSpan";
@@ -28,6 +29,8 @@ const IgrejaSearchForm = ({
   });
 
   const [message, setMessage] = useState(errorMensage);
+  const [autoLoadEnabled, setAutoLoadEnabled] = useState(true);
+  const [hasAutoLoaded, setHasAutoLoaded] = useState(false);
   const [formData, setFormData] = useState({
     uf: "",
     localidade: "",
@@ -50,6 +53,49 @@ const IgrejaSearchForm = ({
       return prevLocalidades;
     });
   };
+
+  useEffect(() => {
+    // Restaurar filtros e preferências do localStorage ao montar
+    const savedFilters = localStorage.getItem("igrejaSearchFilters");
+    const savedAutoLoad = localStorage.getItem("igrejaAutoLoadEnabled");
+    
+    if (savedAutoLoad !== null) {
+      setAutoLoadEnabled(JSON.parse(savedAutoLoad));
+    }
+    
+    if (savedFilters) {
+      try {
+        const parsed = JSON.parse(savedFilters);
+        setFormData(parsed);
+        // Se houver um UF salvo, atualizar localidades também
+        if (parsed.uf && enderecosMap[parsed.uf]) {
+          const cidades = Object.keys(enderecosMap[parsed.uf]);
+          setLocalidades(cidades);
+        }
+      } catch (err) {
+        console.warn("Erro ao restaurar filtros:", err);
+      }
+    }
+  }, [enderecosMap]);
+
+  // Executar busca automaticamente se autoLoad estiver ativado
+  useEffect(() => {
+    if (autoLoadEnabled && !hasAutoLoaded && ufsOptions.length > 0) {
+      const savedFilters = localStorage.getItem("igrejaSearchFilters");
+      if (savedFilters) {
+        try {
+          const parsed = JSON.parse(savedFilters);
+          // Se houver algum filtro significativo, executar busca
+          if (parsed.uf || parsed.nome || parsed.diaSemana) {
+            setHasAutoLoaded(true);
+            setTimeout(() => handleSearch(), 300);
+          }
+        } catch (err) {
+          console.warn("Erro ao executar busca automática:", err);
+        }
+      }
+    }
+  }, [autoLoadEnabled, ufsOptions]);
 
   useEffect(() => {
     // Busca o mapa de endereços (UF -> Cidades -> Bairros)
@@ -126,6 +172,9 @@ const IgrejaSearchForm = ({
         };
 
         onPaginationChange && onPaginationChange(paginationInfo);
+        // Salvar filtros e preferência de autoLoad no localStorage
+        localStorage.setItem("igrejaSearchFilters", JSON.stringify(formData));
+        localStorage.setItem("igrejaAutoLoadEnabled", JSON.stringify(autoLoadEnabled));
         setMessage({});
       })
       .catch((error) => {
@@ -142,6 +191,22 @@ const IgrejaSearchForm = ({
       .finally(() => {
         onLoadingChange && onLoadingChange(false);
       });
+  };
+
+  const handleClearFilters = () => {
+    const defaultFilters = {
+      uf: "",
+      localidade: "",
+      nome: "",
+      diaSemana: "",
+      horario: "",
+      ativo: true,
+      denuncia: false,
+    };
+    setFormData(defaultFilters);
+    localStorage.removeItem("igrejaSearchFilters");
+    resetLocalidades();
+    setHasAutoLoaded(false);
   };
 
   return (
@@ -162,49 +227,30 @@ const IgrejaSearchForm = ({
       >
         <Grid container spacing={2}>
           <Grid size={1}>
-            {/* Dropdown UF */}
-            <FormControl fullWidth>
-              <InputLabel id="uf-label">UF</InputLabel>
-              <Select
-                labelId="uf-label"
-                value={formData.uf}
-                onChange={(e) => handleChange("uf", e.target.value)}
-              >
-                <MenuItem value="">
-                  <em>Selecione uma UF</em>
-                </MenuItem>
-                {ufsOptions.length > 0
-                  ? ufsOptions.map((uf) => (
-                      <MenuItem key={uf} value={uf}>
-                        {uf.toUpperCase()}
-                      </MenuItem>
-                    ))
-                  : ufs.map((uf) => (
-                      <MenuItem key={uf} value={uf}>
-                        {uf.toUpperCase()}
-                      </MenuItem>
-                    ))}
-              </Select>
-            </FormControl>
+            {/* Autocomplete UF */}
+            <Autocomplete
+              freeSolo
+              options={ufsOptions.length > 0 ? ufsOptions : ufs}
+              value={formData.uf}
+              onChange={(event, newValue) => handleChange("uf", newValue || "")}
+              onInputChange={(event, newInputValue) => handleChange("uf", newInputValue)}
+              renderInput={(params) => (
+                <TextField {...params} label="UF" placeholder="Digite ou selecione" />
+              )}
+            />
           </Grid>
           <Grid size={5}>
-            <FormControl fullWidth>
-              <InputLabel id="localidade-label">Localidade</InputLabel>
-              <Select
-                labelId="localidade-label"
-                value={formData.localidade}
-                onChange={(e) => handleChange("localidade", e.target.value)}
-              >
-                 <MenuItem value="">
-                  <em>Selecione uma localidade</em>
-                </MenuItem>
-                {localidades?.length > 0 && localidades.map((item) => (
-                  <MenuItem key={item} value={item}>
-                    {item}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            {/* Autocomplete Localidade */}
+            <Autocomplete
+              freeSolo
+              options={localidades || []}
+              value={formData.localidade}
+              onChange={(event, newValue) => handleChange("localidade", newValue || "")}
+              onInputChange={(event, newInputValue) => handleChange("localidade", newInputValue)}
+              renderInput={(params) => (
+                <TextField {...params} label="Localidade" placeholder="Digite ou selecione" />
+              )}
+            />
           </Grid>
           <Grid size={6}>
             <TextField
@@ -272,10 +318,25 @@ const IgrejaSearchForm = ({
             />
           </Grid>
           <Grid>
-            <Box display="flex" justifyContent="space-between">
+            <Box display="flex" gap={1} alignItems="center">
               <Tooltip title="Buscar">
                 <IconButton color="default" onClick={handleSearch}>
                   <SearchIcon />
+                </IconButton>
+              </Tooltip>
+              <FormControlLabel
+                control={
+                  <Switch
+                    size="small"
+                    checked={autoLoadEnabled}
+                    onChange={(e) => setAutoLoadEnabled(e.target.checked)}
+                  />
+                }
+                label="Auto-carregar"
+              />
+              <Tooltip title="Limpar Filtros">
+                <IconButton color="error" onClick={handleClearFilters}>
+                  <ClearIcon />
                 </IconButton>
               </Tooltip>
               <Tooltip title="Novo">
