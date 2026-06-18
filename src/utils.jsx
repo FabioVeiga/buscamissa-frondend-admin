@@ -59,11 +59,29 @@ export const isCepValid = (cep) => {
  * @returns {string} Horário formatado em HH:mm.
  */
 export const formatarHorario = (horario) => {
+  // Date object -> HH:mm
+  if (horario instanceof Date) {
+    const hh = String(horario.getHours()).padStart(2, "0");
+    const mm = String(horario.getMinutes()).padStart(2, "0");
+    return `${hh}:${mm}`;
+  }
+
+
+  // Number like 930 -> "09:30"
   if (typeof horario === "number") {
     horario = horario.toString().padStart(4, "0");
   }
+
   if (typeof horario === "string") {
-    // Remove caracteres não numéricos
+    // If string already contains HH:MM (possibly with seconds/millis), extract
+    const match = horario.match(/(\d{1,2}):(\d{2})/);
+    if (match) {
+      const hh = match[1].padStart(2, "0");
+      const mm = match[2];
+      return `${hh}:${mm}`;
+    }
+
+    // Remove characters non-numeric and fallback to legacy rules
     const clean = horario.replace(/\D/g, "");
     if (clean.length === 4) {
       return `${clean.slice(0, 2)}:${clean.slice(2)}`;
@@ -78,5 +96,15 @@ export const formatarHorario = (horario) => {
       return `00:0${clean}`;
     }
   }
+
   return horario;
+};
+
+/**
+ * Remove tudo que não for dígito de uma string e retorna a string resultante.
+ * Se receber null/undefined retorna string vazia.
+ */
+export const apenasNumeros = (valor) => {
+  if (valor === null || valor === undefined) return "";
+  return String(valor).replace(/\D/g, "");
 };
