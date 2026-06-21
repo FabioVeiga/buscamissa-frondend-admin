@@ -46,6 +46,9 @@ const IgrejaPage = () => {
     hasNextPage: false,
     totalItems: 0,
   });
+  const [searchFilters, setSearchFilters] = useState({
+    ativo: false,
+  });
   const [igrejaModal, setIgrejaModal] = useState({});
   const [denunciaModalOpen, setDenunciaModalOpen] = useState(null); // Armazena o ID da denúncia aberta
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -123,6 +126,14 @@ const IgrejaPage = () => {
     setPaginacao(pagination);
   };
 
+  const handleFiltersChange = (filters) => {
+    setSearchFilters(filters);
+    setPaginacao((prev) => ({
+      ...prev,
+      pageIndex: 1,
+    }));
+  };
+
   const handleOpenModal = (denunciaId) => {
     setDenunciaModalOpen(denunciaId); // Define o ID da denúncia
   };
@@ -162,7 +173,7 @@ const IgrejaPage = () => {
         .put(`/api/v1/Admin/igreja/ativar/${selectedIgrejaId}/usuario/${JSON.parse(localStorage.getItem("user")).id}`)
         .then(() => {
           console.log("Igreja ativada com sucesso!");
-          fetchIgrejas(); // Recarrega a lista de igrejas após a ativação
+          fetchIgrejas(paginacao.pageIndex, paginacao.pageSize, searchFilters);
         })
         .catch((error) => {
           console.error("Erro ao ativar a igreja:", error);
@@ -179,7 +190,7 @@ const IgrejaPage = () => {
       .delete(`/api/v1/Admin/igreja/deletar/${deleteTargetId}`)
       .then((response) => {
         console.log(response.data?.data?.mensagemAplicacao || "Igreja deletada");
-        fetchIgrejas();
+        fetchIgrejas(paginacao.pageIndex, paginacao.pageSize, searchFilters);
       })
       .catch((error) => {
         console.error("Erro ao deletar igreja:", error);
@@ -189,10 +200,30 @@ const IgrejaPage = () => {
       });
   };
 
-  const fetchIgrejas = (pageIndex = 1, pageSize = 10) => {
+  const buildIgrejasEndpoint = (pageIndex, pageSize, filters) => {
+    const params = new URLSearchParams();
+    if (filters?.ativo !== undefined && filters.ativo !== "") {
+      params.append("ativo", filters.ativo);
+    }
+    if (filters?.uf) params.append("uf", filters.uf);
+    if (filters?.localidade) params.append("localidade", filters.localidade);
+    if (filters?.nome) params.append("nome", filters.nome);
+    if (filters?.diaSemana !== undefined && filters?.diaSemana !== "") {
+      params.append("diadasemana", filters.diaSemana);
+    }
+    if (filters?.horario) params.append("horario", filters.horario);
+    if (filters?.denuncia !== undefined && filters.denuncia !== "") {
+      params.append("denuncia", filters.denuncia);
+    }
+    params.append("Paginacao.PageIndex", pageIndex);
+    params.append("Paginacao.PageSize", pageSize);
+    return `/api/v1/admin/igreja/buscar-por-filtro?${params.toString()}`;
+  };
+
+  const fetchIgrejas = (pageIndex = 1, pageSize = 10, filters = searchFilters) => {
     setIsLoading(true);
     api
-      .get(`/api/v1/admin/igreja/buscar-por-filtro?ativo=false&Paginacao.PageIndex=${pageIndex}&Paginacao.PageSize=${pageSize}`)
+      .get(buildIgrejasEndpoint(pageIndex, pageSize, filters))
       .then((response) => {
         const resp = response.data.data;
         setIgrejas(resp);
@@ -214,7 +245,7 @@ const IgrejaPage = () => {
   };
 
   useEffect(() => {
-    fetchIgrejas(paginacao.pageIndex, paginacao.pageSize);
+    fetchIgrejas(paginacao.pageIndex, paginacao.pageSize, searchFilters);
   }, [paginacao.pageIndex, paginacao.pageSize]);
 
   const handlePageChange = (newPageIndex) => {
@@ -253,6 +284,7 @@ const IgrejaPage = () => {
             onDataChange={handleDataChange}
             onLoadingChange={handleLoadingChange}
             onPaginationChange={handlePaginationChange}
+            onFiltersChange={handleFiltersChange}
           />
           {isLoading ? (
             <Box
