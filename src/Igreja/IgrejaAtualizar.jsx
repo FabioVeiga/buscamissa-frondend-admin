@@ -1,20 +1,21 @@
 import { useState, useEffect } from "react";
-import { Box, TextField, Button, FormControl, InputLabel, MenuItem, Typography, IconButton, Switch, FormControlLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
+import { Box, TextField, Button, FormControl, InputLabel, MenuItem, Typography, IconButton, Switch, FormControlLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Stack } from "@mui/material";
 import { Delete, ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
 import { diasDaSemana, formatarHorario, apenasNumeros } from "../utils";
 import ErrorSpan from "../ErrorSpan";
-import  RedirectModal  from "../Components/RedirectModal"
 import RedeSocialForm from "./Components/RedeSocialForm";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEndereco } from "../Context/EnderecoContext";
 import Grid from "@mui/material/Grid2";
+import { useGeocode } from "../hooks/useGeocode";
 
 const IgrejaAtualizar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { state } = location || {};
   const { endereco, setEndereco } = useEndereco();
+  const { geocode, loading: geoLoading, error: geoError } = useGeocode();
   const [formData, setFormData] = useState(state?.row);
   const [formDataRedeSociais, setFormDataRedeSociais] = useState(
     formData.redesSociais || []
@@ -31,7 +32,7 @@ const IgrejaAtualizar = () => {
   const [base64, setBase64] = useState("");
   const [fileName, setFileName] = useState("");
   const [urlInput, setUrlInput] = useState("");
-  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Carregar endereço do formData quando o componente monta
   useEffect(() => {
@@ -120,6 +121,42 @@ const IgrejaAtualizar = () => {
     return diasDaSemana[dia]?.label || String(dia);
   };
 
+  const handleGeocode = async () => {
+    const { logradouro, numero, bairro, localidade, uf } = endereco;
+    const addressParts = [logradouro, numero, bairro, localidade, uf].filter(Boolean);
+    
+    if (addressParts.length < 3) {
+      setMessage({
+        mensagem: "Por favor, preencha pelo menos Logradouro, Localidade e UF para buscar coordenadas.",
+        severity: "error",
+        show: true,
+      });
+      return;
+    }
+
+    const fullAddress = addressParts.join(", ");
+    const result = await geocode(fullAddress);
+
+    if (result) {
+      setEndereco((prev) => ({
+        ...prev,
+        latitude: result.lat,
+        longitude: result.lon,
+      }));
+      setMessage({
+        mensagem: "Coordenadas encontradas com sucesso!",
+        severity: "success",
+        show: true,
+      });
+    } else {
+      setMessage({
+        mensagem: "Erro ao buscar coordenadas. Verifique o endereço.",
+        severity: "error",
+        show: true,
+      });
+    }
+  };
+
   const obterPrimeiroErro = (erros) => {
     const chaves = Object.keys(erros);
     if (chaves.length > 0) {
@@ -143,6 +180,8 @@ const IgrejaAtualizar = () => {
       setMessage(arrayAux);
       return;
     }
+
+    setLoading(true);
 
     formData.missas = formDatamissas;
     formData.imagem = base64;
@@ -179,12 +218,14 @@ const IgrejaAtualizar = () => {
     api
       .put("/api/v1/Admin/igreja/atualizar", req)
       .then(() => {
-        setShowModal(true);
         setMessage({
           mensagem: obterPrimeiroErro("Igreja atualizada com sucesso!"),
           severity: "success",
           show: true,
         });
+        setTimeout(() => {
+          navigate("/igreja");
+        }, 2000);
       })
       .catch((error) => {
         console.log(error)
@@ -203,9 +244,11 @@ const IgrejaAtualizar = () => {
             show: true,
           });
         }
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
-
   return (
     <>
       <h2>Editar Igreja</h2>
@@ -350,6 +393,48 @@ const IgrejaAtualizar = () => {
                   setEndereco((prev) => ({ ...prev, estado: e.target.value }))
                 }
                 fullWidth
+              />
+            </Grid>
+
+            {/* Botão Buscar Coordenadas */}
+            <Grid size={12}>
+              <Button 
+                variant="outlined" 
+                color="primary" 
+                onClick={handleGeocode}
+                disabled={geoLoading}
+                fullWidth
+              >
+                {geoLoading ? "Buscando..." : "Buscar Coordenadas"}
+              </Button>
+              {geoError && <Typography color="error">{geoError}</Typography>}
+            </Grid>
+
+            {/* Latitude */}
+            <Grid size={6}>
+              <TextField
+                label="Latitude"
+                value={endereco?.latitude || ""}
+                onChange={(e) =>
+                  setEndereco((prev) => ({ ...prev, latitude: e.target.value }))
+                }
+                fullWidth
+                type="number"
+                inputProps={{ step: "0.000001" }}
+              />
+            </Grid>
+
+            {/* Longitude */}
+            <Grid size={6}>
+              <TextField
+                label="Longitude"
+                value={endereco?.longitude || ""}
+                onChange={(e) =>
+                  setEndereco((prev) => ({ ...prev, longitude: e.target.value }))
+                }
+                fullWidth
+                type="number"
+                inputProps={{ step: "0.000001" }}
               />
             </Grid>
           </Grid>
@@ -682,11 +767,24 @@ const IgrejaAtualizar = () => {
             color="inherit"
             startIcon={<ArrowBack />}
             onClick={() => navigate(-1)}
+            disabled={loading}
           >
             Voltar
           </Button>
-          <Button variant="contained" color="primary" onClick={handleSubmit}>
-            Editar Igreja
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <Stack direction="row" alignItems="center" gap={1}>
+                <CircularProgress size={20} />
+                Atualizando...
+              </Stack>
+            ) : (
+              "Editar Igreja"
+            )}
           </Button>
         </Box>
         <Box display="flex">
@@ -698,8 +796,6 @@ const IgrejaAtualizar = () => {
           )}
         </Box>
       </Box>
-      {/* Modal de redirecionamento */}
-      {showModal && <RedirectModal targetPage="/igreja" />}
     </>
   );
 };

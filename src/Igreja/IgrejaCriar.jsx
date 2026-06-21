@@ -18,7 +18,9 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper
+  Paper,
+  CircularProgress,
+  Stack
 } from "@mui/material";
 import { Delete, ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
@@ -26,9 +28,11 @@ import { diasDaSemana, formatarHorario, apenasNumeros } from "../utils";
 import ErrorSpan from "../ErrorSpan";
 import { useEndereco } from "../Context/EnderecoContext";
 import { useNavigate } from "react-router-dom";
+import { useGeocode } from "../hooks/useGeocode";
 
 const IgrejaCriar = () => {
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     nome: "",
@@ -62,6 +66,10 @@ const IgrejaCriar = () => {
 
   const { endereco, setEndereco } = useEndereco();
 
+  const navigate = useNavigate();
+  
+  const { geocode, loading: geoLoading, error: geoError } = useGeocode();
+
   const getDiaLabel = (dia) => {
     if (dia === undefined || dia === null) return "";
     const found = diasDaSemana.find((d) => d.value === dia || d.value === Number(dia));
@@ -69,9 +77,29 @@ const IgrejaCriar = () => {
     return diasDaSemana[dia]?.label || String(dia);
   };
 
-  
+  const handleGeocode = async () => {
+    const { logradouro, numero, bairro, localidade, uf } = endereco;
+    const addressParts = [logradouro, numero, bairro, localidade, uf].filter(Boolean);
+    
+    if (addressParts.length < 3) {
+      setMessage("Por favor, preencha pelo menos Logradouro, Localidade e UF para buscar coordenadas.");
+      return;
+    }
 
-  const navigate = useNavigate();
+    const fullAddress = addressParts.join(", ");
+    const result = await geocode(fullAddress);
+
+    if (result) {
+      setEndereco((prev) => ({
+        ...prev,
+        latitude: result.lat,
+        longitude: result.lon,
+      }));
+      setMessage("Coordenadas encontradas com sucesso!");
+    } else {
+      setMessage("Erro ao buscar coordenadas. Verifique o endereço.");
+    }
+  };
 
   const handleToggleDiaSemana = (diaValue) => {
     setFormDataMissa((prev) => {
@@ -217,6 +245,8 @@ const IgrejaCriar = () => {
       return;
     }
 
+    setLoading(true);
+
     formData.missas = missas;
     formData.imagem = base64;
     formData.endereco = endereco;
@@ -256,6 +286,9 @@ const IgrejaCriar = () => {
          var arrayAux = [error.response.data.data?.messagemAplicacao]
          setMessage(arrayAux);
        }
+     })
+     .finally(() => {
+       setLoading(false);
      });
   };
 
@@ -290,6 +323,59 @@ const IgrejaCriar = () => {
           value={endereco.numero}
           onChange={(e) => handlaComplementoEndereco("numero",e.target.value)}
           fullWidth
+        />
+        <TextField
+          label="Endereço - Logradouro"
+          value={endereco.logradouro}
+          onChange={(e) => handlaComplementoEndereco("logradouro",e.target.value)}
+          fullWidth
+        />
+        <TextField
+          label="Endereço - Bairro"
+          value={endereco.bairro}
+          onChange={(e) => handlaComplementoEndereco("bairro",e.target.value)}
+          fullWidth
+        />
+        <TextField
+          label="Endereço - Localidade"
+          value={endereco.localidade}
+          onChange={(e) => handlaComplementoEndereco("localidade",e.target.value)}
+          fullWidth
+        />
+        <TextField
+          label="Endereço - UF"
+          value={endereco.uf}
+          onChange={(e) => handlaComplementoEndereco("uf",e.target.value)}
+          fullWidth
+        />
+        
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          <Button 
+            variant="outlined" 
+            color="primary" 
+            onClick={handleGeocode}
+            disabled={geoLoading}
+          >
+            {geoLoading ? "Buscando..." : "Buscar Coordenadas"}
+          </Button>
+          {geoError && <Typography color="error">{geoError}</Typography>}
+        </Box>
+
+        <TextField
+          label="Latitude"
+          value={endereco.latitude || ""}
+          onChange={(e) => handlaComplementoEndereco("latitude", e.target.value)}
+          fullWidth
+          type="number"
+          inputProps={{ step: "0.000001" }}
+        />
+        <TextField
+          label="Longitude"
+          value={endereco.longitude || ""}
+          onChange={(e) => handlaComplementoEndereco("longitude", e.target.value)}
+          fullWidth
+          type="number"
+          inputProps={{ step: "0.000001" }}
         />
         
         <TextField
@@ -636,11 +722,24 @@ const IgrejaCriar = () => {
             color="inherit"
             startIcon={<ArrowBack />}
             onClick={() => navigate(-1)}
+            disabled={loading}
           >
             Voltar
           </Button>
-          <Button variant="contained" color="primary" onClick={handleSubmit}>
-            Criar Igreja
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <Stack direction="row" alignItems="center" gap={1}>
+                <CircularProgress size={20} />
+                Criando...
+              </Stack>
+            ) : (
+              "Criar Igreja"
+            )}
           </Button>
         </Box>
 
