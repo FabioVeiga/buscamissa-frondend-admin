@@ -5,6 +5,7 @@ import api from "../services/apiService";
 import { diasDaSemana, formatarHorario, apenasNumeros } from "../utils";
 import ErrorSpan from "../ErrorSpan";
 import RedeSocialForm from "./Components/RedeSocialForm";
+import CepReversoModal from "../Components/CepReversoModal";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEndereco } from "../Context/EnderecoContext";
 import Grid from "@mui/material/Grid2";
@@ -33,6 +34,10 @@ const IgrejaAtualizar = () => {
   const [fileName, setFileName] = useState("");
   const [urlInput, setUrlInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [openCepReverso, setOpenCepReverso] = useState(false);
+  const [candidatosCep, setCandidatosCep] = useState([]);
+  const [cepReversoLoading, setCepReversoLoading] = useState(false);
+  const [cepReversoError, setCepReversoError] = useState("");
 
   // Carregar endereço do formData quando o componente monta
   useEffect(() => {
@@ -155,6 +160,60 @@ const IgrejaAtualizar = () => {
         show: true,
       });
     }
+  };
+
+  const handleBuscarCepReverso = async () => {
+    const { uf, localidade, logradouro, bairro } = endereco || {};
+    if (!uf || !localidade || !logradouro) {
+      setCepReversoError("Preencha UF, Localidade e Logradouro para buscar o CEP.");
+      setCandidatosCep([]);
+      setOpenCepReverso(true);
+      return;
+    }
+
+    const requestData = {
+      uf,
+      cidade: localidade,
+      logradouro,
+    };
+    if (bairro) {
+      requestData.bairro = bairro;
+    }
+
+    setCepReversoLoading(true);
+    setCepReversoError("");
+
+    try {
+      const response = await api.post("/api/v1/Admin/igreja/endereco/reverso", requestData);
+      const candidatos = response.data?.data?.candidatos || [];
+      setCandidatosCep(candidatos);
+      if (candidatos.length === 0) {
+        setCepReversoError("Nenhum candidato encontrado para este endereço.");
+      }
+      setOpenCepReverso(true);
+    } catch (error) {
+      setCepReversoError(
+        error.response?.data?.data?.mensagemAplicacao ||
+          error.response?.data?.message ||
+          "Erro ao buscar candidatos de CEP."
+      );
+      setCandidatosCep([]);
+      setOpenCepReverso(true);
+    } finally {
+      setCepReversoLoading(false);
+    }
+  };
+
+  const handleSelectCepCandidato = (item) => {
+    setEndereco((prev) => ({
+      ...prev,
+      cep: item.cep,
+      logradouro: item.logradouro || prev.logradouro,
+      bairro: item.bairro || prev.bairro,
+      localidade: item.localidade || prev.localidade,
+      uf: item.uf || prev.uf,
+    }));
+    setOpenCepReverso(false);
   };
 
   const obterPrimeiroErro = (erros) => {
@@ -398,17 +457,36 @@ const IgrejaAtualizar = () => {
 
             {/* Botão Buscar Coordenadas */}
             <Grid size={12}>
-              <Button 
-                variant="outlined" 
-                color="primary" 
-                onClick={handleGeocode}
-                disabled={geoLoading}
-                fullWidth
-              >
-                {geoLoading ? "Buscando..." : "Buscar Coordenadas"}
-              </Button>
+              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleBuscarCepReverso}
+                  disabled={cepReversoLoading}
+                  fullWidth
+                >
+                  {cepReversoLoading ? "Buscando CEP..." : "Buscar CEP"}
+                </Button>
+                <Button 
+                  variant="outlined" 
+                  color="primary" 
+                  onClick={handleGeocode}
+                  disabled={geoLoading}
+                  fullWidth
+                >
+                  {geoLoading ? "Buscando..." : "Buscar Coordenadas"}
+                </Button>
+              </Box>
               {geoError && <Typography color="error">{geoError}</Typography>}
             </Grid>
+            <CepReversoModal
+              open={openCepReverso}
+              onClose={() => setOpenCepReverso(false)}
+              candidatos={candidatosCep}
+              onSelect={handleSelectCepCandidato}
+              loading={cepReversoLoading}
+              error={cepReversoError}
+            />
 
             {/* Latitude */}
             <Grid size={6}>
