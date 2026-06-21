@@ -1,12 +1,13 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from "react";
-import { Box, TextField, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel, Button, Autocomplete } from "@mui/material";
+import { Box, TextField, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel, Button, Autocomplete, CircularProgress } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import api from "../services/apiService";
 import { IconButton, Tooltip } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { useNavigate } from "react-router-dom";
 import { diaDaSemana, ufs } from "../utils";
 import ErrorSpan from "../ErrorSpan";
@@ -31,6 +32,7 @@ const IgrejaSearchForm = ({
   const [message, setMessage] = useState(errorMensage);
   const [autoLoadEnabled, setAutoLoadEnabled] = useState(true);
   const [hasAutoLoaded, setHasAutoLoaded] = useState(false);
+  const [geoLoading, setGeoLoading] = useState(false);
   const [formData, setFormData] = useState({
     uf: "",
     localidade: "",
@@ -209,6 +211,32 @@ const IgrejaSearchForm = ({
     setHasAutoLoaded(false);
   };
 
+  const handleGeocodificarPendentes = () => {
+    setGeoLoading(true);
+    api
+      .post(`/api/v2/Igreja/geocodificar-pendentes`)
+      .then((response) => {
+        setMessage({
+          mensagem: response.data?.data?.mensagemAplicacao || "Geocodificação concluída com sucesso!",
+          severity: "success",
+          show: true,
+        });
+        // Recarregar a busca após geocodificar
+        setTimeout(() => handleSearch(), 500);
+      })
+      .catch((error) => {
+        console.error("Erro ao geocodificar igrejas pendentes:", error);
+        setMessage({
+          mensagem: error.response?.data?.data?.mensagemAplicacao || "Erro ao geocodificar igrejas pendentes.",
+          severity: "error",
+          show: true,
+        });
+      })
+      .finally(() => {
+        setGeoLoading(false);
+      });
+  };
+
   return (
     <>
       <Box
@@ -337,6 +365,15 @@ const IgrejaSearchForm = ({
               <Tooltip title="Limpar Filtros">
                 <IconButton color="error" onClick={handleClearFilters}>
                   <ClearIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Geocodificar Pendentes">
+                <IconButton 
+                  color="success" 
+                  onClick={handleGeocodificarPendentes}
+                  disabled={geoLoading}
+                >
+                  {geoLoading ? <CircularProgress size={24} /> : <LocationOnIcon />}
                 </IconButton>
               </Tooltip>
               <Tooltip title="Novo">
