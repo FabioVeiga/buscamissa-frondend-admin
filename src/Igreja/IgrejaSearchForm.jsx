@@ -16,6 +16,7 @@ const IgrejaSearchForm = ({
   onDataChange,
   onLoadingChange,
   onPaginationChange,
+  onFiltersChange,
 }) => {
   const navigate = useNavigate();
 
@@ -148,6 +149,10 @@ const IgrejaSearchForm = ({
     let paginacao = `&Paginacao.PageIndex=1&Paginacao.PageSize=10`;
     endPoint += paginacao;
 
+    if (onFiltersChange) {
+      onFiltersChange(formData);
+    }
+
     if (formData.localidade === "")
       resetLocalidades();
 
@@ -206,6 +211,9 @@ const IgrejaSearchForm = ({
       denuncia: false,
     };
     setFormData(defaultFilters);
+    if (onFiltersChange) {
+      onFiltersChange(defaultFilters);
+    }
     localStorage.removeItem("igrejaSearchFilters");
     resetLocalidades();
     setHasAutoLoaded(false);
