@@ -32,6 +32,7 @@ import { useEndereco } from "../Context/EnderecoContext";
 import { useNavigate } from "react-router-dom";
 import { useGeocode } from "../hooks/useGeocode";
 import RedeSociaisModel from "../Models/RedeSociaisModel";
+import Grid from "@mui/material/Grid2/index.d.ts";
 
 
 const IgrejaCriar = () => {
@@ -396,6 +397,32 @@ const IgrejaCriar = () => {
           boxSizing: "border-box", // Garantir que padding e border sejam incluídos nas dimensões
         }}
       >
+        {/* Número */}
+        <Grid size={4}>
+          <TextField
+              label="Número"
+              value={endereco?.numero || ""}
+              onChange={(e) =>
+                  setEndereco((prev) => ({ ...prev, numero: e.target.value }))
+              }
+              fullWidth
+          />
+        </Grid>
+
+        {/* Complemento */}
+        <Grid size={12}>
+          <TextField
+              label="Complemento"
+              value={endereco?.complemento || ""}
+              onChange={(e) =>
+                  setEndereco((prev) => ({
+                    ...prev,
+                    complemento: e.target.value,
+                  }))
+              }
+              fullWidth
+          />
+        </Grid>
         {/* Dados da Igreja */}
         
         <TextField
