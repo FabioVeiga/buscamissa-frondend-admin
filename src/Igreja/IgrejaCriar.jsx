@@ -20,7 +20,9 @@ import {
   TableRow,
   Paper,
   CircularProgress,
-  Stack
+  Stack,
+  List,
+  ListItem
 } from "@mui/material";
 import { Delete, ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
@@ -29,9 +31,12 @@ import ErrorSpan from "../ErrorSpan";
 import { useEndereco } from "../Context/EnderecoContext";
 import { useNavigate } from "react-router-dom";
 import { useGeocode } from "../hooks/useGeocode";
-import CepReversoModal from "../Components/CepReversoModal";
+import RedeSociaisModel from "../Models/RedeSociaisModel";
+
 
 const IgrejaCriar = () => {
+  const redesSociaisDisponiveis = RedeSociaisModel.obterLista();
+
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -203,19 +208,41 @@ const IgrejaCriar = () => {
 
   const handleAddRedeSocial = () => {
     const { tipoRedeSocial, nomeDoPerfil } = formDataRedeSociais;
-    console.log(tipoRedeSocial, nomeDoPerfil);
-    // Validação
-    if (tipoRedeSocial === "" || nomeDoPerfil === "") {
-      setMessage(
-        "Os campos Tipo de Rede Social e Nome do Perfil são obrigatórios!"
-      );
+
+    if (tipoRedeSocial === "" || nomeDoPerfil.trim() === "") {
+      setMessage([
+        "Os campos Tipo de Rede Social e Nome do Perfil são obrigatórios!",
+      ]);
       return;
     }
 
-    setRedeSociais((prev) => [...prev, { tipoRedeSocial, nomeDoPerfil }]);
+    const tipoRedeSocialSelecionado = Number(tipoRedeSocial);
 
-    // Limpar os campos
-    setFormDataRedeSociais({ tipoRedeSocial: "", nomeDoPerfil: "" });
+    const redeSocialJaExiste = redeSociais.some(
+        (rede) => Number(rede.tipoRedeSocial) === tipoRedeSocialSelecionado
+    );
+
+    if (redeSocialJaExiste) {
+      setMessage([
+        "Essa igreja já possui uma rede social cadastrada com esse tipo.",
+      ]);
+      return;
+    }
+
+    setRedeSociais((prev) => [
+      ...prev,
+      {
+        tipoRedeSocial: tipoRedeSocialSelecionado,
+        nomeDoPerfil: nomeDoPerfil.trim(),
+      },
+    ]);
+
+    setFormDataRedeSociais({
+      tipoRedeSocial: "",
+      nomeDoPerfil: "",
+    });
+
+    setMessage("");
   };
 
   const handleChange = (field, value) => {
@@ -370,89 +397,6 @@ const IgrejaCriar = () => {
         }}
       >
         {/* Dados da Igreja */}
-        <TextField
-          label="Endereço - Complemento"
-          value={endereco.complemento}
-          onChange={(e) => handlaComplementoEndereco("complemento",e.target.value)}
-          fullWidth
-          id="outlined-disabled"
-          />
-        <TextField
-          label="Endereço - Número"
-          id="outlined-disabled"
-          value={endereco.numero}
-          onChange={(e) => handlaComplementoEndereco("numero",e.target.value)}
-          fullWidth
-        />
-        <TextField
-          label="Endereço - Logradouro"
-          value={endereco.logradouro}
-          onChange={(e) => handlaComplementoEndereco("logradouro",e.target.value)}
-          fullWidth
-        />
-        <TextField
-          label="Endereço - Bairro"
-          value={endereco.bairro}
-          onChange={(e) => handlaComplementoEndereco("bairro",e.target.value)}
-          fullWidth
-        />
-        <TextField
-          label="Endereço - Localidade"
-          value={endereco.localidade}
-          onChange={(e) => handlaComplementoEndereco("localidade",e.target.value)}
-          fullWidth
-        />
-        <TextField
-          label="Endereço - UF"
-          value={endereco.uf}
-          onChange={(e) => handlaComplementoEndereco("uf",e.target.value)}
-          fullWidth
-        />
-        
-        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", alignItems: "center" }}>
-          <Button 
-            variant="outlined" 
-            color="primary" 
-            onClick={handleGeocode}
-            disabled={geoLoading}
-          >
-            {geoLoading ? "Buscando..." : "Buscar Coordenadas"}
-          </Button>
-          <Button 
-            variant="outlined" 
-            color="secondary" 
-            onClick={handleBuscarCepReverso}
-            disabled={cepReversoLoading}
-          >
-            {cepReversoLoading ? "Buscando CEP..." : "Buscar CEP"}
-          </Button>
-          {geoError && <Typography color="error">{geoError}</Typography>}
-        </Box>
-        <CepReversoModal
-          open={openCepReverso}
-          onClose={() => setOpenCepReverso(false)}
-          candidatos={candidatosCep}
-          onSelect={handleSelectCepCandidato}
-          loading={cepReversoLoading}
-          error={cepReversoError}
-        />
-
-        <TextField
-          label="Latitude"
-          value={endereco.latitude || ""}
-          onChange={(e) => handlaComplementoEndereco("latitude", e.target.value)}
-          fullWidth
-          type="number"
-          inputProps={{ step: "0.000001" }}
-        />
-        <TextField
-          label="Longitude"
-          value={endereco.longitude || ""}
-          onChange={(e) => handlaComplementoEndereco("longitude", e.target.value)}
-          fullWidth
-          type="number"
-          inputProps={{ step: "0.000001" }}
-        />
         
         <TextField
           label="Nome da Igreja"
@@ -731,63 +675,89 @@ const IgrejaCriar = () => {
 
         {/* Redes Sociais */}
         <Box
-          display="flex"
-          gap={2}
-          flexDirection="column"
-          sx={{ width: "80%", margin: "0 auto", padding: 2 }}
+            display="flex"
+            gap={2}
+            flexDirection="column"
+            sx={{
+              width: "80%",
+              margin: "0 auto",
+              padding: 2,
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 2,
+            }}
         >
+          <Typography variant="h6">Redes Sociais</Typography>
+
           <FormControl fullWidth>
             <InputLabel id="tipoRedeSocial-label">
               Tipo de Rede Social
             </InputLabel>
             <Select
-              labelId="tipoRedeSocial-label"
-              value={formDataRedeSociais.tipoRedeSocial}
-              onChange={(e) =>
-                handleChangeRedeSociais("tipoRedeSocial", e.target.value)
-              }
+                labelId="tipoRedeSocial-label"
+                label="Tipo de Rede Social"
+                value={formDataRedeSociais.tipoRedeSocial}
+                onChange={(e) =>
+                    handleChangeRedeSociais("tipoRedeSocial", e.target.value)
+                }
             >
-              <MenuItem value={1}>Facebook</MenuItem>
-              <MenuItem value={2}>Instagram</MenuItem>
-              <MenuItem value={3}>Youtube</MenuItem>
-              <MenuItem value={4}>Tiktok</MenuItem>
+              {redesSociaisDisponiveis.map((redeSocial) => (
+                  <MenuItem key={redeSocial.id} value={redeSocial.id}>
+                    {redeSocial.tipo}
+                  </MenuItem>
+              ))}
             </Select>
           </FormControl>
+
           <TextField
-            label="Nome do Perfil"
-            value={formDataRedeSociais.nomeDoPerfil}
-            onChange={(e) =>
-              handleChangeRedeSociais("nomeDoPerfil", e.target.value)
-            }
-            fullWidth
+              label="Nome do Perfil"
+              value={formDataRedeSociais.nomeDoPerfil}
+              onChange={(e) =>
+                  handleChangeRedeSociais("nomeDoPerfil", e.target.value)
+              }
+              fullWidth
           />
-          <Button variant="text" color="primary" onClick={handleAddRedeSocial}>
+
+          <Button
+              variant="contained"
+              color="primary"
+              onClick={handleAddRedeSocial}
+          >
             Adicionar Rede Social
           </Button>
-          {/* Lista de Rede Social */}
+
           {redeSociais.length > 0 && (
-            <List>
-              {redeSociais.map((rede, index) => (
-                <ListItem
-                  key={index}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Typography>
-                    {rede.tipoRedeSocial} - {rede.nomeDoPerfil}
-                  </Typography>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDeleteRedeSocial(index)}
-                  >
-                    <Delete />
-                  </IconButton>
-                </ListItem>
-              ))}
-            </List>
+              <List>
+                {redeSociais.map((rede, index) => (
+                    <ListItem
+                        key={`${rede.tipoRedeSocial}-${index}`}
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          border: "1px solid",
+                          borderColor: "divider",
+                          borderRadius: 1,
+                          mb: 1,
+                          px: 2,
+                        }}
+                    >
+                      <Typography>
+                        <strong>
+                          {RedeSociaisModel.obterNomePorId(rede.tipoRedeSocial)}:
+                        </strong>{" "}
+                        {rede.nomeDoPerfil}
+                      </Typography>
+
+                      <IconButton
+                          color="error"
+                          onClick={() => handleDeleteRedeSocial(index)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </ListItem>
+                ))}
+              </List>
           )}
         </Box>
 
