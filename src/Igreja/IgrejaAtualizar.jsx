@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react";
-import { Box, TextField, Button, FormControl, InputLabel, MenuItem, Typography, IconButton, Switch, FormControlLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, Stack } from "@mui/material";
-import { Delete, ArrowBack } from "@mui/icons-material";
+import { Box, TextField, Button, Typography, Switch, FormControlLabel, CircularProgress, Stack } from "@mui/material";
+import { ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
-import { diasDaSemana, formatarHorario, apenasNumeros } from "../utils";
+import { apenasNumeros } from "../utils";
 import ErrorSpan from "../ErrorSpan";
-import RedeSocialForm from "./Components/RedeSocialForm";
-import CepReversoModal from "../Components/CepReversoModal";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEndereco } from "../Context/EnderecoContext";
-import Grid from "@mui/material/Grid2";
 import { useGeocode } from "../hooks/useGeocode";
+import MissaForm from "./Components/MissaForm";
+import ContatoForm from "./Components/ContatoForm";
+import EnderecoForm from "./Components/EnderecoForm";
+import RedesSociaisSection from "./Components/RedesSociaisSection";
+import SectionCard from "./Components/SectionCard";
+import IgrejasCepModal from "./Components/IgrejasCepModal";
 
 const IgrejaAtualizar = () => {
   const navigate = useNavigate();
@@ -17,18 +20,43 @@ const IgrejaAtualizar = () => {
   const { state } = location || {};
   const { endereco, setEndereco } = useEndereco();
   const { geocode, loading: geoLoading, error: geoError } = useGeocode();
-  const [formData, setFormData] = useState(state?.row);
-  const [formDataRedeSociais, setFormDataRedeSociais] = useState(
-    formData.redesSociais || []
+
+  const criarContatoVazio = () => ({
+    emailContato: "",
+    ddd: "",
+    telefone: "",
+    dddWhatsApp: "",
+    telefoneWhatsApp: "",
+  });
+
+  const normalizarIgrejaRecebida = (row) => ({
+    id: row?.id,
+    nome: row?.nome || "",
+    nomeUnico: row?.nomeUnico || "",
+    paroco: row?.paroco || "",
+    missas: row?.missas || [],
+    contato: row?.contato || criarContatoVazio(),
+    redesSociais: row?.redesSociais || [],
+    endereco: row?.endereco || row?.dadosEndereco || {},
+    ativo: row?.ativo ?? true,
+    imagemUrl: row?.imagemUrl || row?.imagem || "",
+  });
+
+  const [formData, setFormData] = useState(() =>
+      normalizarIgrejaRecebida(state?.row)
   );
-  //console.log(formData)
+  const [formDataRedeSociais, setFormDataRedeSociais] = useState(
+      state?.row?.redesSociais || []
+  );
+  
   const errorMensage = () => ({
     mensagem: "",
     severity: "",
     show: false,
   });
+
   const [message, setMessage] = useState(errorMensage);
-  const [formDatamissas, setformDataMissas] = useState(formData.missas);
+  const [formDatamissas, setformDataMissas] = useState(state?.row?.missas || []);
   const [missas, setMissas] = useState([]);
   const [base64, setBase64] = useState("");
   const [fileName, setFileName] = useState("");
@@ -38,13 +66,239 @@ const IgrejaAtualizar = () => {
   const [candidatosCep, setCandidatosCep] = useState([]);
   const [cepReversoLoading, setCepReversoLoading] = useState(false);
   const [cepReversoError, setCepReversoError] = useState("");
+  const [cepLoading, setCepLoading] = useState(false);
+  const [igrejasCepModalOpen, setIgrejasCepModalOpen] = useState(false);
+  const [igrejasEncontradasCep, setIgrejasEncontradasCep] = useState([]);
 
   // Carregar endereço do formData quando o componente monta
   useEffect(() => {
-    if (formData?.endereco) {
-      setEndereco(formData.endereco);
+    const igrejaNormalizada = normalizarIgrejaRecebida(state?.row);
+
+    setFormData(igrejaNormalizada);
+    setFormDataRedeSociais(igrejaNormalizada.redesSociais || []);
+    setformDataMissas(igrejaNormalizada.missas || []);
+    setEndereco(igrejaNormalizada.endereco || {});
+    setBase64("");
+    setFileName("");
+    setUrlInput("");
+    setMessage(errorMensage());
+  }, [state?.row]);
+
+  const handleShowError = (mensagem) => {
+    setMessage({
+      mensagem,
+      severity: "error",
+      show: true,
+    });
+  };
+
+  const handleEditarIgrejaCep = async (igreja) => {
+    if (!igreja?.nomeUnico) {
+      setMessage({
+        mensagem: "Nome único da igreja não informado.",
+        severity: "error",
+        show: true,
+      });
+      return;
     }
-  }, []);
+
+    setCepLoading(true);
+
+    try {
+      const igrejaCompleta = await buscarIgrejaCompletaPorNomeUnico(
+          igreja.nomeUnico
+      );
+
+      setIgrejasCepModalOpen(false);
+
+      navigate("/igrejaEditar", {
+        replace: true,
+        state: {
+          row: normalizarIgrejaParaEdicao(igrejaCompleta),
+        },
+      });
+    } catch (error) {
+      console.error("Erro ao buscar igreja completa:", error);
+      setMessage({
+        mensagem:
+            error.response?.data?.data?.messagemAplicacao ||
+            error.response?.data?.message ||
+            "Não foi possível carregar os dados completos da igreja para edição.",
+        severity: "error",
+        show: true,
+      });
+    } finally {
+      setCepLoading(false);
+    }
+  };
+
+  const handleBuscarPorCep = async () => {
+    const cep = endereco?.cep;
+
+    if (!cep) {
+      setMessage({
+        mensagem: "Informe o CEP para realizar a busca.",
+        severity: "error",
+        show: true,
+      });
+      return;
+    }
+
+    const cepNumeros = apenasNumeros(cep);
+
+    setCepLoading(true);
+
+    try {
+      const response = await api.get(`/api/v2/Igreja/buscar-por-cep/${cepNumeros}`);
+
+      const igrejas = response.data?.data || [];
+
+      if (Array.isArray(igrejas) && igrejas.length > 0) {
+        setIgrejasEncontradasCep(igrejas);
+        setIgrejasCepModalOpen(true);
+        return;
+      }
+
+      setMessage({
+        mensagem: "Nenhuma igreja encontrada para este CEP.",
+        severity: "error",
+        show: true,
+      });
+
+      setMessage({
+        mensagem: "Nenhuma igreja encontrada para este CEP.",
+        severity: "error",
+        show: true,
+      });
+    } catch (error) {
+      const responseData = error.response?.data?.data || {};
+      const mensagemAplicacao = responseData.messagemAplicacao || "";
+      const enderecoResponse = responseData.endereco;
+
+      if (
+          error.response?.status === 404 &&
+          mensagemAplicacao === "Preencher campos do endereço!" &&
+          enderecoResponse
+      ) {
+        preencherEndereco(enderecoResponse, cep);
+        setMessage({
+          mensagem: "Endereço encontrado. Preencha os demais campos da igreja.",
+          severity: "success",
+          show: true,
+        });
+        return;
+      }
+
+      setMessage({
+        mensagem:
+            mensagemAplicacao ||
+            error.response?.data?.message ||
+            "Erro ao buscar informações pelo CEP.",
+        severity: "error",
+        show: true,
+      });
+    } finally {
+      setCepLoading(false);
+    }
+  };
+
+  const preencherEndereco = (enderecoResponse, cepFallback = "") => {
+    if (!enderecoResponse) return;
+
+    setEndereco((prev) => ({
+      ...prev,
+      cep: enderecoResponse.cep || cepFallback,
+      logradouro: enderecoResponse.logradouro || prev?.logradouro || "",
+      complemento: enderecoResponse.complemento || prev?.complemento || "",
+      bairro: enderecoResponse.bairro || prev?.bairro || "",
+      localidade:
+          enderecoResponse.localidade ||
+          enderecoResponse.cidade ||
+          prev?.localidade ||
+          "",
+      uf: enderecoResponse.uf || prev?.uf || "",
+      estado: enderecoResponse.estado || prev?.estado || "",
+      regiao: enderecoResponse.regiao || prev?.regiao || "",
+    }));
+  };
+
+  const limparEndereco = () => {
+    setEndereco({});
+  };
+
+  const buscarIgrejaCompletaPorNomeUnico = async (nomeUnico) => {
+    if (!nomeUnico) {
+      throw new Error("Nome único da igreja não informado.");
+    }
+
+    const response = await api.get(`/api/v2/Igreja/${nomeUnico}`);
+    return response.data?.data || response.data;
+  };
+
+  const normalizarIgrejaParaEdicao = (response) => {
+    const igreja =
+        response?.igreja ||
+        response?.item ||
+        response?.data ||
+        response;
+
+    const endereco =
+        igreja?.endereco ||
+        igreja?.dadosEndereco ||
+        igreja?.dados?.endereco ||
+        response?.endereco ||
+        response?.dadosEndereco ||
+        {};
+
+    return {
+      id: igreja?.id,
+      nome: igreja?.nome || "",
+      nomeUnico: igreja?.nomeUnico || "",
+      paroco: igreja?.paroco || "",
+      missas: igreja?.missas || [],
+      contato: igreja?.contato || criarContatoVazio(),
+      redesSociais: igreja?.redesSociais || [],
+      endereco,
+      ativo: igreja?.ativo ?? true,
+      imagemUrl: igreja?.imagemUrl || igreja?.imagem || "",
+    };
+  };
+  
+  const selecionarIgrejaPorCep = (igrejas) => {
+    if (!Array.isArray(igrejas) || igrejas.length === 0) return null;
+
+    if (igrejas.length === 1) {
+      const desejaEditar = window.confirm(
+          `Já existe uma igreja cadastrada para este CEP:\n\n${igrejas[0].nome}\n\nDeseja ser redirecionado para a edição?`
+      );
+
+      return desejaEditar ? igrejas[0] : null;
+    }
+
+    const opcoes = igrejas
+        .map((igreja, index) => `${index + 1} - ${igreja.nome}`)
+        .join("\n");
+
+    const escolha = window.prompt(
+        `Foram encontradas ${igrejas.length} igrejas para este CEP.\n\nDigite o número da igreja que deseja editar:\n\n${opcoes}`
+    );
+
+    if (!escolha) return null;
+
+    const indexSelecionado = Number(escolha) - 1;
+
+    if (Number.isNaN(indexSelecionado) || !igrejas[indexSelecionado]) {
+      setMessage({
+        mensagem: "Opção inválida.",
+        severity: "error",
+        show: true,
+      });
+      return null;
+    }
+
+    return igrejas[indexSelecionado];
+  };
+
 
 
   const handleAddMissa = () => {
@@ -226,26 +480,24 @@ const IgrejaAtualizar = () => {
   };
 
   const handleSubmit = () => {
-    var arrayAux = [];
-    if (formData.nome === "") {
-      arrayAux.push("O campo Nome é obrigatório!");
-    }
-
-    if (formDatamissas.length === 0) {
-      arrayAux.push("É necessário adicionar ao menos uma missa!");
-    }
-
-    if (arrayAux.length > 0) {
-      setMessage(arrayAux);
+    // Verificar se existe pelo menos uma missa antes de prosseguir
+    if (!formDatamissas || formDatamissas.length === 0) {
+      setMessage({
+        mensagem: "Erro: É necessário adicionar ao menos uma missa antes de editar a igreja!",
+        severity: "error",
+        show: true,
+      });
       return;
     }
 
     setLoading(true);
 
+    // Preparar dados do formulário antes de enviar
     formData.missas = formDatamissas;
     formData.imagem = base64;
     formData.RedeSociais = formDataRedeSociais;
-    let req  ={
+
+    let req = {
       id: formData.id,
       nome: formData.nome,
       paroco: formData.paroco,
@@ -255,9 +507,9 @@ const IgrejaAtualizar = () => {
       redeSociais: formDataRedeSociais,
       endereco: endereco,
       ativo: formData?.ativo ?? false,
-    }
-    
-    // Sanitizar contato e endereço
+    };
+
+    // Sanitizar dados do contato e endereço
     if (req.contato) {
       req.contato = {
         ...req.contato,
@@ -273,45 +525,46 @@ const IgrejaAtualizar = () => {
         cep: apenasNumeros(req.endereco.cep),
       };
     }
-    //console.log(req);
+
+    // Submeter requisição à API
     api
-      .put("/api/v1/Admin/igreja/atualizar", req)
-      .then(() => {
-        setMessage({
-          mensagem: obterPrimeiroErro("Igreja atualizada com sucesso!"),
-          severity: "success",
-          show: true,
+        .put("/api/v1/Admin/igreja/atualizar", req)
+        .then(() => {
+          setMessage({
+            mensagem: "Igreja atualizada com sucesso!",
+            severity: "success",
+            show: true,
+          });
+          setTimeout(() => {
+            navigate("/igreja");
+          }, 2000);
+        })
+        .catch((error) => {
+          console.log(error);
+          var data = error.response.data.errors;
+          if (data) {
+            setMessage({
+              mensagem: obterPrimeiroErro(data),
+              severity: "error",
+              show: true,
+            });
+          } else {
+            var arrayAux = [error.response.data.data?.messagemAplicacao];
+            setMessage({
+              mensagem: arrayAux,
+              severity: "error",
+              show: true,
+            });
+          }
+        })
+        .finally(() => {
+          setLoading(false);
         });
-        setTimeout(() => {
-          navigate("/igreja");
-        }, 2000);
-      })
-      .catch((error) => {
-        console.log(error)
-        var data = error.response.data.errors;
-        if (data) {
-          setMessage({
-            mensagem: obterPrimeiroErro(data),
-            severity: "error",
-            show: true,
-          });
-        } else {
-          var arrayAux = [error.response.data.data?.messagemAplicacao];
-          setMessage({
-            mensagem: arrayAux,
-            severity: "error",
-            show: true,
-          });
-        }
-      })
-      .finally(() => {
-        setLoading(false);
-      });
   };
+  
   return (
     <>
-      <h2>Editar Igreja</h2>
-      <Box
+      <SectionCard
         component="form"
         display="flex"
         flexDirection="column"
@@ -326,233 +579,63 @@ const IgrejaAtualizar = () => {
         }}
       >
         {/* Seção de Endereço */}
-        <Box
-          sx={{
-            padding: 2,
-            border: "1px solid #ddd",
-            borderRadius: 2,
-            backgroundColor: "#f9f9f9",
-          }}
-        >
-          <Typography variant="h6" sx={{ marginBottom: 2 }}>
-            Endereço
-          </Typography>
-          <Grid container spacing={2}>
-            {/* CEP */}
-            <Grid size={12}>
-              <TextField
-                label="CEP"
-                value={endereco?.cep || ""}
-                onChange={(e) =>
-                  setEndereco((prev) => ({ ...prev, cep: e.target.value }))
-                }
-                fullWidth
-              />
-            </Grid>
-
-            {/* Logradouro */}
-            <Grid size={8}>
-              <TextField
-                label="Logradouro"
-                value={endereco?.logradouro || ""}
-                onChange={(e) =>
-                  setEndereco((prev) => ({
-                    ...prev,
-                    logradouro: e.target.value,
-                  }))
-                }
-                fullWidth
-              />
-            </Grid>
-
-            {/* Número */}
-            <Grid size={4}>
-              <TextField
-                label="Número"
-                value={endereco?.numero || ""}
-                onChange={(e) =>
-                  setEndereco((prev) => ({ ...prev, numero: e.target.value }))
-                }
-                fullWidth
-              />
-            </Grid>
-
-            {/* Complemento */}
-            <Grid size={12}>
-              <TextField
-                label="Complemento"
-                value={endereco?.complemento || ""}
-                onChange={(e) =>
-                  setEndereco((prev) => ({
-                    ...prev,
-                    complemento: e.target.value,
-                  }))
-                }
-                fullWidth
-              />
-            </Grid>
-
-            {/* Bairro */}
-            <Grid size={6}>
-              <TextField
-                label="Bairro"
-                value={endereco?.bairro || ""}
-                onChange={(e) =>
-                  setEndereco((prev) => ({ ...prev, bairro: e.target.value }))
-                }
-                fullWidth
-              />
-            </Grid>
-
-            {/* Localidade */}
-            <Grid size={6}>
-              <TextField
-                label="Localidade"
-                value={endereco?.localidade || ""}
-                onChange={(e) =>
-                  setEndereco((prev) => ({
-                    ...prev,
-                    localidade: e.target.value,
-                  }))
-                }
-                fullWidth
-              />
-            </Grid>
-
-            {/* UF */}
-            <Grid size={3}>
-              <TextField
-                label="UF"
-                value={endereco?.uf || ""}
-                onChange={(e) =>
-                  setEndereco((prev) => ({ ...prev, uf: e.target.value }))
-                }
-                fullWidth
-              />
-            </Grid>
-
-            {/* Região */}
-            <Grid size={3}>
-              <TextField
-                label="Região"
-                value={endereco?.regiao || ""}
-                onChange={(e) =>
-                  setEndereco((prev) => ({ ...prev, regiao: e.target.value }))
-                }
-                fullWidth
-              />
-            </Grid>
-
-            {/* Estado */}
-            <Grid size={6}>
-              <TextField
-                label="Estado"
-                value={endereco?.estado || ""}
-                onChange={(e) =>
-                  setEndereco((prev) => ({ ...prev, estado: e.target.value }))
-                }
-                fullWidth
-              />
-            </Grid>
-
-            {/* Botão Buscar Coordenadas */}
-            <Grid size={12}>
-              <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  onClick={handleBuscarCepReverso}
-                  disabled={cepReversoLoading}
-                  fullWidth
-                >
-                  {cepReversoLoading ? "Buscando CEP..." : "Buscar CEP"}
-                </Button>
-                <Button 
-                  variant="outlined" 
-                  color="primary" 
-                  onClick={handleGeocode}
-                  disabled={geoLoading}
-                  fullWidth
-                >
-                  {geoLoading ? "Buscando..." : "Buscar Coordenadas"}
-                </Button>
-              </Box>
-              {geoError && <Typography color="error">{geoError}</Typography>}
-            </Grid>
-            <CepReversoModal
-              open={openCepReverso}
-              onClose={() => setOpenCepReverso(false)}
-              candidatos={candidatosCep}
-              onSelect={handleSelectCepCandidato}
-              loading={cepReversoLoading}
-              error={cepReversoError}
-            />
-
-            {/* Latitude */}
-            <Grid size={6}>
-              <TextField
-                label="Latitude"
-                value={endereco?.latitude || ""}
-                onChange={(e) =>
-                  setEndereco((prev) => ({ ...prev, latitude: e.target.value }))
-                }
-                fullWidth
-                type="number"
-                inputProps={{ step: "0.000001" }}
-              />
-            </Grid>
-
-            {/* Longitude */}
-            <Grid size={6}>
-              <TextField
-                label="Longitude"
-                value={endereco?.longitude || ""}
-                onChange={(e) =>
-                  setEndereco((prev) => ({ ...prev, longitude: e.target.value }))
-                }
-                fullWidth
-                type="number"
-                inputProps={{ step: "0.000001" }}
-              />
-            </Grid>
-          </Grid>
-        </Box>
+        <EnderecoForm
+            endereco={endereco}
+            setEndereco={setEndereco}
+            onBuscarPorCep={handleBuscarPorCep}
+            cepLoading={cepLoading}
+            onBuscarCepReverso={handleBuscarCepReverso}
+            cepReversoLoading={cepReversoLoading}
+            geoLoading={geoLoading}
+            onBuscarCoordenadas={handleGeocode}
+            geoError={geoError}
+            openCepReverso={openCepReverso}
+            onCloseCepReverso={() => setOpenCepReverso(false)}
+            candidatosCep={candidatosCep}
+            onSelectCepCandidato={handleSelectCepCandidato}
+            cepReversoError={cepReversoError}
+        />
 
         {/* Dados da Igreja */}
-        <FormControlLabel
-          control={
-            <Switch
-              checked={formData?.ativo ?? false}
-              onChange={(e) => handleChange("ativo", e.target.checked)}
-              color="primary"
+        <SectionCard
+            title="Dados da Igreja"
+            subtitle="Dados principais da igreja."
+        >
+          <Box display="flex" flexDirection="column" gap={2}>
+            <FormControlLabel
+                control={
+                  <Switch
+                      checked={formData?.ativo ?? false}
+                      onChange={(e) => handleChange("ativo", e.target.checked)}
+                      color="primary"
+                  />
+                }
+                label="Ativo"
             />
-          }
-          label="Ativo"
-        />
-        <TextField
-          label="Nome da Igreja"
-          value={formData.nome}
-          onChange={(e) => handleChange("nome", e.target.value)}
-          fullWidth
-          required
-        />
-        <TextField
-          label="Pároco"
-          value={formData.paroco}
-          onChange={(e) => handleChange("paroco", e.target.value)}
-          fullWidth
-        />
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-            maxWidth: 500,
-            margin: "0 auto",
-            padding: 2,
-            border: "1px solid #ccc",
-            borderRadius: 2,
-          }}
+
+            <TextField
+                label="Nome da Igreja"
+                value={formData.nome}
+                onChange={(e) => handleChange("nome", e.target.value)}
+                fullWidth
+                required
+            />
+
+            <TextField
+                label="Pároco"
+                value={formData.paroco}
+                onChange={(e) => handleChange("paroco", e.target.value)}
+                fullWidth
+            />
+          </Box>
+        </SectionCard>
+        <SectionCard
+            title="Imagem"
+            subtitle="Faça upload, cole uma imagem ou converta por URL."
+            sx={{
+              maxWidth: 620,
+              margin: "0 auto",
+            }}
         >
           <Typography variant="h6">
             Upload de Imagem e Conversão para Base64
@@ -672,171 +755,33 @@ const IgrejaAtualizar = () => {
               }}
             />
           )}
-        </Box>
+        </SectionCard>
 
-        {/* Missas */}
-        <Box
-          display="flex"
-          gap={2}
-          flexDirection="column"
-          sx={{ width: "80%", margin: "0 auto", padding: 2 }}
-        >
-          <Typography>Adicionar Missa</Typography>
-
-          {/* Horário */}
-          <TextField
-            label="Horário"
-            type="time"
-            value={missas.horario}
-            onChange={(e) => handleChangeMissa("horario", e.target.value)}
-            fullWidth
-            InputLabelProps={{ shrink: true }}
-            inputProps={{
-              step: 900,
-            }}
-          />
-
-          {/* Dia da Semana */}
-          <TextField
-            label="Dia da Semana"
-            select
-            value={missas.diaSemana}
-            onChange={(e) => handleChangeMissa("diaSemana", e.target.value)}
-            fullWidth
-          >
-            {diasDaSemana.map((dia) => (
-              <MenuItem key={dia.value} value={dia.value}>
-                {dia.label}
-              </MenuItem>
-            ))}
-          </TextField>
-
-          {/* Observação */}
-          <TextField
-            label="Observação"
-            value={missas.observacao}
-            onChange={(e) => handleChangeMissa("observacao", e.target.value)}
-            fullWidth
-          />
-
-          {/* Botão Adicionar */}
-          <Button variant="text" color="primary" onClick={handleAddMissa}>
-            Adicionar Missa
-          </Button>
-
-            {/* Tabela de Missas */}
-            {formDatamissas.length > 0 && (
-              <TableContainer component={Paper} sx={{ mt: 1 }}>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Horário</TableCell>
-                      <TableCell>Dia</TableCell>
-                      <TableCell>Observação</TableCell>
-                      <TableCell>Ações</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {formDatamissas.map((missa, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{formatarHorario(missa.horario)}</TableCell>
-                        <TableCell>{getDiaLabel(missa.diaSemana)}</TableCell>
-                        <TableCell>{missa.observacao || "Sem observação"}</TableCell>
-                        <TableCell>
-                          <IconButton color="error" onClick={() => handleDeleteMissa(index)}>
-                            <Delete />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-        </Box>
-
-        {/* Contato */}
-        <TextField
-          label="Email de Contato"
-          value={formData.contato.emailContato}
-          onChange={(e) =>
-            handleChange("contato", {
-              ...formData.contato,
-              emailContato: e.target.value,
-            })
-          }
-          fullWidth
+        {/* Sessão de Missas */}
+        <MissaForm
+            missas={formDatamissas}
+            setMissas={setformDataMissas}
+            onError={handleShowError}
         />
-        <TextField
-          label="DDD"
-          value={formData.contato.ddd}
-          onChange={(e) =>
-            handleChange("contato", {
-              ...formData.contato,
-              ddd: e.target.value,
-            })
-          }
-          fullWidth
-        />
-        <TextField
-          label="Telefone"
-          value={formData.contato.telefone}
-          onChange={(e) =>
-            handleChange("contato", {
-              ...formData.contato,
-              telefone: e.target.value,
-            })
-          }
-          fullWidth
-        />
-        <TextField
-          label="DDD WhatsApp"
-          value={formData.contato.dddWhatsApp}
-          onChange={(e) =>
-            handleChange("contato", {
-              ...formData.contato,
-              dddWhatsApp: e.target.value,
-            })
-          }
-          fullWidth
-        />
-        <TextField
-          label="Telefone WhatsApp"
-          value={formData.contato.telefoneWhatsApp}
-          onChange={(e) =>
-            handleChange("contato", {
-              ...formData.contato,
-              telefoneWhatsApp: e.target.value,
-            })
-          }
-          fullWidth
+
+        <ContatoForm
+            contato={formData.contato}
+            onChange={(contatoAtualizado) => handleChange("contato", contatoAtualizado)}
         />
 
         {/* Redes Sociais */}
-        <Box
-          display="flex"
-          gap={2}
-          flexDirection="column"
-          sx={{ width: "80%", margin: "0 auto", padding: 2 }}
-        >
-          <FormControl fullWidth>
-            <InputLabel id="tipoRedeSocial-label">
-              Tipo de Rede Social
-            </InputLabel>
-            <RedeSocialForm
-              redesSociaisExistentes={formDataRedeSociais}
-              igrejaId={formData.id} // Passando o formData.id como prop
-              onAddRedeSocial={(novaRede) =>
+        <RedesSociaisSection
+            redesSociais={formDataRedeSociais}
+            igrejaId={formData.id}
+            onAddRedeSocial={(novaRede) =>
                 setFormDataRedeSociais((prev) => [...prev, novaRede])
-              }
-              onDeleteRedeSocial={(tipoRedeSocial) =>
+            }
+            onDeleteRedeSocial={(tipoRedeSocial) =>
                 setFormDataRedeSociais((prev) =>
-                  prev.filter((rede) => rede.tipoRedeSocial !== tipoRedeSocial)
+                    prev.filter((rede) => rede.tipoRedeSocial !== tipoRedeSocial)
                 )
-              }
-            />
-          </FormControl>
-        </Box>
+            }
+        />
 
         {/* Botões de Ação */}
         <Box display="flex" gap={2}>
@@ -873,7 +818,15 @@ const IgrejaAtualizar = () => {
             />
           )}
         </Box>
-      </Box>
+      </SectionCard>
+
+      <IgrejasCepModal
+          open={igrejasCepModalOpen}
+          igrejas={igrejasEncontradasCep}
+          loading={cepLoading}
+          onClose={() => setIgrejasCepModalOpen(false)}
+          onEditar={handleEditarIgrejaCep}
+      />
     </>
   );
 };
