@@ -9,7 +9,6 @@ const IgrejaNovo = () => {
     <EnderecoProvider>
       <Menu>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2, width: "100%" }}>
-          <CepSearch />
           <IgrejaCriar />
         </Box>
       </Menu>

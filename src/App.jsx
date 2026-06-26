@@ -12,70 +12,70 @@ import PrivateRoute from './PrivateRoute'
 
 
 const App = () => {
-  const { isAuthenticated } = useAuth();
-  
-  return (
-    <Routes>
-      <Route path="/" element={<LoginPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route
-        path="/home"
-        element={
-          <PrivateRoute isAuthenticated={isAuthenticated}>
-            <Home />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/igreja"
-        element={
-          <PrivateRoute isAuthenticated={isAuthenticated}>
-            <Igreja />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/usuario"
-        element={
-          <PrivateRoute isAuthenticated={isAuthenticated}>
-            <Usuario />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/igrejaNovo"
-        element={
-          <PrivateRoute isAuthenticated={isAuthenticated}>
-            <IgrejaNovo />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/igrejaEditar"
-        element={
-          <PrivateRoute isAuthenticated={isAuthenticated}>
-            <IgrejaEdita />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/solicitacoes"
-        element={
-          <PrivateRoute isAuthenticated={isAuthenticated}>
-            <SolicitacoesPage />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/contribuidores"
-        element={
-          <PrivateRoute isAuthenticated={isAuthenticated}>
-            <Contribuidores />
-          </PrivateRoute>
-        }
-      />
-    </Routes>
-  );
+    const { isAuthenticated, loading } = useAuth();
+
+    return (
+        <Routes>
+            <Route path="/" element={<LoginPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+                path="/home"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <Home />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/igreja"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <Igreja />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/usuario"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <Usuario />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/igrejaNovo"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <IgrejaNovo />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/igrejaEditar"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <IgrejaEdita />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/solicitacoes"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <SolicitacoesPage />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/contribuidores"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <Contribuidores />
+                    </PrivateRoute>
+                }
+            />
+        </Routes>
+    );
 };
 
 export default App;
