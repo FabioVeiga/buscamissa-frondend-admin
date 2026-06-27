@@ -1,5 +1,19 @@
 import { useState, useEffect } from "react";
-import { Box, TextField, Button, Typography, Switch, FormControlLabel, CircularProgress, Stack } from "@mui/material";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Switch,
+  FormControlLabel,
+  CircularProgress,
+  Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+} from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
 import { apenasNumeros } from "../utils";
@@ -13,6 +27,7 @@ import EnderecoForm from "./Components/EnderecoForm";
 import RedesSociaisSection from "./Components/RedesSociaisSection";
 import SectionCard from "./Components/SectionCard";
 import IgrejasCepModal from "./Components/IgrejasCepModal";
+
 
 const IgrejaAtualizar = () => {
   const navigate = useNavigate();
@@ -69,6 +84,8 @@ const IgrejaAtualizar = () => {
   const [cepLoading, setCepLoading] = useState(false);
   const [igrejasCepModalOpen, setIgrejasCepModalOpen] = useState(false);
   const [igrejasEncontradasCep, setIgrejasEncontradasCep] = useState([]);
+  const [emailContatoModalOpen, setEmailContatoModalOpen] = useState(false);
+
 
   // Carregar endereço do formData quando o componente monta
   useEffect(() => {
@@ -479,54 +496,48 @@ const IgrejaAtualizar = () => {
     return null; // Retorna null se não houver erros
   };
 
-  const handleSubmit = () => {
-    // Verificar se existe pelo menos uma missa antes de prosseguir
-    if (!formDatamissas || formDatamissas.length === 0) {
-      setMessage({
-        mensagem: "Erro: É necessário adicionar ao menos uma missa antes de editar a igreja!",
-        severity: "error",
-        show: true,
-      });
-      return;
-    }
+  const montarPayloadAtualizacao = (tipoEmailContato = null) => {
+    const contato = formData.contato
+        ? {
+          ...formData.contato,
+          ddd: apenasNumeros(formData.contato.ddd),
+          telefone: apenasNumeros(formData.contato.telefone),
+          dddWhatsApp: apenasNumeros(formData.contato.dddWhatsApp),
+          telefoneWhatsApp: apenasNumeros(formData.contato.telefoneWhatsApp),
+        }
+        : null;
 
-    setLoading(true);
+    const enderecoSanitizado = endereco
+        ? {
+          ...endereco,
+          cep: apenasNumeros(endereco.cep),
+        }
+        : null;
 
-    // Preparar dados do formulário antes de enviar
-    formData.missas = formDatamissas;
-    formData.imagem = base64;
-    formData.RedeSociais = formDataRedeSociais;
-
-    let req = {
+    const req = {
       id: formData.id,
       nome: formData.nome,
       paroco: formData.paroco,
-      missas: formData.missas,
-      contato: formData.contato ? formData.contato : null,
+      missas: formDatamissas,
+      contato,
       imagem: base64,
       redeSociais: formDataRedeSociais,
-      endereco: endereco,
+      endereco: enderecoSanitizado,
       ativo: formData?.ativo ?? false,
     };
 
-    // Sanitizar dados do contato e endereço
-    if (req.contato) {
-      req.contato = {
-        ...req.contato,
-        ddd: apenasNumeros(req.contato.ddd),
-        telefone: apenasNumeros(req.contato.telefone),
-        dddWhatsApp: apenasNumeros(req.contato.dddWhatsApp),
-        telefoneWhatsApp: apenasNumeros(req.contato.telefoneWhatsApp),
-      };
-    }
-    if (req.endereco) {
-      req.endereco = {
-        ...req.endereco,
-        cep: apenasNumeros(req.endereco.cep),
-      };
+    if (tipoEmailContato) {
+      req.tipoEmailContato = tipoEmailContato;
     }
 
-    // Submeter requisição à API
+    return req;
+  };
+
+  const atualizarIgreja = (tipoEmailContato = null) => {
+    setLoading(true);
+
+    const req = montarPayloadAtualizacao(tipoEmailContato);
+
     api
         .put("/api/v1/Admin/igreja/atualizar", req)
         .then(() => {
@@ -559,7 +570,29 @@ const IgrejaAtualizar = () => {
         })
         .finally(() => {
           setLoading(false);
+          setEmailContatoModalOpen(false);
         });
+  };
+
+  const handleSubmit = () => {
+    // Verificar se existe pelo menos uma missa antes de prosseguir
+    if (!formDatamissas || formDatamissas.length === 0) {
+      setMessage({
+        mensagem: "Erro: É necessário adicionar ao menos uma missa antes de editar a igreja!",
+        severity: "error",
+        show: true,
+      });
+      return;
+    }
+
+    const emailContato = formData?.contato?.emailContato?.trim();
+
+    if (emailContato) {
+      setEmailContatoModalOpen(true);
+      return;
+    }
+
+    atualizarIgreja();
   };
   
   return (
@@ -827,6 +860,53 @@ const IgrejaAtualizar = () => {
           onClose={() => setIgrejasCepModalOpen(false)}
           onEditar={handleEditarIgrejaCep}
       />
+      <Dialog
+          open={emailContatoModalOpen}
+          onClose={() => setEmailContatoModalOpen(false)}
+          fullWidth
+          maxWidth="sm"
+      >
+        <DialogTitle>Enviar e-mail de contato?</DialogTitle>
+
+        <DialogContent>
+          <DialogContentText>
+            Esta igreja possui e-mail de contato cadastrado. Deseja enviar um e-mail informando sobre criação ou alteração?
+          </DialogContentText>
+
+          <Typography variant="body2" sx={{ mt: 2, fontWeight: 600 }}>
+            E-mail: {formData?.contato?.emailContato}
+          </Typography>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 2, gap: 1, flexWrap: "wrap" }}>
+          <Button
+              variant="outlined"
+              color="inherit"
+              onClick={() => atualizarIgreja()}
+              disabled={loading}
+          >
+            Não enviar
+          </Button>
+
+          <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => atualizarIgreja("criacao")}
+              disabled={loading}
+          >
+            Enviar criação
+          </Button>
+
+          <Button
+              variant="contained"
+              color="primary"
+              onClick={() => atualizarIgreja("alteracao")}
+              disabled={loading}
+          >
+            Enviar alteração
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
