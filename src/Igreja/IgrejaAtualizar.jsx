@@ -55,6 +55,7 @@ const IgrejaAtualizar = () => {
     endereco: row?.endereco || row?.dadosEndereco || {},
     ativo: row?.ativo ?? true,
     imagemUrl: row?.imagemUrl || row?.imagem || "",
+    emailCriacaoEnviado: row?.emailCriacaoEnviado ?? false,
   });
 
   const [formData, setFormData] = useState(() =>
@@ -888,14 +889,16 @@ const IgrejaAtualizar = () => {
             Não enviar
           </Button>
 
-          <Button
-              variant="outlined"
-              color="primary"
-              onClick={() => atualizarIgreja("criacao")}
-              disabled={loading}
-          >
-            Enviar criação
-          </Button>
+          {!formData.emailCriacaoEnviado && (
+            <Button
+                variant="outlined"
+                color="primary"
+                onClick={() => atualizarIgreja("criacao")}
+                disabled={loading}
+            >
+              Enviar criação
+            </Button>
+          )}
 
           <Button
               variant="contained"
