@@ -8,6 +8,7 @@ import IgrejaNovo from './Igreja/IgrejaNovo';
 import IgrejaEdita from './Igreja/IgrejaEdita';
 import SolicitacoesPage from './Solicitacoes';
 import Contribuidores from './Contribuidores';
+import EmailEventoPage from './EmailEvento/EmailEvento';
 import PrivateRoute from './PrivateRoute'
 
 
@@ -71,6 +72,14 @@ const App = () => {
                 element={
                     <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
                         <Contribuidores />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/email-evento"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <EmailEventoPage />
                     </PrivateRoute>
                 }
             />
