@@ -80,7 +80,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                         type="time"
                         value={novaMissa.horario}
                         onChange={(e) => handleChange("horario", e.target.value)}
-                        fullWidth
+                        sx={{ width: 150 }}
                         InputLabelProps={{ shrink: true }}
                         inputProps={{ step: 900 }}
                     />
