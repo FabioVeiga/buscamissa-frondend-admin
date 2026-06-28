@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
-import { apenasNumeros } from "../utils";
+import { apenasNumeros, formatarErroApi } from "../utils";
 import ErrorSpan from "../ErrorSpan";
 import { useEndereco } from "../Context/EnderecoContext";
 import { useNavigate } from "react-router-dom";
@@ -483,7 +483,7 @@ const IgrejaCriar = () => {
        var data = error.response.data;
        console.error("Erro ao criar a igreja:", error);
        if (data.errors) {
-         setMessage(data.errors);
+         setMessage([formatarErroApi(data.errors)]);
        } else {
          var arrayAux = [error.response.data.data?.messagemAplicacao]
          setMessage(arrayAux);

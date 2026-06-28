@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
-import { apenasNumeros } from "../utils";
+import { apenasNumeros, formatarErroApi } from "../utils";
 import ErrorSpan from "../ErrorSpan";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEndereco } from "../Context/EnderecoContext";
@@ -488,14 +488,6 @@ const IgrejaAtualizar = () => {
     setOpenCepReverso(false);
   };
 
-  const obterPrimeiroErro = (erros) => {
-    const chaves = Object.keys(erros);
-    if (chaves.length > 0) {
-      return erros[chaves[0]][0];
-    }
-  
-    return null; // Retorna null se não houver erros
-  };
 
   const montarPayloadAtualizacao = (tipoEmailContato = null) => {
     const contato = formData.contato
@@ -556,7 +548,7 @@ const IgrejaAtualizar = () => {
           var data = error.response.data.errors;
           if (data) {
             setMessage({
-              mensagem: obterPrimeiroErro(data),
+              mensagem: formatarErroApi(data),
               severity: "error",
               show: true,
             });

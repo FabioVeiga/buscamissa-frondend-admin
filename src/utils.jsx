@@ -108,3 +108,42 @@ export const apenasNumeros = (valor) => {
   if (valor === null || valor === undefined) return "";
   return String(valor).replace(/\D/g, "");
 };
+
+const ENTIDADE_MAP = {
+  RedeSociais: "Rede Social",
+  Missas: "Missa",
+  Contato: "Contato",
+  Endereco: "Endereço",
+};
+
+const camelParaLabel = (str) =>
+  str.replace(/([A-Z])/g, " $1").trim();
+
+const formatarChaveErro = (chave) => {
+  // Padrão: "Entidade[N].Campo"
+  const match = chave.match(/^([A-Za-z]+)\[(\d+)\]\.(.+)$/);
+  if (match) {
+    const [, entidade, indice, campo] = match;
+    const entidadeLabel = ENTIDADE_MAP[entidade] || camelParaLabel(entidade);
+    const campoLabel = camelParaLabel(campo);
+    return `${entidadeLabel} #${Number(indice) + 1} — ${campoLabel}`;
+  }
+  return camelParaLabel(chave);
+};
+
+/**
+ * Recebe o objeto `errors` da resposta da API e retorna uma mensagem amigável
+ * para o primeiro erro encontrado.
+ */
+export const formatarErroApi = (erros) => {
+  const chaves = Object.keys(erros);
+  if (chaves.length === 0) return null;
+
+  const chave = chaves[0];
+  const valorBruto = erros[chave][0] ?? "";
+
+  // Se o valor já inclui o caminho do campo (ex: "RedeSociais[0].X: msg"), remove o prefixo
+  const valorLimpo = valorBruto.replace(/^[A-Za-z\[\]\d.]+:\s*/, "");
+
+  return `${formatarChaveErro(chave)}: ${valorLimpo}`;
+};
