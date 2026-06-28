@@ -588,7 +588,7 @@ const IgrejaAtualizar = () => {
 
     const emailContato = formData?.contato?.emailContato?.trim();
 
-    if (emailContato) {
+    if (emailContato || formData?.ativo) {
       setEmailContatoModalOpen(true);
       return;
     }
