@@ -74,15 +74,20 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
             subtitle="Cadastre os horários das missas. Você pode selecionar vários dias para o mesmo horário."
         >
             <Box display="flex" flexDirection="column" gap={2}>
-                <TextField
-                    label="Horário"
-                    type="time"
-                    value={novaMissa.horario}
-                    onChange={(e) => handleChange("horario", e.target.value)}
-                    fullWidth
-                    InputLabelProps={{ shrink: true }}
-                    inputProps={{ step: 900 }}
-                />
+                <Box display="flex" alignItems="center" gap={2}>
+                    <TextField
+                        label="Horário"
+                        type="time"
+                        value={novaMissa.horario}
+                        onChange={(e) => handleChange("horario", e.target.value)}
+                        fullWidth
+                        InputLabelProps={{ shrink: true }}
+                        inputProps={{ step: 900 }}
+                    />
+                    <Button variant="contained" color="primary" onClick={handleAddMissa} sx={{ whiteSpace: "nowrap" }}>
+                        Adicionar Missa
+                    </Button>
+                </Box>
 
                 <Box>
                     <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
@@ -127,12 +132,6 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                     multiline
                     minRows={2}
                 />
-
-                <Box display="flex" justifyContent="flex-end">
-                    <Button variant="contained" color="primary" onClick={handleAddMissa}>
-                        Adicionar Missa
-                    </Button>
-                </Box>
 
                 {missas.length > 0 && (
                     <TableContainer component={Paper} sx={{ mt: 1, borderRadius: 2 }}>
