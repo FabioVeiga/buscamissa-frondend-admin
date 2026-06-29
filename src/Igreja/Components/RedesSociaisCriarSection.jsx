@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import SectionCard from "./SectionCard";
-import RedeSociaisModel from "../../Models/RedeSociaisModel";
+import { useRedesSociais } from "../../hooks/useRedesSociais";
 
 const RedesSociaisCriarSection = ({
                                       redesSociais,
@@ -21,7 +21,7 @@ const RedesSociaisCriarSection = ({
                                       onAdd,
                                       onDelete,
                                   }) => {
-    const redesSociaisDisponiveis = RedeSociaisModel.obterLista();
+    const { tipos: redesSociaisDisponiveis, obterNomePorId } = useRedesSociais();
 
     return (
         <SectionCard
@@ -41,7 +41,7 @@ const RedesSociaisCriarSection = ({
                 >
                     {redesSociaisDisponiveis.map((redeSocial) => (
                         <MenuItem key={redeSocial.id} value={redeSocial.id}>
-                            {redeSocial.tipo}
+                            {redeSocial.nome}
                         </MenuItem>
                     ))}
                 </Select>
@@ -78,7 +78,7 @@ const RedesSociaisCriarSection = ({
                         >
                             <Typography>
                                 <strong>
-                                    {RedeSociaisModel.obterNomePorId(rede.tipoRedeSocial)}:
+                                    {obterNomePorId(rede.tipoRedeSocial)}:
                                 </strong>{" "}
                                 {rede.nomeDoPerfil}
                             </Typography>
