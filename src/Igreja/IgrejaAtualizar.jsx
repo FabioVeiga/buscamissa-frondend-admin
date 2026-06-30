@@ -13,6 +13,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
@@ -27,6 +29,7 @@ import EnderecoForm from "./Components/EnderecoForm";
 import RedesSociaisSection from "./Components/RedesSociaisSection";
 import SectionCard from "./Components/SectionCard";
 import IgrejasCepModal from "./Components/IgrejasCepModal";
+import IgrejaMetricasTab from "./Components/IgrejaMetricasTab";
 
 
 const IgrejaAtualizar = () => {
@@ -86,6 +89,7 @@ const IgrejaAtualizar = () => {
   const [igrejasCepModalOpen, setIgrejasCepModalOpen] = useState(false);
   const [igrejasEncontradasCep, setIgrejasEncontradasCep] = useState([]);
   const [emailContatoModalOpen, setEmailContatoModalOpen] = useState(false);
+  const [abaAtiva, setAbaAtiva] = useState(0);
 
 
   // Carregar endereço do formData quando o componente monta
@@ -588,6 +592,18 @@ const IgrejaAtualizar = () => {
   
   return (
     <>
+      <Tabs
+        value={abaAtiva}
+        onChange={(event, novaAba) => setAbaAtiva(novaAba)}
+        sx={{ mb: 2 }}
+      >
+        <Tab label="Dados" />
+        <Tab label="Métricas" />
+      </Tabs>
+
+      {abaAtiva === 1 ? (
+        <IgrejaMetricasTab igrejaId={formData.id} />
+      ) : (
       <SectionCard
         component="form"
         display="flex"
@@ -843,6 +859,7 @@ const IgrejaAtualizar = () => {
           )}
         </Box>
       </SectionCard>
+      )}
 
       <IgrejasCepModal
           open={igrejasCepModalOpen}
