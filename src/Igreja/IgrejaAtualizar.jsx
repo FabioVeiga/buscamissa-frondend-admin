@@ -111,9 +111,9 @@ const IgrejaAtualizar = () => {
   };
 
   const handleEditarIgrejaCep = async (igreja) => {
-    if (!igreja?.nomeUnico) {
+    if (!igreja?.id) {
       setMessage({
-        mensagem: "Nome único da igreja não informado.",
+        mensagem: "Id da igreja não informado.",
         severity: "error",
         show: true,
       });
@@ -123,9 +123,7 @@ const IgrejaAtualizar = () => {
     setCepLoading(true);
 
     try {
-      const igrejaCompleta = await buscarIgrejaCompletaPorNomeUnico(
-          igreja.nomeUnico
-      );
+      const igrejaCompleta = await buscarIgrejaCompletaPorId(igreja.id);
 
       setIgrejasCepModalOpen(false);
 
@@ -244,12 +242,12 @@ const IgrejaAtualizar = () => {
     setEndereco({});
   };
 
-  const buscarIgrejaCompletaPorNomeUnico = async (nomeUnico) => {
-    if (!nomeUnico) {
-      throw new Error("Nome único da igreja não informado.");
+  const buscarIgrejaCompletaPorId = async (id) => {
+    if (!id) {
+      throw new Error("Id da igreja não informado.");
     }
 
-    const response = await api.get(`/api/v2/Igreja/${nomeUnico}`);
+    const response = await api.get(`/api/v2/Igreja/admin/${id}`);
     return response.data?.data || response.data;
   };
 
@@ -850,6 +848,7 @@ const IgrejaAtualizar = () => {
           open={igrejasCepModalOpen}
           igrejas={igrejasEncontradasCep}
           loading={cepLoading}
+          igrejaAtualId={formData.id}
           onClose={() => setIgrejasCepModalOpen(false)}
           onEditar={handleEditarIgrejaCep}
       />

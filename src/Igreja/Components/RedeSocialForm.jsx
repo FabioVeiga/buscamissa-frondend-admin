@@ -22,9 +22,7 @@ import {
 } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import api from "../../services/apiService";
-import RedeSociaisModel from "../../Models/RedeSociaisModel";
-
-const redesSociaisDisponiveis = RedeSociaisModel.obterLista();
+import { useRedesSociais } from "../../hooks/useRedesSociais";
 
 const RedeSocialForm = ({
                           redesSociaisExistentes,
@@ -32,6 +30,8 @@ const RedeSocialForm = ({
                           onDeleteRedeSocial,
                           igrejaId,
                         }) => {
+  const { tipos: redesSociaisDisponiveis, obterNomePorId } = useRedesSociais();
+
   const [redeSocial, setRedeSocial] = useState({
     tipoRedeSocial: "",
     nomeDoPerfil: "",
@@ -193,7 +193,7 @@ const RedeSocialForm = ({
           >
             {redesSociaisDisponiveis.map((item) => (
                 <MenuItem key={item.id} value={item.id}>
-                  {item.tipo}
+                  {item.nome}
                 </MenuItem>
             ))}
           </Select>
@@ -233,7 +233,7 @@ const RedeSocialForm = ({
                   >
                     <Typography>
                       <strong>
-                        {RedeSociaisModel.obterNomePorId(rede.tipoRedeSocial)}:
+                        {obterNomePorId(rede.tipoRedeSocial)}:
                       </strong>{" "}
                       {rede.nomeDoPerfil}
                     </Typography>

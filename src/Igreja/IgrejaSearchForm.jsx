@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from "react";
-import { Box, TextField, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel, Button, Autocomplete, CircularProgress } from "@mui/material";
+import { Box, TextField, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel, Autocomplete, CircularProgress } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import api from "../services/apiService";
 import { IconButton, Tooltip } from "@mui/material";
@@ -11,6 +11,21 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { useNavigate } from "react-router-dom";
 import { diaDaSemana, ufs } from "../utils";
 import ErrorSpan from "../ErrorSpan";
+
+const FILTROS_PADRAO = {
+  id: "",
+  uf: "",
+  localidade: "",
+  bairro: "",
+  cep: "",
+  nome: "",
+  paroco: "",
+  diaSemana: "",
+  horario: "",
+  ativo: true,
+  denuncia: false,
+  semCoordenadas: false,
+};
 
 const IgrejaSearchForm = ({
   onDataChange,
@@ -34,15 +49,7 @@ const IgrejaSearchForm = ({
   const [autoLoadEnabled, setAutoLoadEnabled] = useState(true);
   const [hasAutoLoaded, setHasAutoLoaded] = useState(false);
   const [geoLoading, setGeoLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    uf: "",
-    localidade: "",
-    nome: "",
-    diaSemana: "",
-    horario: "",
-    ativo: true,
-    denuncia: false,
-  });
+  const [formData, setFormData] = useState({ ...FILTROS_PADRAO });
 
   const [localidades, setLocalidades] = useState([]);
   const [enderecosMap, setEnderecosMap] = useState({});
@@ -58,49 +65,6 @@ const IgrejaSearchForm = ({
   };
 
   useEffect(() => {
-    // Restaurar filtros e preferências do localStorage ao montar
-    const savedFilters = localStorage.getItem("igrejaSearchFilters");
-    const savedAutoLoad = localStorage.getItem("igrejaAutoLoadEnabled");
-    
-    if (savedAutoLoad !== null) {
-      setAutoLoadEnabled(JSON.parse(savedAutoLoad));
-    }
-    
-    if (savedFilters) {
-      try {
-        const parsed = JSON.parse(savedFilters);
-        setFormData(parsed);
-        // Se houver um UF salvo, atualizar localidades também
-        if (parsed.uf && enderecosMap[parsed.uf]) {
-          const cidades = Object.keys(enderecosMap[parsed.uf]);
-          setLocalidades(cidades);
-        }
-      } catch (err) {
-        console.warn("Erro ao restaurar filtros:", err);
-      }
-    }
-  }, [enderecosMap]);
-
-  // Executar busca automaticamente se autoLoad estiver ativado
-  useEffect(() => {
-    if (autoLoadEnabled && !hasAutoLoaded && ufsOptions.length > 0) {
-      const savedFilters = localStorage.getItem("igrejaSearchFilters");
-      if (savedFilters) {
-        try {
-          const parsed = JSON.parse(savedFilters);
-          // Se houver algum filtro significativo, executar busca
-          if (parsed.uf || parsed.nome || parsed.diaSemana) {
-            setHasAutoLoaded(true);
-            setTimeout(() => handleSearch(), 300);
-          }
-        } catch (err) {
-          console.warn("Erro ao executar busca automática:", err);
-        }
-      }
-    }
-  }, [autoLoadEnabled, ufsOptions]);
-
-  useEffect(() => {
     // Busca o mapa de endereços (UF -> Cidades -> Bairros)
     api
       .get(`/api/v1/Igreja/v2/obter-enderecos`)
@@ -113,6 +77,55 @@ const IgrejaSearchForm = ({
         console.warn("Não foi possível carregar endereços:", err);
       });
   }, []);
+
+  // Restaurar filtros do localStorage e disparar busca automática quando aplicável.
+  // Tudo num único efeito para evitar a condição de corrida em que handleSearch
+  // capturava o formData antigo (antes do restore ser aplicado ao estado).
+  useEffect(() => {
+    if (ufsOptions.length === 0 || hasAutoLoaded) return;
+
+    const savedAutoLoad = localStorage.getItem("igrejaAutoLoadEnabled");
+    const autoLoad = savedAutoLoad !== null ? JSON.parse(savedAutoLoad) : true;
+    setAutoLoadEnabled(autoLoad);
+
+    const savedFilters = localStorage.getItem("igrejaSearchFilters");
+    if (!savedFilters) {
+      setHasAutoLoaded(true);
+      return;
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(savedFilters);
+    } catch (err) {
+      console.warn("Erro ao restaurar filtros:", err);
+      setHasAutoLoaded(true);
+      return;
+    }
+
+    const filtrosCompletos = { ...FILTROS_PADRAO, ...parsed };
+    setFormData(filtrosCompletos);
+
+    if (filtrosCompletos.uf && enderecosMap[filtrosCompletos.uf]) {
+      setLocalidades(Object.keys(enderecosMap[filtrosCompletos.uf]));
+    }
+
+    setHasAutoLoaded(true);
+
+    if (
+      autoLoad &&
+      (filtrosCompletos.uf ||
+        filtrosCompletos.nome ||
+        filtrosCompletos.diaSemana ||
+        filtrosCompletos.cep ||
+        filtrosCompletos.id)
+    ) {
+      // Passa os filtros restaurados diretamente, sem depender do estado
+      // (que ainda não foi re-renderizado neste mesmo ciclo de efeitos).
+      handleSearch(filtrosCompletos);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ufsOptions, enderecosMap, hasAutoLoaded]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -127,39 +140,47 @@ const IgrejaSearchForm = ({
     }
   };
 
-  const handleSearch = () => {
+  const handleSearch = (filtrosOverride) => {
+    const filtros = filtrosOverride || formData;
 
     onLoadingChange && onLoadingChange(true);
 
     let endPoint = `/api/v1/admin/igreja/buscar-por-filtro?`;
 
-    if (formData.ativo !== "") 
-      endPoint += `ativo=${formData.ativo}`;
-    if (formData.uf !== "")
-      endPoint += `&uf=${formData.uf}`;
-    if (formData.localidade !== "")
-      endPoint += `&localidade=${formData.localidade}`;
-    if (formData.nome !== "") 
-      endPoint += `&nome=${formData.nome}`;
-    if (formData.diaSemana !== "")
-      endPoint += `&diadasemana=${formData.diaSemana}`;
-    if (formData.horario !== "") endPoint += `&horario=${formData.horario}`;
-    if (formData.denuncia !== "") endPoint += `&denuncia=${formData.denuncia}`;
+    if (filtros.id !== "") endPoint += `id=${filtros.id}`;
+    if (filtros.ativo !== "")
+      endPoint += `&ativo=${filtros.ativo}`;
+    if (filtros.uf !== "")
+      endPoint += `&uf=${filtros.uf}`;
+    if (filtros.localidade !== "")
+      endPoint += `&localidade=${filtros.localidade}`;
+    if (filtros.bairro !== "")
+      endPoint += `&bairro=${filtros.bairro}`;
+    if (filtros.cep !== "")
+      endPoint += `&cep=${filtros.cep}`;
+    if (filtros.nome !== "")
+      endPoint += `&nome=${filtros.nome}`;
+    if (filtros.paroco !== "")
+      endPoint += `&paroco=${filtros.paroco}`;
+    if (filtros.diaSemana !== "")
+      endPoint += `&diadasemana=${filtros.diaSemana}`;
+    if (filtros.horario !== "") endPoint += `&horario=${filtros.horario}`;
+    if (filtros.denuncia !== "") endPoint += `&denuncia=${filtros.denuncia}`;
+    if (filtros.semCoordenadas) endPoint += `&semCoordenadas=true`;
 
     let paginacao = `&Paginacao.PageIndex=1&Paginacao.PageSize=10`;
     endPoint += paginacao;
 
     if (onFiltersChange) {
-      onFiltersChange(formData);
+      onFiltersChange(filtros);
     }
 
-    if (formData.localidade === "")
+    if (filtros.localidade === "")
       resetLocalidades();
 
     api
       .get(endPoint)
       .then((response) => {
-        //console.log(response.data.data)
         const fetchedData = response.data.data;
         onDataChange && onDataChange(fetchedData);
 
@@ -180,7 +201,7 @@ const IgrejaSearchForm = ({
 
         onPaginationChange && onPaginationChange(paginationInfo);
         // Salvar filtros e preferência de autoLoad no localStorage
-        localStorage.setItem("igrejaSearchFilters", JSON.stringify(formData));
+        localStorage.setItem("igrejaSearchFilters", JSON.stringify(filtros));
         localStorage.setItem("igrejaAutoLoadEnabled", JSON.stringify(autoLoadEnabled));
         setMessage({});
       })
@@ -201,22 +222,13 @@ const IgrejaSearchForm = ({
   };
 
   const handleClearFilters = () => {
-    const defaultFilters = {
-      uf: "",
-      localidade: "",
-      nome: "",
-      diaSemana: "",
-      horario: "",
-      ativo: true,
-      denuncia: false,
-    };
+    const defaultFilters = { ...FILTROS_PADRAO };
     setFormData(defaultFilters);
     if (onFiltersChange) {
       onFiltersChange(defaultFilters);
     }
     localStorage.removeItem("igrejaSearchFilters");
     resetLocalidades();
-    setHasAutoLoaded(false);
   };
 
   const handleGeocodificarPendentes = () => {
@@ -275,7 +287,7 @@ const IgrejaSearchForm = ({
               )}
             />
           </Grid>
-          <Grid size={5}>
+          <Grid size={4}>
             {/* Autocomplete Localidade */}
             <Autocomplete
               freeSolo
@@ -288,11 +300,43 @@ const IgrejaSearchForm = ({
               )}
             />
           </Grid>
-          <Grid size={6}>
+          <Grid size={3}>
+            <TextField
+              label="Bairro"
+              value={formData.bairro}
+              onChange={(e) => handleChange("bairro", e.target.value)}
+              fullWidth
+            />
+          </Grid>
+          <Grid size={4}>
             <TextField
               label="Nome"
               value={formData.nome}
               onChange={(e) => handleChange("nome", e.target.value)}
+              fullWidth
+            />
+          </Grid>
+          <Grid size={2}>
+            <TextField
+              label="Id"
+              value={formData.id}
+              onChange={(e) => handleChange("id", e.target.value.replace(/\D/g, ""))}
+              fullWidth
+            />
+          </Grid>
+          <Grid size={3}>
+            <TextField
+              label="CEP"
+              value={formData.cep}
+              onChange={(e) => handleChange("cep", e.target.value)}
+              fullWidth
+            />
+          </Grid>
+          <Grid size={3}>
+            <TextField
+              label="Pároco"
+              value={formData.paroco}
+              onChange={(e) => handleChange("paroco", e.target.value)}
               fullWidth
             />
           </Grid>
@@ -354,9 +398,20 @@ const IgrejaSearchForm = ({
             />
           </Grid>
           <Grid>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.semCoordenadas}
+                  onChange={(e) => handleChange("semCoordenadas", e.target.checked)}
+                />
+              }
+              label="Sem coordenadas"
+            />
+          </Grid>
+          <Grid>
             <Box display="flex" gap={1} alignItems="center">
               <Tooltip title="Buscar">
-                <IconButton color="default" onClick={handleSearch}>
+                <IconButton color="default" onClick={() => handleSearch()}>
                   <SearchIcon />
                 </IconButton>
               </Tooltip>
@@ -365,7 +420,10 @@ const IgrejaSearchForm = ({
                   <Switch
                     size="small"
                     checked={autoLoadEnabled}
-                    onChange={(e) => setAutoLoadEnabled(e.target.checked)}
+                    onChange={(e) => {
+                      setAutoLoadEnabled(e.target.checked);
+                      localStorage.setItem("igrejaAutoLoadEnabled", JSON.stringify(e.target.checked));
+                    }}
                   />
                 }
                 label="Auto-carregar"
@@ -376,8 +434,8 @@ const IgrejaSearchForm = ({
                 </IconButton>
               </Tooltip>
               <Tooltip title="Geocodificar Pendentes">
-                <IconButton 
-                  color="success" 
+                <IconButton
+                  color="success"
                   onClick={handleGeocodificarPendentes}
                   disabled={geoLoading}
                 >

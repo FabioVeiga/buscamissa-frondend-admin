@@ -252,6 +252,18 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                     minRows={2}
                 />
 
+                <TextField
+                    label="Apoio"
+                    value={apoio}
+                    onChange={(e) => setApoio(e.target.value)}
+                    fullWidth
+                    multiline
+                    rows={3}
+                    placeholder="Anotações temporárias de apoio (não salvo)..."
+                    helperText="Este campo não é salvo."
+                    sx={{ mt: 1 }}
+                />
+
                 {missas.length > 0 && (
                     <TableContainer component={Paper} sx={{ mt: 1, borderRadius: 2 }}>
                         <Table size="small">
@@ -280,18 +292,6 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                         </Table>
                     </TableContainer>
                 )}
-
-                <TextField
-                    label="Apoio"
-                    value={apoio}
-                    onChange={(e) => setApoio(e.target.value)}
-                    fullWidth
-                    multiline
-                    rows={3}
-                    placeholder="Anotações temporárias de apoio (não salvo)..."
-                    helperText="Este campo não é salvo."
-                    sx={{ mt: 1 }}
-                />
             </Box>
         </SectionCard>
     );
