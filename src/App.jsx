@@ -9,6 +9,7 @@ import IgrejaEdita from './Igreja/IgrejaEdita';
 import SolicitacoesPage from './Solicitacoes';
 import Contribuidores from './Contribuidores';
 import EmailEventoPage from './EmailEvento/EmailEvento';
+import Indicadores from './Indicadores/Indicadores';
 import PrivateRoute from './PrivateRoute'
 
 
@@ -80,6 +81,14 @@ const App = () => {
                 element={
                     <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
                         <EmailEventoPage />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/indicadores"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <Indicadores />
                     </PrivateRoute>
                 }
             />

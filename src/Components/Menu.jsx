@@ -23,6 +23,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import BuildIcon from "@mui/icons-material/Build";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import EmailIcon from "@mui/icons-material/Email";
+import InsightsIcon from "@mui/icons-material/Insights";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -41,6 +42,7 @@ const navItems = [
   { path: "/solicitacoes", label: "Solicitações", icon: BuildIcon },
   { path: "/contribuidores", label: "Contribuidores", icon: CurrencyExchangeIcon },
   { path: "/email-evento", label: "E-mails Evento", icon: EmailIcon },
+  { path: "/indicadores", label: "Indicadores", icon: InsightsIcon },
 ];
 
 const pageTitles = {
@@ -52,6 +54,7 @@ const pageTitles = {
   "/igrejaNovo": "Nova Igreja",
   "/igrejaEditar": "Editar Igreja",
   "/email-evento": "E-mails Evento",
+  "/indicadores": "Indicadores",
 };
 
 const Menu = ({ children }) => {
