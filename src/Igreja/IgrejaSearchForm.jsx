@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from "react";
-import { Box, TextField, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel, Autocomplete, CircularProgress } from "@mui/material";
+import { Box, TextField, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel, Button, Autocomplete, CircularProgress } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import api from "../services/apiService";
 import { IconButton, Tooltip } from "@mui/material";
@@ -375,7 +375,22 @@ const IgrejaSearchForm = ({
               }}
             />
           </Grid>
-          <Grid>
+        </Grid>
+
+        <Box
+          display="flex"
+          flexWrap="wrap"
+          alignItems="center"
+          justifyContent="space-between"
+          gap={2}
+          sx={{
+            pt: 1.5,
+            mt: 0.5,
+            borderTop: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          <Box display="flex" flexWrap="wrap" alignItems="center" gap={2}>
             <FormControlLabel
               control={
                 <Switch
@@ -385,8 +400,6 @@ const IgrejaSearchForm = ({
               }
               label="Ativo"
             />
-          </Grid>
-          <Grid>
             <FormControlLabel
               control={
                 <Switch
@@ -394,10 +407,8 @@ const IgrejaSearchForm = ({
                   onChange={(e) => handleChange("denuncia", e.target.checked)}
                 />
               }
-              label="Denuncia"
+              label="Denúncia"
             />
-          </Grid>
-          <Grid>
             <FormControlLabel
               control={
                 <Switch
@@ -407,52 +418,58 @@ const IgrejaSearchForm = ({
               }
               label="Sem coordenadas"
             />
-          </Grid>
-          <Grid>
-            <Box display="flex" gap={1} alignItems="center">
-              <Tooltip title="Buscar">
-                <IconButton color="default" onClick={() => handleSearch()}>
-                  <SearchIcon />
-                </IconButton>
-              </Tooltip>
-              <FormControlLabel
-                control={
-                  <Switch
-                    size="small"
-                    checked={autoLoadEnabled}
-                    onChange={(e) => {
-                      setAutoLoadEnabled(e.target.checked);
-                      localStorage.setItem("igrejaAutoLoadEnabled", JSON.stringify(e.target.checked));
-                    }}
-                  />
-                }
-                label="Auto-carregar"
-              />
-              <Tooltip title="Limpar Filtros">
-                <IconButton color="error" onClick={handleClearFilters}>
-                  <ClearIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Geocodificar Pendentes">
-                <IconButton
-                  color="success"
-                  onClick={handleGeocodificarPendentes}
-                  disabled={geoLoading}
-                >
-                  {geoLoading ? <CircularProgress size={24} /> : <LocationOnIcon />}
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Novo">
-                <IconButton
-                  color="primary"
-                  onClick={() => handleNavigate("/igrejaNovo")}
-                >
-                  <AddIcon />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </Grid>
-        </Grid>
+          </Box>
+
+          <Box display="flex" flexWrap="wrap" alignItems="center" gap={1.5}>
+            <FormControlLabel
+              control={
+                <Switch
+                  size="small"
+                  checked={autoLoadEnabled}
+                  onChange={(e) => {
+                    setAutoLoadEnabled(e.target.checked);
+                    localStorage.setItem("igrejaAutoLoadEnabled", JSON.stringify(e.target.checked));
+                  }}
+                />
+              }
+              label="Auto-carregar"
+            />
+
+            <Tooltip title="Limpar Filtros">
+              <IconButton color="error" onClick={handleClearFilters}>
+                <ClearIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Geocodificar Pendentes">
+              <IconButton
+                color="success"
+                onClick={handleGeocodificarPendentes}
+                disabled={geoLoading}
+              >
+                {geoLoading ? <CircularProgress size={24} /> : <LocationOnIcon />}
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Nova Igreja">
+              <IconButton
+                color="primary"
+                onClick={() => handleNavigate("/igrejaNovo")}
+              >
+                <AddIcon />
+              </IconButton>
+            </Tooltip>
+
+            <Button
+              variant="contained"
+              color="primary"
+              size="large"
+              startIcon={<SearchIcon />}
+              onClick={() => handleSearch()}
+              sx={{ ml: 0.5 }}
+            >
+              Buscar
+            </Button>
+          </Box>
+        </Box>
       </Box>
       <Box display="flex">
         {message.show && (
