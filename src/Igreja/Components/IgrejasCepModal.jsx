@@ -20,6 +20,7 @@ const IgrejasCepModal = ({
                              onClose,
                              onEditar,
                              loading = false,
+                             igrejaAtualId,
                          }) => {
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -58,11 +59,16 @@ const IgrejasCepModal = ({
                         <TableBody>
                             {igrejas.map((igreja) => {
                                 const endereco = igreja.dadosEndereco || igreja.endereco || {};
+                                const ehIgrejaAtual =
+                                    igrejaAtualId != null && igreja.id === igrejaAtualId;
 
                                 return (
                                     <TableRow key={igreja.id} hover>
                                         <TableCell>{igreja.id}</TableCell>
-                                        <TableCell>{igreja.nome}</TableCell>
+                                        <TableCell>
+                                            {igreja.nome}
+                                            {ehIgrejaAtual && " (igreja atual)"}
+                                        </TableCell>
                                         <TableCell>{endereco.uf || "-"}</TableCell>
                                         <TableCell>{endereco.estado || "-"}</TableCell>
                                         <TableCell>{endereco.localidade || "-"}</TableCell>
@@ -70,7 +76,7 @@ const IgrejasCepModal = ({
                                             <Button
                                                 variant="contained"
                                                 size="small"
-                                                disabled={loading}
+                                                disabled={loading || ehIgrejaAtual}
                                                 onClick={() => onEditar(igreja)}
                                             >
                                                 Editar
