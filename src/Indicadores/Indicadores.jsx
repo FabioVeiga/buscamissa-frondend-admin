@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import {
   Box,
+  Button,
   Card,
   CircularProgress,
   Paper,
@@ -14,6 +15,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import Grid from "@mui/material/Grid2";
 import Menu from "../Components/Menu";
 import api from "../services/apiService";
@@ -57,7 +59,7 @@ const Indicadores = () => {
   const [erro, setErro] = useState("");
   const [dados, setDados] = useState(null);
 
-  useEffect(() => {
+  const carregar = () => {
     setLoading(true);
     setErro("");
 
@@ -72,7 +74,9 @@ const Indicadores = () => {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  };
+
+  useEffect(() => { carregar(); }, []);
 
   if (loading) {
     return (
@@ -97,9 +101,20 @@ const Indicadores = () => {
   return (
     <Menu>
       <Stack spacing={2}>
-        <Typography variant="body2" color="text.secondary">
-          Indicadores gerais do sistema (últimos 30 dias).
-        </Typography>
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <Typography variant="body2" color="text.secondary">
+            Indicadores gerais do sistema (últimos 30 dias).
+          </Typography>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={loading ? <CircularProgress size={14} /> : <RefreshIcon />}
+            onClick={carregar}
+            disabled={loading}
+          >
+            Atualizar
+          </Button>
+        </Box>
 
         <Grid container spacing={2}>
           <Grid size={4}>
