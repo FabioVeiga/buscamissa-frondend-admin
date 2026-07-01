@@ -86,6 +86,7 @@ const IgrejaAtualizar = () => {
   const [igrejasCepModalOpen, setIgrejasCepModalOpen] = useState(false);
   const [igrejasEncontradasCep, setIgrejasEncontradasCep] = useState([]);
   const [emailContatoModalOpen, setEmailContatoModalOpen] = useState(false);
+  const [divulgarAvulso, setDivulgarAvulso] = useState(false);
   const [abaAtiva, setAbaAtiva] = useState(0);
 
   // Assistente de Divulgação
@@ -838,9 +839,19 @@ const IgrejaAtualizar = () => {
           >
             Voltar
           </Button>
-          <Button 
-            variant="contained" 
-            color="primary" 
+          {(formData?.contato?.emailContato?.trim() || urlInstagram || urlFacebook) && (
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => { setDivulgarAvulso(true); setEmailContatoModalOpen(true); }}
+              disabled={loading}
+            >
+              Divulgar
+            </Button>
+          )}
+          <Button
+            variant="contained"
+            color="primary"
             onClick={handleSubmit}
             disabled={loading}
           >
@@ -881,7 +892,7 @@ const IgrejaAtualizar = () => {
       />
       <AssistenteDivulgacao
         open={emailContatoModalOpen}
-        onClose={() => setEmailContatoModalOpen(false)}
+        onClose={() => { setEmailContatoModalOpen(false); setDivulgarAvulso(false); }}
         igreja={{ ...formData, endereco }}
         emailCriacaoEnviado={formData?.emailCriacaoEnviado}
         urlInstagram={urlInstagram}
@@ -890,6 +901,7 @@ const IgrejaAtualizar = () => {
         opcaoEmail={divulgacaoOpcaoEmail}
         onOpcaoEmailChange={setDivulgacaoOpcaoEmail}
         onConfirmar={() => atualizarIgreja(divulgacaoOpcaoEmail || null)}
+        modoAvulso={divulgarAvulso}
       />
     </>
   );
