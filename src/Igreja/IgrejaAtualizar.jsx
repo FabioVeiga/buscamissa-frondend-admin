@@ -8,11 +8,6 @@ import {
   FormControlLabel,
   CircularProgress,
   Stack,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
   Tabs,
   Tab,
 } from "@mui/material";
@@ -30,6 +25,8 @@ import RedesSociaisSection from "./Components/RedesSociaisSection";
 import SectionCard from "./Components/SectionCard";
 import IgrejasCepModal from "./Components/IgrejasCepModal";
 import IgrejaMetricasTab from "./Components/IgrejaMetricasTab";
+import AssistenteDivulgacao from "./Components/AssistenteDivulgacao";
+import IgrejaContatosHistorico from "./Components/IgrejaContatosHistorico";
 
 
 const IgrejaAtualizar = () => {
@@ -90,6 +87,9 @@ const IgrejaAtualizar = () => {
   const [igrejasEncontradasCep, setIgrejasEncontradasCep] = useState([]);
   const [emailContatoModalOpen, setEmailContatoModalOpen] = useState(false);
   const [abaAtiva, setAbaAtiva] = useState(0);
+
+  // Assistente de Divulgação
+  const [divulgacaoOpcaoEmail, setDivulgacaoOpcaoEmail] = useState("");
 
 
   // Carregar endereço do formData quando o componente monta
@@ -569,8 +569,10 @@ const IgrejaAtualizar = () => {
         });
   };
 
+  const urlInstagram = formDataRedeSociais.find((r) => r.tipoRedeSocial === 2)?.url || "";
+  const urlFacebook = formDataRedeSociais.find((r) => r.tipoRedeSocial === 1)?.url || "";
+
   const handleSubmit = () => {
-    // Verificar se existe pelo menos uma missa antes de prosseguir
     if (!formDatamissas || formDatamissas.length === 0) {
       setMessage({
         mensagem: "Erro: É necessário adicionar ao menos uma missa antes de editar a igreja!",
@@ -581,8 +583,10 @@ const IgrejaAtualizar = () => {
     }
 
     const emailContato = formData?.contato?.emailContato?.trim();
+    const temCanal = (emailContato || urlInstagram || urlFacebook) && formData?.ativo;
 
-    if (emailContato && formData?.ativo) {
+    if (temCanal) {
+      setDivulgacaoOpcaoEmail("");
       setEmailContatoModalOpen(true);
       return;
     }
@@ -861,6 +865,12 @@ const IgrejaAtualizar = () => {
       </SectionCard>
       )}
 
+      {abaAtiva === 0 && formData.id && (
+        <Box sx={{ mt: 2 }}>
+          <IgrejaContatosHistorico igrejaId={formData.id} />
+        </Box>
+      )}
+
       <IgrejasCepModal
           open={igrejasCepModalOpen}
           igrejas={igrejasEncontradasCep}
@@ -869,55 +879,18 @@ const IgrejaAtualizar = () => {
           onClose={() => setIgrejasCepModalOpen(false)}
           onEditar={handleEditarIgrejaCep}
       />
-      <Dialog
-          open={emailContatoModalOpen}
-          onClose={() => setEmailContatoModalOpen(false)}
-          fullWidth
-          maxWidth="sm"
-      >
-        <DialogTitle>Enviar e-mail de contato?</DialogTitle>
-
-        <DialogContent>
-          <DialogContentText>
-            Esta igreja possui e-mail de contato cadastrado. Deseja enviar um e-mail informando sobre criação ou alteração?
-          </DialogContentText>
-
-          <Typography variant="body2" sx={{ mt: 2, fontWeight: 600 }}>
-            E-mail: {formData?.contato?.emailContato}
-          </Typography>
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, pb: 2, gap: 1, flexWrap: "wrap" }}>
-          <Button
-              variant="outlined"
-              color="inherit"
-              onClick={() => atualizarIgreja()}
-              disabled={loading}
-          >
-            Não enviar
-          </Button>
-
-          {!formData.emailCriacaoEnviado && (
-            <Button
-                variant="outlined"
-                color="primary"
-                onClick={() => atualizarIgreja("criacao")}
-                disabled={loading}
-            >
-              Enviar criação
-            </Button>
-          )}
-
-          <Button
-              variant="contained"
-              color="primary"
-              onClick={() => atualizarIgreja("alteracao")}
-              disabled={loading}
-          >
-            Enviar alteração
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <AssistenteDivulgacao
+        open={emailContatoModalOpen}
+        onClose={() => setEmailContatoModalOpen(false)}
+        igreja={{ ...formData, endereco }}
+        emailCriacaoEnviado={formData?.emailCriacaoEnviado}
+        urlInstagram={urlInstagram}
+        urlFacebook={urlFacebook}
+        loading={loading}
+        opcaoEmail={divulgacaoOpcaoEmail}
+        onOpcaoEmailChange={setDivulgacaoOpcaoEmail}
+        onConfirmar={() => atualizarIgreja(divulgacaoOpcaoEmail || null)}
+      />
     </>
   );
 };

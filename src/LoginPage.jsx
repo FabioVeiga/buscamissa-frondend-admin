@@ -22,8 +22,8 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    await login(email, senha);
-    if (isAuthenticated) {
+    const sucesso = await login(email, senha);
+    if (sucesso) {
       navigate("/home");
     }
   };
