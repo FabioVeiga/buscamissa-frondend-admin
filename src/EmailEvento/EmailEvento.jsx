@@ -10,9 +10,12 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
+  FormControlLabel,
   InputLabel,
   MenuItem,
   Paper,
+  Radio,
+  RadioGroup,
   Select,
   Stack,
   Table,
@@ -31,6 +34,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import PhoneCallbackIcon from "@mui/icons-material/PhoneCallback";
 import Menu from "../Components/Menu";
 import Pagination from "../Components/Paginacao";
 import api from "../services/apiService";
@@ -133,6 +137,38 @@ const EmailEventoPage = () => {
   const [formEditar, setFormEditar] = useState(formInicialAtualizar);
   const [loadingAcao, setLoadingAcao] = useState(false);
   const [message, setMessage] = useState({ mensagem: "", severity: "", show: false });
+
+  // Modal Registro Manual
+  const modalRegistroManualVazio = { igrejaId: "", canal: "2", destinoContato: "", observacao: "" };
+  const [modalRegistroManualAberto, setModalRegistroManualAberto] = useState(false);
+  const [formRegistroManual, setFormRegistroManual] = useState(modalRegistroManualVazio);
+  const [registroManualLoading, setRegistroManualLoading] = useState(false);
+
+  const abrirModalRegistroManual = () => {
+    setFormRegistroManual(modalRegistroManualVazio);
+    setModalRegistroManualAberto(true);
+  };
+
+  const salvarRegistroManual = async () => {
+    if (!formRegistroManual.igrejaId || !formRegistroManual.destinoContato.trim()) return;
+    setRegistroManualLoading(true);
+    try {
+      await api.post("/api/v1/Admin/email-evento/registrar-contato", {
+        igrejaId: Number(formRegistroManual.igrejaId),
+        tipo: 99, // Outro
+        canal: Number(formRegistroManual.canal),
+        destinoContato: formRegistroManual.destinoContato.trim(),
+        dataEnvio: new Date().toISOString(),
+        observacao: formRegistroManual.observacao.trim() || null,
+      });
+      setModalRegistroManualAberto(false);
+      buscar(1);
+    } catch {
+      // erro silencioso — backend retornará mensagem de validação
+    } finally {
+      setRegistroManualLoading(false);
+    }
+  };
 
   const buscar = useCallback(
     async (pageIndex = 1) => {
@@ -487,9 +523,19 @@ const EmailEventoPage = () => {
         <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2 }}>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
             <Typography variant="h6">Divulgação das Igrejas</Typography>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={abrirModalCriar}>
-              Novo
-            </Button>
+            <Stack direction="row" spacing={1}>
+              <Button
+                variant="outlined"
+                color="secondary"
+                startIcon={<PhoneCallbackIcon />}
+                onClick={abrirModalRegistroManual}
+              >
+                Registrar contato
+              </Button>
+              <Button variant="contained" startIcon={<AddIcon />} onClick={abrirModalCriar}>
+                Novo
+              </Button>
+            </Stack>
           </Box>
 
           {isLoading ? (
@@ -732,6 +778,64 @@ const EmailEventoPage = () => {
           </Button>
           <Button variant="contained" onClick={handleAtualizar} disabled={loadingAcao}>
             {loadingAcao ? <CircularProgress size={20} /> : "Salvar"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Modal: Registro Manual de Contato */}
+      <Dialog open={modalRegistroManualAberto} onClose={() => setModalRegistroManualAberto(false)} fullWidth maxWidth="xs">
+        <DialogTitle>Registrar contato</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} mt={1}>
+            <TextField
+              label="ID da Igreja"
+              type="number"
+              size="small"
+              value={formRegistroManual.igrejaId}
+              onChange={(e) => setFormRegistroManual((p) => ({ ...p, igrejaId: e.target.value }))}
+              required
+              fullWidth
+            />
+            <FormControl>
+              <Typography variant="caption" color="text.secondary" mb={0.5}>Canal</Typography>
+              <RadioGroup
+                row
+                value={formRegistroManual.canal}
+                onChange={(e) => setFormRegistroManual((p) => ({ ...p, canal: e.target.value }))}
+              >
+                <FormControlLabel value="2" control={<Radio size="small" />} label="Instagram" />
+                <FormControlLabel value="3" control={<Radio size="small" />} label="Facebook" />
+              </RadioGroup>
+            </FormControl>
+            <TextField
+              label="Destino (perfil ou URL)"
+              size="small"
+              value={formRegistroManual.destinoContato}
+              onChange={(e) => setFormRegistroManual((p) => ({ ...p, destinoContato: e.target.value }))}
+              required
+              fullWidth
+              placeholder={formRegistroManual.canal === "2" ? "@perfil ou URL do Instagram" : "URL ou nome da página"}
+            />
+            <TextField
+              label="Observação"
+              size="small"
+              multiline
+              rows={3}
+              value={formRegistroManual.observacao}
+              onChange={(e) => setFormRegistroManual((p) => ({ ...p, observacao: e.target.value }))}
+              fullWidth
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setModalRegistroManualAberto(false)} disabled={registroManualLoading}>Cancelar</Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={salvarRegistroManual}
+            disabled={registroManualLoading || !formRegistroManual.igrejaId || !formRegistroManual.destinoContato.trim()}
+          >
+            {registroManualLoading ? <CircularProgress size={20} /> : "Salvar"}
           </Button>
         </DialogActions>
       </Dialog>
