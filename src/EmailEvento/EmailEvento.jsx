@@ -145,7 +145,7 @@ const EmailEventoPage = () => {
   const [registroManualLoading, setRegistroManualLoading] = useState(false);
 
   const abrirModalRegistroManual = () => {
-    setFormRegistroManual(modalRegistroManualVazio);
+    setFormRegistroManual({ ...modalRegistroManualVazio, igrejaId: idSelecionado });
     setModalRegistroManualAberto(true);
   };
 
@@ -293,8 +293,12 @@ const EmailEventoPage = () => {
     buscar(page);
   };
 
+  const idSelecionado = selecionados.length === 1
+    ? (registros.find((r) => r.id === selecionados[0])?.igrejaId ?? "")
+    : "";
+
   const abrirModalCriar = () => {
-    setFormCriar(formInicialCriar);
+    setFormCriar({ ...formInicialCriar, igrejaId: idSelecionado });
     setMessage({ mensagem: "", severity: "", show: false });
     setModalCriarAberto(true);
   };

@@ -9,8 +9,8 @@ const Pagination = ({
 }) => {
   const current = Number(pageIndex) || 1;
   const total = Number(totalPages) || 1;
-  const disablePrev = current <= 1 ? true : !(hasPreviousPage ?? true);
-  const disableNext = current >= total ? true : !(hasNextPage ?? true);
+  const disablePrev = current <= 1;
+  const disableNext = current >= total;
 
   return (
     <Box display="flex" justifyContent="center" alignItems="center" sx={{ marginTop: 2 }}>
