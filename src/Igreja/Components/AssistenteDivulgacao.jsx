@@ -145,6 +145,7 @@ const AssistenteDivulgacao = ({
   opcaoEmail,
   onOpcaoEmailChange,
   onConfirmar,
+  modoAvulso = false,
 }) => {
   const email = igreja?.contato?.emailContato?.trim() || "";
   const nomeIgreja = igreja?.nome || "sua paróquia";
@@ -207,11 +208,13 @@ const AssistenteDivulgacao = ({
 
       <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
         <Button variant="outlined" color="inherit" onClick={onClose} disabled={loading}>
-          Cancelar
+          {modoAvulso ? "Fechar" : "Cancelar"}
         </Button>
-        <Button variant="contained" onClick={onConfirmar} disabled={loading}>
-          Confirmar
-        </Button>
+        {!modoAvulso && (
+          <Button variant="contained" onClick={onConfirmar} disabled={loading}>
+            Confirmar
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   );
