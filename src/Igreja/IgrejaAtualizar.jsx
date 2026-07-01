@@ -571,8 +571,9 @@ const IgrejaAtualizar = () => {
         });
   };
 
-  const urlInstagram = formDataRedeSociais.find((r) => Number(r.tipoRedeSocial) === 2)?.url || "";
-  const urlFacebook = formDataRedeSociais.find((r) => Number(r.tipoRedeSocial) === 1)?.url || "";
+  const _redeSocialVal = (r) => r?.url || r?.nomeDoPerfil || "";
+  const urlInstagram = _redeSocialVal(formDataRedeSociais.find((r) => Number(r.tipoRedeSocial) === 2));
+  const urlFacebook = _redeSocialVal(formDataRedeSociais.find((r) => Number(r.tipoRedeSocial) === 1));
 
   const handleSubmit = () => {
     if (!formDatamissas || formDatamissas.length === 0) {
