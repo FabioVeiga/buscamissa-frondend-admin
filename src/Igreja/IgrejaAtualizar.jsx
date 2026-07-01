@@ -91,6 +91,7 @@ const IgrejaAtualizar = () => {
 
   // Assistente de Divulgação
   const [divulgacaoOpcaoEmail, setDivulgacaoOpcaoEmail] = useState("");
+  const [jaFoiDivulgada, setJaFoiDivulgada] = useState(false);
 
 
   // Carregar endereço do formData quando o componente monta
@@ -839,7 +840,7 @@ const IgrejaAtualizar = () => {
           >
             Voltar
           </Button>
-          {(formData?.contato?.emailContato?.trim() || urlInstagram || urlFacebook) && (
+          {!jaFoiDivulgada && (formData?.contato?.emailContato?.trim() || urlInstagram || urlFacebook) && (
             <Button
               variant="outlined"
               color="secondary"
@@ -878,7 +879,7 @@ const IgrejaAtualizar = () => {
 
       {abaAtiva === 0 && formData.id && (
         <Box sx={{ mt: 2 }}>
-          <IgrejaContatosHistorico igrejaId={formData.id} />
+          <IgrejaContatosHistorico igrejaId={formData.id} onLoad={(total) => setJaFoiDivulgada(total > 0)} />
         </Box>
       )}
 

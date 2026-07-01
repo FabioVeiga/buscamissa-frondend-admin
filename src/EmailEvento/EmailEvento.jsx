@@ -555,6 +555,7 @@ const EmailEventoPage = () => {
                         onChange={(e) => setSelecionados(e.target.checked ? registros.map((r) => r.id) : [])}
                       />
                     </TableCell>
+                    <TableCell>ID</TableCell>
                     <TableCell>Igreja</TableCell>
                     <TableCell>Cidade</TableCell>
                     <TableCell>Tipo</TableCell>
@@ -582,6 +583,7 @@ const EmailEventoPage = () => {
                               }
                             />
                           </TableCell>
+                          <TableCell sx={{ color: "text.secondary", fontSize: "0.75rem" }}>{r.igrejaId}</TableCell>
                           <TableCell>{r.igrejaNome || `#${r.igrejaId}`}</TableCell>
                           <TableCell>{r.igrejaCidade || "-"}</TableCell>
                           <TableCell>{TIPO_LABEL[r.tipo] ?? r.tipo}</TableCell>
@@ -649,7 +651,7 @@ const EmailEventoPage = () => {
                     })
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={9} align="center">
+                      <TableCell colSpan={10} align="center">
                         Nenhum registro encontrado.
                       </TableCell>
                     </TableRow>
@@ -657,7 +659,7 @@ const EmailEventoPage = () => {
                 </TableBody>
                 <TableFooter>
                   <TableRow>
-                    <TableCell colSpan={9} align="right">
+                    <TableCell colSpan={10} align="right">
                       {selecionados.length > 0
                         ? `${selecionados.length} selecionado(s) · Total: ${paginacao.totalItems ?? registros.length}`
                         : `Total: ${paginacao.totalItems ?? registros.length}`}
