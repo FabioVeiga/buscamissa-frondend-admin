@@ -41,7 +41,7 @@ const navItems = [
   { path: "/igreja", label: "Igrejas", icon: ChurchIcon },
   { path: "/solicitacoes", label: "Solicitações", icon: BuildIcon },
   { path: "/contribuidores", label: "Contribuidores", icon: CurrencyExchangeIcon },
-  { path: "/email-evento", label: "E-mails Evento", icon: EmailIcon },
+  { path: "/email-evento", label: "Divulgação", icon: EmailIcon },
   { path: "/indicadores", label: "Indicadores", icon: InsightsIcon },
 ];
 
@@ -53,7 +53,7 @@ const pageTitles = {
   "/contribuidores": "Contribuidores",
   "/igrejaNovo": "Nova Igreja",
   "/igrejaEditar": "Editar Igreja",
-  "/email-evento": "E-mails Evento",
+  "/email-evento": "Divulgação das Igrejas",
   "/indicadores": "Indicadores",
 };
 

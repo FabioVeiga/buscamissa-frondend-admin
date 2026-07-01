@@ -28,25 +28,51 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Menu from "../Components/Menu";
 import Pagination from "../Components/Paginacao";
 import api from "../services/apiService";
 import ErrorSpan from "../ErrorSpan";
+import {
+  gerarMensagemInstagram,
+  gerarMensagemFacebook,
+  construirLinkIgreja,
+} from "../services/mensagemDivulgacao";
 
 const TIPOS_EMAIL = [
   { value: "", label: "Todos" },
   { value: "criacao", label: "Criação" },
   { value: "alteracao", label: "Alteração" },
+  { value: "notificacao", label: "Notificação" },
+  { value: "validacao", label: "Validação" },
+  { value: "outro", label: "Outro" },
 ];
+
+const TIPO_LABEL = {
+  1: "Criação",
+  2: "Alteração",
+  3: "Notificação",
+  4: "Validação",
+  99: "Outro",
+};
+
+const CANAL_LABEL = {
+  1: "E-mail",
+  2: "Instagram",
+  3: "Facebook",
+};
 
 const filtrosIniciais = {
   IgrejaId: "",
+  IgrejaNome: "",
+  Cidade: "",
   Tipo: "",
+  Canal: "",
   EmailDestino: "",
-  Ativo: "",
   Enviado: "",
-  DataCriacaoInicio: "",
-  DataCriacaoFim: "",
+  DataEnvioInicio: "",
+  DataEnvioFim: "",
 };
 
 const formInicialCriar = {
@@ -98,12 +124,14 @@ const EmailEventoPage = () => {
         params.append("PageSize", paginacao.pageSize);
 
         if (filtrosAplicados.IgrejaId) params.append("IgrejaId", filtrosAplicados.IgrejaId);
+        if (filtrosAplicados.IgrejaNome) params.append("IgrejaNome", filtrosAplicados.IgrejaNome);
+        if (filtrosAplicados.Cidade) params.append("Cidade", filtrosAplicados.Cidade);
         if (filtrosAplicados.Tipo) params.append("Tipo", filtrosAplicados.Tipo);
+        if (filtrosAplicados.Canal) params.append("Canal", filtrosAplicados.Canal);
         if (filtrosAplicados.EmailDestino) params.append("EmailDestino", filtrosAplicados.EmailDestino);
-        if (filtrosAplicados.Ativo !== "") params.append("Ativo", filtrosAplicados.Ativo);
         if (filtrosAplicados.Enviado !== "") params.append("Enviado", filtrosAplicados.Enviado);
-        if (filtrosAplicados.DataCriacaoInicio) params.append("DataCriacaoInicio", filtrosAplicados.DataCriacaoInicio);
-        if (filtrosAplicados.DataCriacaoFim) params.append("DataCriacaoFim", filtrosAplicados.DataCriacaoFim);
+        if (filtrosAplicados.DataEnvioInicio) params.append("DataEnvioInicio", filtrosAplicados.DataEnvioInicio);
+        if (filtrosAplicados.DataEnvioFim) params.append("DataEnvioFim", filtrosAplicados.DataEnvioFim);
 
         const response = await api.get(`/api/v1/Admin/email-evento/buscar-por-filtro?${params.toString()}`);
         const data = response.data?.data || response.data;
@@ -227,12 +255,18 @@ const EmailEventoPage = () => {
           </Typography>
           <Box display="flex" flexWrap="wrap" gap={2}>
             <TextField
-              label="Igreja ID"
-              value={filtros.IgrejaId}
-              onChange={(e) => setFiltros((p) => ({ ...p, IgrejaId: e.target.value }))}
+              label="Igreja"
+              value={filtros.IgrejaNome}
+              onChange={(e) => setFiltros((p) => ({ ...p, IgrejaNome: e.target.value }))}
               size="small"
-              type="number"
-              sx={{ minWidth: 120 }}
+              sx={{ minWidth: 180 }}
+            />
+            <TextField
+              label="Cidade"
+              value={filtros.Cidade}
+              onChange={(e) => setFiltros((p) => ({ ...p, Cidade: e.target.value }))}
+              size="small"
+              sx={{ minWidth: 160 }}
             />
             <FormControl size="small" sx={{ minWidth: 150 }}>
               <InputLabel>Tipo</InputLabel>
@@ -248,23 +282,17 @@ const EmailEventoPage = () => {
                 ))}
               </Select>
             </FormControl>
-            <TextField
-              label="E-mail Destino"
-              value={filtros.EmailDestino}
-              onChange={(e) => setFiltros((p) => ({ ...p, EmailDestino: e.target.value }))}
-              size="small"
-              sx={{ minWidth: 200 }}
-            />
-            <FormControl size="small" sx={{ minWidth: 130 }}>
-              <InputLabel>Ativo</InputLabel>
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel>Canal</InputLabel>
               <Select
-                label="Ativo"
-                value={filtros.Ativo}
-                onChange={(e) => setFiltros((p) => ({ ...p, Ativo: e.target.value }))}
+                label="Canal"
+                value={filtros.Canal}
+                onChange={(e) => setFiltros((p) => ({ ...p, Canal: e.target.value }))}
               >
                 <MenuItem value="">Todos</MenuItem>
-                <MenuItem value="true">Sim</MenuItem>
-                <MenuItem value="false">Não</MenuItem>
+                <MenuItem value="1">E-mail</MenuItem>
+                <MenuItem value="2">Instagram</MenuItem>
+                <MenuItem value="3">Facebook</MenuItem>
               </Select>
             </FormControl>
             <FormControl size="small" sx={{ minWidth: 130 }}>
@@ -280,22 +308,22 @@ const EmailEventoPage = () => {
               </Select>
             </FormControl>
             <TextField
-              label="Data Criação Início"
-              type="datetime-local"
-              value={filtros.DataCriacaoInicio}
-              onChange={(e) => setFiltros((p) => ({ ...p, DataCriacaoInicio: e.target.value }))}
+              label="Data Envio Início"
+              type="date"
+              value={filtros.DataEnvioInicio}
+              onChange={(e) => setFiltros((p) => ({ ...p, DataEnvioInicio: e.target.value }))}
               size="small"
               InputLabelProps={{ shrink: true }}
-              sx={{ minWidth: 210 }}
+              sx={{ minWidth: 180 }}
             />
             <TextField
-              label="Data Criação Fim"
-              type="datetime-local"
-              value={filtros.DataCriacaoFim}
-              onChange={(e) => setFiltros((p) => ({ ...p, DataCriacaoFim: e.target.value }))}
+              label="Data Envio Fim"
+              type="date"
+              value={filtros.DataEnvioFim}
+              onChange={(e) => setFiltros((p) => ({ ...p, DataEnvioFim: e.target.value }))}
               size="small"
               InputLabelProps={{ shrink: true }}
-              sx={{ minWidth: 210 }}
+              sx={{ minWidth: 180 }}
             />
           </Box>
           <Box display="flex" gap={1} mt={2}>
@@ -311,7 +339,7 @@ const EmailEventoPage = () => {
         {/* Tabela */}
         <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2 }}>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h6">E-mails Evento</Typography>
+            <Typography variant="h6">Divulgação das Igrejas</Typography>
             <Button variant="contained" startIcon={<AddIcon />} onClick={abrirModalCriar}>
               Novo
             </Button>
@@ -326,13 +354,12 @@ const EmailEventoPage = () => {
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell>ID</TableCell>
-                    <TableCell>Igreja ID</TableCell>
+                    <TableCell>Igreja</TableCell>
                     <TableCell>Tipo</TableCell>
-                    <TableCell>E-mail Destino</TableCell>
-                    <TableCell>Ativo</TableCell>
-                    <TableCell>Enviado</TableCell>
-                    <TableCell>Data Criação</TableCell>
+                    <TableCell>Canal</TableCell>
+                    <TableCell>Destino</TableCell>
+                    <TableCell>Data do Envio</TableCell>
+                    <TableCell>Status</TableCell>
                     <TableCell>Ações</TableCell>
                   </TableRow>
                 </TableHead>
@@ -340,37 +367,81 @@ const EmailEventoPage = () => {
                   {registros.length > 0 ? (
                     registros.map((r) => (
                       <TableRow key={r.id}>
-                        <TableCell>{r.id}</TableCell>
-                        <TableCell>{r.igrejaId}</TableCell>
-                        <TableCell>{r.tipo}</TableCell>
-                        <TableCell>{r.emailDestino}</TableCell>
+                        <TableCell>{r.igrejaNome || `#${r.igrejaId}`}</TableCell>
+                        <TableCell>{TIPO_LABEL[r.tipo] ?? r.tipo}</TableCell>
+                        <TableCell>{CANAL_LABEL[r.canal] ?? r.canal}</TableCell>
+                        <TableCell sx={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {r.destinoContato || r.emailDestino || "-"}
+                        </TableCell>
+                        <TableCell>{r.dataEnvio ? formatarData(r.dataEnvio) : "-"}</TableCell>
                         <TableCell>
                           <Chip
-                            label={r.ativo ? "Sim" : "Não"}
-                            color={r.ativo ? "success" : "default"}
+                            label={r.enviado ? "Enviado" : "Pendente"}
+                            color={r.enviado ? "success" : "default"}
                             size="small"
                           />
                         </TableCell>
                         <TableCell>
-                          <Chip
-                            label={r.enviado ? "Sim" : "Não"}
-                            color={r.enviado ? "info" : "default"}
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell>{formatarData(r.dataCriacao)}</TableCell>
-                        <TableCell>
+                          <Box display="flex" alignItems="center" gap={0.5} flexWrap="wrap">
+                          {r.canal === 2 && r.destinoContato && (
+                            <Tooltip title="Abrir Instagram">
+                              <IconButton
+                                size="small"
+                                onClick={() => {
+                                  const url = r.destinoContato.startsWith("http") ? r.destinoContato : `https://${r.destinoContato}`;
+                                  window.open(url, "_blank", "noopener,noreferrer");
+                                }}
+                              >
+                                <OpenInNewIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                          {r.canal === 3 && r.destinoContato && (
+                            <Tooltip title="Abrir Facebook">
+                              <IconButton
+                                size="small"
+                                onClick={() => {
+                                  const url = r.destinoContato.startsWith("http") ? r.destinoContato : `https://${r.destinoContato}`;
+                                  window.open(url, "_blank", "noopener,noreferrer");
+                                }}
+                              >
+                                <OpenInNewIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                          {(r.canal === 2 || r.canal === 3) && (
+                            <Tooltip title="Copiar mensagem">
+                              <IconButton
+                                size="small"
+                                onClick={() => {
+                                  const igreja = {
+                                    nome: r.igrejaNome,
+                                    endereco: { uf: r.igrejaUf, cidadeSlug: r.igrejaCidadeSlug },
+                                    slug: r.igrejaSlug,
+                                  };
+                                  const link = construirLinkIgreja(igreja);
+                                  const msg = r.canal === 2
+                                    ? gerarMensagemInstagram(r.igrejaNome, link)
+                                    : gerarMensagemFacebook(r.igrejaNome, link);
+                                  navigator.clipboard.writeText(msg).catch(() => {});
+                                }}
+                              >
+                                <ContentCopyIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                           <Tooltip title="Editar">
                             <IconButton size="small" onClick={() => abrirModalEditar(r)}>
                               <EditIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
+                          </Box>
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={8} align="center">
+                      <TableCell colSpan={7} align="center">
                         Nenhum registro encontrado.
                       </TableCell>
                     </TableRow>
@@ -378,7 +449,7 @@ const EmailEventoPage = () => {
                 </TableBody>
                 <TableFooter>
                   <TableRow>
-                    <TableCell colSpan={8} align="right">
+                    <TableCell colSpan={7} align="right">
                       Total: {paginacao.totalItems ?? registros.length}
                     </TableCell>
                   </TableRow>
