@@ -86,10 +86,12 @@ const IgrejaAtualizar = () => {
   const [igrejasCepModalOpen, setIgrejasCepModalOpen] = useState(false);
   const [igrejasEncontradasCep, setIgrejasEncontradasCep] = useState([]);
   const [emailContatoModalOpen, setEmailContatoModalOpen] = useState(false);
+  const [divulgarAvulso, setDivulgarAvulso] = useState(false);
   const [abaAtiva, setAbaAtiva] = useState(0);
 
   // Assistente de Divulgação
   const [divulgacaoOpcaoEmail, setDivulgacaoOpcaoEmail] = useState("");
+  const [jaFoiDivulgada, setJaFoiDivulgada] = useState(false);
 
 
   // Carregar endereço do formData quando o componente monta
@@ -838,9 +840,19 @@ const IgrejaAtualizar = () => {
           >
             Voltar
           </Button>
-          <Button 
-            variant="contained" 
-            color="primary" 
+          {!jaFoiDivulgada && (formData?.contato?.emailContato?.trim() || urlInstagram || urlFacebook) && (
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => { setDivulgarAvulso(true); setEmailContatoModalOpen(true); }}
+              disabled={loading}
+            >
+              Divulgar
+            </Button>
+          )}
+          <Button
+            variant="contained"
+            color="primary"
             onClick={handleSubmit}
             disabled={loading}
           >
@@ -867,7 +879,7 @@ const IgrejaAtualizar = () => {
 
       {abaAtiva === 0 && formData.id && (
         <Box sx={{ mt: 2 }}>
-          <IgrejaContatosHistorico igrejaId={formData.id} />
+          <IgrejaContatosHistorico igrejaId={formData.id} onLoad={(total) => setJaFoiDivulgada(total > 0)} />
         </Box>
       )}
 
@@ -881,7 +893,7 @@ const IgrejaAtualizar = () => {
       />
       <AssistenteDivulgacao
         open={emailContatoModalOpen}
-        onClose={() => setEmailContatoModalOpen(false)}
+        onClose={() => { setEmailContatoModalOpen(false); setDivulgarAvulso(false); }}
         igreja={{ ...formData, endereco }}
         emailCriacaoEnviado={formData?.emailCriacaoEnviado}
         urlInstagram={urlInstagram}
@@ -890,6 +902,7 @@ const IgrejaAtualizar = () => {
         opcaoEmail={divulgacaoOpcaoEmail}
         onOpcaoEmailChange={setDivulgacaoOpcaoEmail}
         onConfirmar={() => atualizarIgreja(divulgacaoOpcaoEmail || null)}
+        modoAvulso={divulgarAvulso}
       />
     </>
   );

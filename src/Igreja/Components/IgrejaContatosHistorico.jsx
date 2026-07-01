@@ -27,7 +27,7 @@ const formatarData = (valor) => {
   return new Date(valor).toLocaleDateString("pt-BR");
 };
 
-const IgrejaContatosHistorico = ({ igrejaId }) => {
+const IgrejaContatosHistorico = ({ igrejaId, onLoad }) => {
   const [loading, setLoading] = useState(true);
   const [contatos, setContatos] = useState([]);
 
@@ -39,8 +39,9 @@ const IgrejaContatosHistorico = ({ igrejaId }) => {
       .then((res) => {
         const lista = res.data?.data || res.data || [];
         setContatos(lista.slice(0, 10));
+        onLoad?.(lista.length);
       })
-      .catch(() => setContatos([]))
+      .catch(() => { setContatos([]); onLoad?.(0); })
       .finally(() => setLoading(false));
   }, [igrejaId]);
 
