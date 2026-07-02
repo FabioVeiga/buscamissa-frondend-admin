@@ -19,7 +19,7 @@ const ReportarProblemaModal = ({ open, onClose, problemaId, nome, email, descric
 
   const handleSave = async () => {
     setLoading(true);
-    let endpoint = `api/Admin/igreja/reportar-problema/${problemaId}`;
+    let endpoint = `api/v1/Admin/igreja/reportar-problema/${problemaId}`;
     var json = JSON.stringify({
       solucao,
       enviarEmail,
@@ -90,15 +90,25 @@ const ReportarProblemaModal = ({ open, onClose, problemaId, nome, email, descric
 
         <Divider sx={{ mb: 2 }} />
 
-        <TextField
-          label="Solução"
-          fullWidth
-          multiline
-          rows={4}
-          value={solucao}
-          onChange={(e) => setSolucao(e.target.value)}
-          style={{ marginBottom: "16px" }}
-        />
+        <Box className="reportar-problema-solucao" sx={{ mb: 2 }}>
+          <Typography
+            className="reportar-problema-solucao__label"
+            variant="subtitle2"
+            sx={{ mb: 0.5, fontWeight: 600 }}
+          >
+            Solução
+          </Typography>
+          <TextField
+            className="reportar-problema-solucao__input"
+            placeholder="Descreva a solução ou a resposta que será enviada a quem reportou..."
+            fullWidth
+            multiline
+            minRows={5}
+            maxRows={12}
+            value={solucao}
+            onChange={(e) => setSolucao(e.target.value)}
+          />
+        </Box>
         <FormControlLabel
           control={
             <Checkbox
