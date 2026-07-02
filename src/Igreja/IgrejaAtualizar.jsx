@@ -10,6 +10,8 @@ import {
   Stack,
   Tabs,
   Tab,
+  Alert,
+  AlertTitle,
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
@@ -24,6 +26,7 @@ import EnderecoForm from "./Components/EnderecoForm";
 import RedesSociaisSection from "./Components/RedesSociaisSection";
 import SectionCard from "./Components/SectionCard";
 import IgrejasCepModal from "./Components/IgrejasCepModal";
+import ReportarProblemaModal from "./Components/ReportarProblemaModal";
 import IgrejaMetricasTab from "./Components/IgrejaMetricasTab";
 import AssistenteDivulgacao from "./Components/AssistenteDivulgacao";
 import IgrejaContatosHistorico from "./Components/IgrejaContatosHistorico";
@@ -84,6 +87,7 @@ const IgrejaAtualizar = () => {
   const [cepReversoError, setCepReversoError] = useState("");
   const [cepLoading, setCepLoading] = useState(false);
   const [igrejasCepModalOpen, setIgrejasCepModalOpen] = useState(false);
+  const [modalReportarProblemaOpen, setModalReportarProblemaOpen] = useState(false);
   const [igrejasEncontradasCep, setIgrejasEncontradasCep] = useState([]);
   const [emailContatoModalOpen, setEmailContatoModalOpen] = useState(false);
   const [divulgarAvulso, setDivulgarAvulso] = useState(false);
@@ -599,6 +603,30 @@ const IgrejaAtualizar = () => {
   
   return (
     <>
+      {state?.row?.reportarProblema && (
+        <Alert
+          severity="warning"
+          sx={{ mb: 2, whiteSpace: "pre-wrap" }}
+          action={
+            <Button
+              color="warning"
+              variant="outlined"
+              size="small"
+              onClick={() => setModalReportarProblemaOpen(true)}
+              sx={{ whiteSpace: "nowrap" }}
+            >
+              Resolver problema
+            </Button>
+          }
+        >
+          <AlertTitle>
+            Problema reportado por {state.row.reportarProblema.nome || "—"}
+            {state.row.reportarProblema.email && ` (${state.row.reportarProblema.email})`}
+          </AlertTitle>
+          {state.row.reportarProblema.descricao}
+        </Alert>
+      )}
+
       <Tabs
         value={abaAtiva}
         onChange={(event, novaAba) => setAbaAtiva(novaAba)}
@@ -905,6 +933,17 @@ const IgrejaAtualizar = () => {
         onConfirmar={() => atualizarIgreja(divulgacaoOpcaoEmail || null)}
         modoAvulso={divulgarAvulso}
       />
+      {state?.row?.reportarProblema && (
+        <ReportarProblemaModal
+          open={modalReportarProblemaOpen}
+          onClose={() => setModalReportarProblemaOpen(false)}
+          problemaId={state.row.reportarProblema.id}
+          nome={state.row.reportarProblema.nome}
+          email={state.row.reportarProblema.email}
+          descricao={state.row.reportarProblema.descricao}
+          onSuccess={() => setModalReportarProblemaOpen(false)}
+        />
+      )}
     </>
   );
 };

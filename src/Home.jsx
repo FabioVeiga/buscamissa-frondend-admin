@@ -37,8 +37,8 @@ const statCards = [
     bgLight: "rgba(14, 165, 233, 0.1)",
   },
   {
-    key: "quantidadeIgrejaDenunciaNaoAtendida",
-    label: "Denúncias pendentes",
+    key: "quantidadeIgrejaReportarProblemaNaoAtendida",
+    label: "Problemas reportados pendentes",
     icon: WarningAmberIcon,
     color: "#f59e0b",
     bgLight: "rgba(245, 158, 11, 0.1)",
