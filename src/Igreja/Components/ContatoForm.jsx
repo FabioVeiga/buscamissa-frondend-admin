@@ -1,12 +1,22 @@
 import { TextField } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import SectionCard from "./SectionCard";
+import { apenasNumeros } from "../../utils";
 
 const ContatoForm = ({ contato = {}, onChange }) => {
     const handleChange = (field, value) => {
         onChange({
             ...contato,
             [field]: value,
+        });
+    };
+
+    const handleTelefoneChange = (dddField, telefoneField) => (e) => {
+        const digitos = apenasNumeros(e.target.value);
+        onChange({
+            ...contato,
+            [dddField]: digitos.slice(0, 2),
+            [telefoneField]: digitos.slice(2),
         });
     };
 
@@ -20,43 +30,25 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                     <TextField
                         label="Email de Contato"
                         value={contato.emailContato || ""}
-                        onChange={(e) => handleChange("emailContato", e.target.value)}
+                        onChange={(e) => handleChange("emailContato", e.target.value.replace(/\s/g, ""))}
                         fullWidth
                     />
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                        label="DDD"
-                        value={contato.ddd || ""}
-                        onChange={(e) => handleChange("ddd", e.target.value)}
-                        fullWidth
-                    />
-                </Grid>
-
-                <Grid size={{ xs: 12, md: 8 }}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                         label="Telefone"
-                        value={contato.telefone || ""}
-                        onChange={(e) => handleChange("telefone", e.target.value)}
+                        value={`${contato.ddd || ""}${contato.telefone || ""}`}
+                        onChange={handleTelefoneChange("ddd", "telefone")}
                         fullWidth
                     />
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 4 }}>
-                    <TextField
-                        label="DDD WhatsApp"
-                        value={contato.dddWhatsApp || ""}
-                        onChange={(e) => handleChange("dddWhatsApp", e.target.value)}
-                        fullWidth
-                    />
-                </Grid>
-
-                <Grid size={{ xs: 12, md: 8 }}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                         label="Telefone WhatsApp"
-                        value={contato.telefoneWhatsApp || ""}
-                        onChange={(e) => handleChange("telefoneWhatsApp", e.target.value)}
+                        value={`${contato.dddWhatsApp || ""}${contato.telefoneWhatsApp || ""}`}
+                        onChange={handleTelefoneChange("dddWhatsApp", "telefoneWhatsApp")}
                         fullWidth
                     />
                 </Grid>
