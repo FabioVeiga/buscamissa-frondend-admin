@@ -28,7 +28,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Link from '@mui/material/Link';
 import { useNavigate } from "react-router-dom";
-import DenunciaModal from "./Components/DenunciaModal";
+import ReportarProblemaModal from "./Components/ReportarProblemaModal";
 import ConfirmModal from "../Components/ConfirmModal";
 import DeleteConfirmModal from "../Components/DeleteConfirmModal";
 import api from "../services/apiService";
@@ -50,7 +50,7 @@ const IgrejaPage = () => {
     ativo: false,
   });
   const [igrejaModal, setIgrejaModal] = useState({});
-  const [denunciaModalOpen, setDenunciaModalOpen] = useState(null); // Armazena o ID da denúncia aberta
+  const [problemaModalOpen, setProblemaModalOpen] = useState(null); // Armazena o ID do problema reportado aberto
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [selectedIgrejaId, setSelectedIgrejaId] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -134,17 +134,17 @@ const IgrejaPage = () => {
     }));
   };
 
-  const handleOpenModal = (denunciaId) => {
-    setDenunciaModalOpen(denunciaId); // Define o ID da denúncia
+  const handleOpenModal = (problemaId) => {
+    setProblemaModalOpen(problemaId); // Define o ID do problema reportado
   };
 
   const handleCloseModal = () => {
-    setDenunciaModalOpen(null); // Reseta o estado para fechar a modal
+    setProblemaModalOpen(null); // Reseta o estado para fechar a modal
   };
 
   const handleSuccess = (result) => {
     console.log("Modal saved successfully:", result);
-    setDenunciaModalOpen(false);
+    setProblemaModalOpen(false);
   };
 
   const handleOpenConfirmModal = (igrejaId) => {
@@ -212,8 +212,8 @@ const IgrejaPage = () => {
       params.append("diadasemana", filters.diaSemana);
     }
     if (filters?.horario) params.append("horario", filters.horario);
-    if (filters?.denuncia !== undefined && filters.denuncia !== "") {
-      params.append("denuncia", filters.denuncia);
+    if (filters?.reportarProblema !== undefined && filters.reportarProblema !== "") {
+      params.append("reportarProblema", filters.reportarProblema);
     }
     params.append("Paginacao.PageIndex", pageIndex);
     params.append("Paginacao.PageSize", pageSize);
@@ -413,9 +413,9 @@ const IgrejaPage = () => {
                               <EditIcon />
                             </IconButton>
                           </Tooltip>
-                          {row.denuncia && (
+                          {row.reportarProblema && (
                             <>
-                              <Tooltip title="Denúncia">
+                              <Tooltip title="Problema reportado">
                                 <IconButton
                                   color="warning"
                                   onClick={handleOpenModal}
@@ -423,11 +423,13 @@ const IgrejaPage = () => {
                                   <AnnouncementIcon />
                                 </IconButton>
                               </Tooltip>
-                              <DenunciaModal
-                                open={denunciaModalOpen}
+                              <ReportarProblemaModal
+                                open={problemaModalOpen}
                                 onClose={handleCloseModal}
-                                denunciaId={row.denuncia.id}
-                                descricao={row.denuncia.descricao}
+                                problemaId={row.reportarProblema.id}
+                                nome={row.reportarProblema.nome}
+                                email={row.reportarProblema.email}
+                                descricao={row.reportarProblema.descricao}
                                 onSuccess={handleSuccess} // Passa uma função, não uma chamada direta
                               />
                             </>

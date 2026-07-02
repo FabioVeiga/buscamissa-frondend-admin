@@ -23,7 +23,7 @@ const FILTROS_PADRAO = {
   diaSemana: "",
   horario: "",
   ativo: true,
-  denuncia: false,
+  reportarProblema: false,
   semCoordenadas: false,
 };
 
@@ -165,7 +165,7 @@ const IgrejaSearchForm = ({
     if (filtros.diaSemana !== "")
       endPoint += `&diadasemana=${filtros.diaSemana}`;
     if (filtros.horario !== "") endPoint += `&horario=${filtros.horario}`;
-    if (filtros.denuncia !== "") endPoint += `&denuncia=${filtros.denuncia}`;
+    if (filtros.reportarProblema !== "") endPoint += `&reportarProblema=${filtros.reportarProblema}`;
     if (filtros.semCoordenadas) endPoint += `&semCoordenadas=true`;
 
     let paginacao = `&Paginacao.PageIndex=1&Paginacao.PageSize=10`;
@@ -403,11 +403,11 @@ const IgrejaSearchForm = ({
             <FormControlLabel
               control={
                 <Switch
-                  checked={formData.denuncia}
-                  onChange={(e) => handleChange("denuncia", e.target.checked)}
+                  checked={formData.reportarProblema}
+                  onChange={(e) => handleChange("reportarProblema", e.target.checked)}
                 />
               }
-              label="Denúncia"
+              label="Problema reportado"
             />
             <FormControlLabel
               control={
