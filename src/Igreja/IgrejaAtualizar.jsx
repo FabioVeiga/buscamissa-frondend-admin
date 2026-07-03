@@ -81,6 +81,7 @@ const IgrejaAtualizar = () => {
   const [fileName, setFileName] = useState("");
   const [urlInput, setUrlInput] = useState("");
   const [imagemAlterada, setImagemAlterada] = useState(false);
+  const [imagemMimeType, setImagemMimeType] = useState("image/png");
   const [loading, setLoading] = useState(false);
   const [openCepReverso, setOpenCepReverso] = useState(false);
   const [candidatosCep, setCandidatosCep] = useState([]);
@@ -372,10 +373,13 @@ const IgrejaAtualizar = () => {
 
       reader.onload = (e) => {
         // O resultado contém a base64 da imagem
-        const base64String = e.target.result.split(",")[1]; // Remove o cabeçalho 'data:image/jpeg;base64,'
+        const fullBase64 = e.target.result;
+        const base64String = fullBase64.split(",")[1]; // Remove o cabeçalho 'data:image/jpeg;base64,'
         setBase64(base64String);
         setFileName(file.name);
+        setImagemMimeType(file.type || "image/png");
         setImagemAlterada(true);
+        console.log("Imagem alterada:", { fileName: file.name, mimeType: file.type, base64Length: base64String.length });
       };
 
       reader.readAsDataURL(file); // Lê o arquivo como uma DataURL
@@ -391,7 +395,9 @@ const IgrejaAtualizar = () => {
           const base64String = e.target.result.split(",")[1];
           setBase64(base64String);
           setFileName(name || "image");
+          setImagemMimeType(blob.type || "image/png");
           setImagemAlterada(true);
+          console.log("Blob convertido:", { name, mimeType: blob.type, base64Length: base64String.length });
           resolve(base64String);
         } catch (err) {
           reject(err);
@@ -501,10 +507,13 @@ const IgrejaAtualizar = () => {
   };
 
   const handleRemoverImagem = () => {
+    console.log("Removendo imagem");
     setBase64("");
     setFileName("");
     setUrlInput("");
+    setImagemMimeType("image/png");
     setImagemAlterada(true);
+    setFormData((prev) => ({ ...prev, imagemUrl: "" }));
   };
 
 
@@ -540,6 +549,13 @@ const IgrejaAtualizar = () => {
     // Apenas incluir imagem se foi alterada
     if (imagemAlterada) {
       req.imagem = base64;
+      console.log("Payload de atualização com imagem:", {
+        imagemAlterada,
+        base64Length: base64?.length || 0,
+        imagemUrl: formData.imagemUrl
+      });
+    } else {
+      console.log("Payload de atualização SEM imagem (não foi alterada)");
     }
 
     if (tipoEmailContato) {
@@ -805,10 +821,13 @@ const IgrejaAtualizar = () => {
                       const base64String = ev.target.result.split(",")[1];
                       setBase64(base64String);
                       setFileName(urlInput);
+                      setImagemMimeType(blob.type || "image/png");
                       setImagemAlterada(true);
+                      console.log("URL convertida:", { urlInput, mimeType: blob.type, base64Length: base64String.length });
                     };
                     reader.readAsDataURL(blob);
                   } catch (err) {
+                    console.error("Erro ao converter URL:", err);
                     setMessage({ mensagem: ["Não foi possível converter a URL."], severity: "error", show: true });
                   }
                 }}
@@ -837,11 +856,12 @@ const IgrejaAtualizar = () => {
               <Box
                 component="img"
                 src={
-                  base64 ? `data:image/png;base64,${base64}` : formData.imagemUrl
+                  base64 ? `${imagemMimeType};base64,${base64}` : formData.imagemUrl
                 }
                 alt="Preview"
                 sx={{
                   maxWidth: "100%",
+                  maxHeight: "400px",
                   border: "1px solid #ccc",
                   borderRadius: 1,
                 }}
