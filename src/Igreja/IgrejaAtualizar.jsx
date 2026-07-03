@@ -80,6 +80,7 @@ const IgrejaAtualizar = () => {
   const [base64, setBase64] = useState("");
   const [fileName, setFileName] = useState("");
   const [urlInput, setUrlInput] = useState("");
+  const [imagemAlterada, setImagemAlterada] = useState(false);
   const [loading, setLoading] = useState(false);
   const [openCepReverso, setOpenCepReverso] = useState(false);
   const [candidatosCep, setCandidatosCep] = useState([]);
@@ -109,6 +110,7 @@ const IgrejaAtualizar = () => {
     setBase64("");
     setFileName("");
     setUrlInput("");
+    setImagemAlterada(false);
     setMessage(errorMensage());
   }, [state?.row]);
 
@@ -373,6 +375,7 @@ const IgrejaAtualizar = () => {
         const base64String = e.target.result.split(",")[1]; // Remove o cabeçalho 'data:image/jpeg;base64,'
         setBase64(base64String);
         setFileName(file.name);
+        setImagemAlterada(true);
       };
 
       reader.readAsDataURL(file); // Lê o arquivo como uma DataURL
@@ -388,6 +391,7 @@ const IgrejaAtualizar = () => {
           const base64String = e.target.result.split(",")[1];
           setBase64(base64String);
           setFileName(name || "image");
+          setImagemAlterada(true);
           resolve(base64String);
         } catch (err) {
           reject(err);
@@ -496,6 +500,13 @@ const IgrejaAtualizar = () => {
     setOpenCepReverso(false);
   };
 
+  const handleRemoverImagem = () => {
+    setBase64("");
+    setFileName("");
+    setUrlInput("");
+    setImagemAlterada(true);
+  };
+
 
   const montarPayloadAtualizacao = (tipoEmailContato = null) => {
     const contato = formData.contato
@@ -521,11 +532,15 @@ const IgrejaAtualizar = () => {
       paroco: formData.paroco,
       missas: formDatamissas,
       contato,
-      imagem: base64,
       redeSociais: formDataRedeSociais,
       endereco: enderecoSanitizado,
       ativo: formData?.ativo ?? false,
     };
+
+    // Apenas incluir imagem se foi alterada
+    if (imagemAlterada) {
+      req.imagem = base64;
+    }
 
     if (tipoEmailContato) {
       req.tipoEmailContato = tipoEmailContato;
@@ -790,6 +805,7 @@ const IgrejaAtualizar = () => {
                       const base64String = ev.target.result.split(",")[1];
                       setBase64(base64String);
                       setFileName(urlInput);
+                      setImagemAlterada(true);
                     };
                     reader.readAsDataURL(blob);
                   } catch (err) {
@@ -817,18 +833,27 @@ const IgrejaAtualizar = () => {
 
           {/* Imagem preview (opcional) */}
           {(base64 || formData.imagemUrl) && (
-            <Box
-              component="img"
-              src={
-                base64 ? `data:image/png;base64,${base64}` : formData.imagemUrl
-              }
-              alt="Preview"
-              sx={{
-                maxWidth: "100%",
-                border: "1px solid #ccc",
-                borderRadius: 1,
-              }}
-            />
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1, alignItems: "center" }}>
+              <Box
+                component="img"
+                src={
+                  base64 ? `data:image/png;base64,${base64}` : formData.imagemUrl
+                }
+                alt="Preview"
+                sx={{
+                  maxWidth: "100%",
+                  border: "1px solid #ccc",
+                  borderRadius: 1,
+                }}
+              />
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={handleRemoverImagem}
+              >
+                Remover Imagem
+              </Button>
+            </Box>
           )}
         </SectionCard>
 
