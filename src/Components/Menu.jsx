@@ -262,6 +262,7 @@ const Menu = ({ children }) => {
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
+          pt: { xs: `${TOP_BAR_HEIGHT}px`, sm: `${TOP_BAR_HEIGHT_SM}px`, md: 0 },
         }}
       >
         <Box
