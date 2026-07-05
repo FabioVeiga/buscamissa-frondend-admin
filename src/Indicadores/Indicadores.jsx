@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   CircularProgress,
+  Link,
   Paper,
   Stack,
   Table,
@@ -13,58 +14,184 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
   Typography,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
 import Grid from "@mui/material/Grid2";
+import { useNavigate } from "react-router-dom";
 import Menu from "../Components/Menu";
 import api from "../services/apiService";
 import ErrorSpan from "../ErrorSpan";
 
-const RankingTable = ({ titulo, itens }) => (
-  <Paper sx={{ p: 2, borderRadius: 2, height: "100%" }}>
-    <Typography variant="h6" mb={2}>
+// Filtros de período são mantidos entre navegações (ex: ida e volta da edição de igreja).
+const FILTROS_STORAGE_KEY = "indicadores_filtro_periodo";
+
+// Etapa 2: número fixo de linhas em todos os rankings.
+const TOP_N = 10;
+
+// Etapa 5: altura fixa para o scroll interno quando houver mais linhas do que cabe.
+const ALTURA_TABELA = 360;
+
+const paraDataInput = (data) => data.toISOString().slice(0, 10);
+
+// Atalhos de período — usados tanto no botão de atalho quanto no default inicial (competência atual).
+const periodoHoje = () => {
+  const hoje = paraDataInput(new Date());
+  return { dataInicial: hoje, dataFinal: hoje };
+};
+
+const periodoOntem = () => {
+  const ontem = new Date();
+  ontem.setDate(ontem.getDate() - 1);
+  const valor = paraDataInput(ontem);
+  return { dataInicial: valor, dataFinal: valor };
+};
+
+const periodoMesCorrente = () => {
+  const agora = new Date();
+  const inicio = new Date(agora.getFullYear(), agora.getMonth(), 1);
+  const fim = new Date(agora.getFullYear(), agora.getMonth() + 1, 0);
+  return { dataInicial: paraDataInput(inicio), dataFinal: paraDataInput(fim) };
+};
+
+const periodoAnoCorrente = () => {
+  const agora = new Date();
+  const inicio = new Date(agora.getFullYear(), 0, 1);
+  const fim = new Date(agora.getFullYear(), 11, 31);
+  return { dataInicial: paraDataInput(inicio), dataFinal: paraDataInput(fim) };
+};
+
+// Sem filtro salvo (primeira visita), a tela abre já na competência do mês atual.
+const carregarFiltrosSalvos = () => {
+  try {
+    const salvos = JSON.parse(sessionStorage.getItem(FILTROS_STORAGE_KEY));
+    return salvos || periodoMesCorrente();
+  } catch {
+    return periodoMesCorrente();
+  }
+};
+
+const formatarDataHora = (data) =>
+  data
+    ? data.toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "—";
+
+// Etapa 4: card de estatística padronizado — título em cima, valor em destaque embaixo.
+const StatCard = ({ titulo, valor }) => (
+  <Card variant="outlined" sx={{ p: 2, textAlign: "center" }}>
+    <Typography variant="body2" color="text.secondary">
       {titulo}
     </Typography>
-    <TableContainer>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Igreja</TableCell>
-            <TableCell align="right">Quantidade</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {itens.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={2} align="center">
-                Sem dados nos últimos 30 dias.
-              </TableCell>
-            </TableRow>
-          )}
-          {itens.map((item) => (
-            <TableRow key={item.igrejaId} hover>
-              <TableCell>{item.nome}</TableCell>
-              <TableCell align="right">{item.quantidade}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  </Paper>
+    <Typography variant="h4" fontWeight={700}>
+      {valor ?? 0}
+    </Typography>
+  </Card>
 );
 
+// Etapa 5: cabeçalho, espaçamento e altura padronizados em todos os rankings.
+// Etapa 6: cidade/UF exibidos como subtítulo junto ao nome da igreja.
+const RankingTable = ({ titulo, itens, onIgrejaClick }) => {
+  const linhas = (itens || []).slice(0, TOP_N);
+
+  return (
+    <Paper sx={{ p: 2, borderRadius: 2, height: "100%" }}>
+      <Typography variant="h6" mb={2}>
+        {titulo}
+      </Typography>
+      <TableContainer sx={{ maxHeight: ALTURA_TABELA }}>
+        <Table size="small" stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontWeight: 700, width: 48 }}>#</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Igreja</TableCell>
+              <TableCell sx={{ fontWeight: 700 }} align="right">Quantidade</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {linhas.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={3} align="center">
+                  Sem dados no período selecionado.
+                </TableCell>
+              </TableRow>
+            )}
+            {linhas.map((item, index) => (
+              <TableRow key={item.igrejaId} hover>
+                <TableCell>{index + 1}</TableCell>
+                <TableCell>
+                  <Link
+                    component="button"
+                    underline="hover"
+                    onClick={() => onIgrejaClick(item.igrejaId)}
+                  >
+                    {item.nome}
+                  </Link>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    {item.cidade} • {item.uf}
+                  </Typography>
+                </TableCell>
+                <TableCell align="right">{item.quantidade}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  );
+};
+
+const buscarIgrejaCompletaPorId = async (id) => {
+  const response = await api.get(`/api/v2/Igreja/admin/${id}`);
+  return response.data?.data || response.data;
+};
+
+const normalizarIgrejaParaEdicao = (response) => {
+  const igreja = response?.igreja || response?.item || response?.data || response;
+  const endereco =
+    igreja?.endereco || igreja?.dadosEndereco || igreja?.dados?.endereco || response?.endereco || {};
+
+  return {
+    id: igreja?.id,
+    nome: igreja?.nome || "",
+    nomeUnico: igreja?.nomeUnico || "",
+    slug: igreja?.slug || "",
+    paroco: igreja?.paroco || "",
+    missas: igreja?.missas || [],
+    contato: igreja?.contato || {},
+    redesSociais: igreja?.redesSociais || [],
+    endereco,
+    ativo: igreja?.ativo ?? true,
+    imagemUrl: igreja?.imagemUrl || igreja?.imagem || "",
+  };
+};
+
 const Indicadores = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
   const [dados, setDados] = useState(null);
+  const [filtros, setFiltros] = useState(carregarFiltrosSalvos);
 
-  const carregar = () => {
+  // Etapa 8: endpoint único — traz cards, rankings, período e data da consulta numa só chamada.
+  const carregar = (filtrosAtivos) => {
     setLoading(true);
     setErro("");
 
+    const params = {};
+    if (filtrosAtivos?.dataInicial) params.dataInicial = filtrosAtivos.dataInicial;
+    if (filtrosAtivos?.dataFinal) params.dataFinal = filtrosAtivos.dataFinal;
+
     api
-      .get(`/api/v1/admin/metricas/dashboard`)
+      .get(`/api/v1/admin/indicadores`, { params })
       .then((response) => {
         setDados(response.data?.data || null);
       })
@@ -76,13 +203,45 @@ const Indicadores = () => {
       });
   };
 
-  useEffect(() => { carregar(); }, []);
+  useEffect(() => { carregar(filtros); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handlePesquisar = () => {
+    sessionStorage.setItem(FILTROS_STORAGE_KEY, JSON.stringify(filtros));
+    carregar(filtros);
+  };
+
+  const handleLimpar = () => {
+    const vazio = { dataInicial: "", dataFinal: "" };
+    setFiltros(vazio);
+    sessionStorage.removeItem(FILTROS_STORAGE_KEY);
+    carregar(vazio);
+  };
+
+  // Atalhos de período: aplicam o intervalo e já disparam a pesquisa.
+  const handleAtalhoPeriodo = (gerarPeriodo) => () => {
+    const periodo = gerarPeriodo();
+    setFiltros(periodo);
+    sessionStorage.setItem(FILTROS_STORAGE_KEY, JSON.stringify(periodo));
+    carregar(periodo);
+  };
+
+  const handleIgrejaClick = async (igrejaId) => {
+    try {
+      const igrejaCompleta = await buscarIgrejaCompletaPorId(igrejaId);
+      navigate("/igrejaEditar", { state: { row: normalizarIgrejaParaEdicao(igrejaCompleta) } });
+    } catch {
+      setErro("Não foi possível abrir a igreja para edição.");
+    }
+  };
 
   if (loading) {
     return (
       <Menu>
-        <Box display="flex" justifyContent="center" alignItems="center" py={6}>
+        <Box display="flex" flexDirection="column" alignItems="center" gap={2} py={6}>
           <CircularProgress />
+          <Typography variant="body2" color="text.secondary">
+            Carregando indicadores...
+          </Typography>
         </Box>
       </Menu>
     );
@@ -96,73 +255,133 @@ const Indicadores = () => {
     );
   }
 
-  const totais = dados.totais || {};
+  const totais = dados.cards || {};
+  const rankings = dados.rankings || {};
+  const periodoAtivo = filtros.dataInicial || filtros.dataFinal;
+
+  // Etapa 10: empty state quando não há nenhum registro no período informado.
+  const semDados =
+    !totais.visualizacoes &&
+    !totais.favoritos &&
+    !totais.compartilhamentos &&
+    !(rankings.maisVisualizadas || []).length &&
+    !(rankings.maisFavoritadas || []).length &&
+    !(rankings.maisCompartilhadas || []).length &&
+    !(rankings.maisRotasAbertas || []).length;
 
   return (
     <Menu>
       <Stack spacing={2}>
-        <Box display="flex" alignItems="center" justifyContent="space-between">
-          <Typography variant="body2" color="text.secondary">
-            Indicadores gerais do sistema (últimos 30 dias).
-          </Typography>
+        <Paper sx={{ p: 2, borderRadius: 2 }}>
+          <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
+            <Typography variant="subtitle2">Período</Typography>
+            <TextField
+              label="Data Inicial"
+              type="date"
+              size="small"
+              value={filtros.dataInicial}
+              onChange={(e) => setFiltros((f) => ({ ...f, dataInicial: e.target.value }))}
+              slotProps={{ inputLabel: { shrink: true } }}
+            />
+            <TextField
+              label="Data Final"
+              type="date"
+              size="small"
+              value={filtros.dataFinal}
+              onChange={(e) => setFiltros((f) => ({ ...f, dataFinal: e.target.value }))}
+              slotProps={{ inputLabel: { shrink: true } }}
+            />
+            <Button variant="contained" size="small" startIcon={<SearchIcon />} onClick={handlePesquisar}>
+              Pesquisar
+            </Button>
+            <Button variant="outlined" size="small" startIcon={<ClearIcon />} onClick={handleLimpar}>
+              Limpar
+            </Button>
+          </Stack>
+
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap mt={1.5}>
+            <Button size="small" onClick={handleAtalhoPeriodo(periodoHoje)}>Hoje</Button>
+            <Button size="small" onClick={handleAtalhoPeriodo(periodoOntem)}>Ontem</Button>
+            <Button size="small" onClick={handleAtalhoPeriodo(periodoMesCorrente)}>Mês corrente</Button>
+            <Button size="small" onClick={handleAtalhoPeriodo(periodoAnoCorrente)}>Ano corrente</Button>
+          </Stack>
+        </Paper>
+
+        <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" rowGap={1}>
+          <Box>
+            <Typography variant="body2" color="text.secondary">
+              {periodoAtivo
+                ? `Indicadores gerais do sistema no período selecionado.`
+                : `Indicadores gerais do sistema (todos os registros).`}
+            </Typography>
+            {/* Etapa 7: data/hora da consulta (do servidor), exibida abaixo do título */}
+            <Typography variant="caption" color="text.secondary">
+              Atualizado em {formatarDataHora(dados.dataConsulta ? new Date(dados.dataConsulta) : null)}
+            </Typography>
+          </Box>
           <Button
             variant="outlined"
             size="small"
             startIcon={loading ? <CircularProgress size={14} /> : <RefreshIcon />}
-            onClick={carregar}
+            onClick={() => carregar(filtros)}
             disabled={loading}
           >
             Atualizar
           </Button>
         </Box>
 
-        <Grid container spacing={2}>
-          <Grid size={4}>
-            <Card variant="outlined" sx={{ p: 2, textAlign: "center" }}>
-              <Typography variant="h4" fontWeight={700}>
-                {totais.visualizacoes ?? 0}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Visualizações do sistema
-              </Typography>
-            </Card>
-          </Grid>
-          <Grid size={4}>
-            <Card variant="outlined" sx={{ p: 2, textAlign: "center" }}>
-              <Typography variant="h4" fontWeight={700}>
-                {totais.favoritos ?? 0}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Total de Favoritos
-              </Typography>
-            </Card>
-          </Grid>
-          <Grid size={4}>
-            <Card variant="outlined" sx={{ p: 2, textAlign: "center" }}>
-              <Typography variant="h4" fontWeight={700}>
-                {totais.compartilhamentos ?? 0}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Total de Compartilhamentos
-              </Typography>
-            </Card>
-          </Grid>
-        </Grid>
+        {semDados ? (
+          <Paper sx={{ p: 4, borderRadius: 2, textAlign: "center" }}>
+            <Typography variant="body1" color="text.secondary">
+              Nenhum dado encontrado para o período informado.
+            </Typography>
+          </Paper>
+        ) : (
+          <>
+            <Grid container spacing={2}>
+              <Grid size={4}>
+                <StatCard titulo="Visualizações" valor={totais.visualizacoes} />
+              </Grid>
+              <Grid size={4}>
+                <StatCard titulo="Favoritos" valor={totais.favoritos} />
+              </Grid>
+              <Grid size={4}>
+                <StatCard titulo="Compartilhamentos" valor={totais.compartilhamentos} />
+              </Grid>
+            </Grid>
 
-        <Grid container spacing={2}>
-          <Grid size={6}>
-            <RankingTable titulo="Igrejas mais visualizadas" itens={dados.maisVisualizadas || []} />
-          </Grid>
-          <Grid size={6}>
-            <RankingTable titulo="Igrejas mais favoritadas" itens={dados.maisFavoritadas || []} />
-          </Grid>
-          <Grid size={6}>
-            <RankingTable titulo="Igrejas mais compartilhadas" itens={dados.maisCompartilhadas || []} />
-          </Grid>
-          <Grid size={6}>
-            <RankingTable titulo="Igrejas com mais rotas abertas" itens={dados.maisRotasAbertas || []} />
-          </Grid>
-        </Grid>
+            <Grid container spacing={2}>
+              <Grid size={6}>
+                <RankingTable
+                  titulo="Igrejas mais visualizadas"
+                  itens={rankings.maisVisualizadas}
+                  onIgrejaClick={handleIgrejaClick}
+                />
+              </Grid>
+              <Grid size={6}>
+                <RankingTable
+                  titulo="Igrejas mais favoritadas"
+                  itens={rankings.maisFavoritadas}
+                  onIgrejaClick={handleIgrejaClick}
+                />
+              </Grid>
+              <Grid size={6}>
+                <RankingTable
+                  titulo="Igrejas mais compartilhadas"
+                  itens={rankings.maisCompartilhadas}
+                  onIgrejaClick={handleIgrejaClick}
+                />
+              </Grid>
+              <Grid size={6}>
+                <RankingTable
+                  titulo="Igrejas com mais rotas abertas"
+                  itens={rankings.maisRotasAbertas}
+                  onIgrejaClick={handleIgrejaClick}
+                />
+              </Grid>
+            </Grid>
+          </>
+        )}
       </Stack>
     </Menu>
   );
