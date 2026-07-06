@@ -15,11 +15,13 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import Grid from "@mui/material/Grid2";
 import { useNavigate } from "react-router-dom";
 import Menu from "../Components/Menu";
@@ -99,14 +101,17 @@ const StatCard = ({ titulo, valor }) => (
 
 // Etapa 5: cabeçalho, espaçamento e altura padronizados em todos os rankings.
 // Etapa 6: cidade/UF exibidos como subtítulo junto ao nome da igreja.
-const RankingTable = ({ titulo, itens, onIgrejaClick }) => {
+const RankingTable = ({ titulo, descricao, itens, onIgrejaClick }) => {
   const linhas = (itens || []).slice(0, TOP_N);
 
   return (
     <Paper sx={{ p: 2, borderRadius: 2, height: "100%" }}>
-      <Typography variant="h6" mb={2}>
-        {titulo}
-      </Typography>
+      <Stack direction="row" alignItems="center" spacing={0.5} mb={2}>
+        <Typography variant="h6">{titulo}</Typography>
+        <Tooltip title={descricao} arrow>
+          <InfoOutlinedIcon fontSize="small" color="action" sx={{ cursor: "help" }} />
+        </Tooltip>
+      </Stack>
       <TableContainer sx={{ maxHeight: ALTURA_TABELA }}>
         <Table size="small" stickyHeader>
           <TableHead>
@@ -354,6 +359,7 @@ const Indicadores = () => {
               <Grid size={6}>
                 <RankingTable
                   titulo="Igrejas mais visualizadas"
+                  descricao="Quantas vezes a página da igreja foi acessada no site público. Cada visitante conta só uma vez a cada 30 minutos, para evitar contagem duplicada em atualizações de página (F5)."
                   itens={rankings.maisVisualizadas}
                   onIgrejaClick={handleIgrejaClick}
                 />
@@ -361,6 +367,7 @@ const Indicadores = () => {
               <Grid size={6}>
                 <RankingTable
                   titulo="Igrejas mais favoritadas"
+                  descricao="Quantas vezes usuários marcaram a igreja como favorita no site público (botão de coração)."
                   itens={rankings.maisFavoritadas}
                   onIgrejaClick={handleIgrejaClick}
                 />
@@ -368,6 +375,7 @@ const Indicadores = () => {
               <Grid size={6}>
                 <RankingTable
                   titulo="Igrejas mais compartilhadas"
+                  descricao="Quantas vezes o link da igreja foi compartilhado pelo botão de compartilhar no site público."
                   itens={rankings.maisCompartilhadas}
                   onIgrejaClick={handleIgrejaClick}
                 />
@@ -375,6 +383,7 @@ const Indicadores = () => {
               <Grid size={6}>
                 <RankingTable
                   titulo="Igrejas com mais rotas abertas"
+                  descricao="Quantas vezes usuários clicaram em 'Como chegar' para abrir a rota da igreja no mapa."
                   itens={rankings.maisRotasAbertas}
                   onIgrejaClick={handleIgrejaClick}
                 />
