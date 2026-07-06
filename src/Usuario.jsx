@@ -16,11 +16,13 @@ import {
   TextField,
   Checkbox,
   MenuItem,
+  Link,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import Menu from "./Components/Menu";
 import api from "./services/apiService";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { CircularProgress, Box, Typography } from "@mui/material";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
@@ -48,7 +50,33 @@ const FILTROS_PADRAO = {
   criacaoFim: "",
 };
 
+const buscarIgrejaCompletaPorId = async (id) => {
+  const response = await api.get(`/api/v2/Igreja/admin/${id}`);
+  return response.data?.data || response.data;
+};
+
+const normalizarIgrejaParaEdicao = (response) => {
+  const igreja = response?.igreja || response?.item || response?.data || response;
+  const endereco =
+    igreja?.endereco || igreja?.dadosEndereco || igreja?.dados?.endereco || response?.endereco || {};
+
+  return {
+    id: igreja?.id,
+    nome: igreja?.nome || "",
+    nomeUnico: igreja?.nomeUnico || "",
+    slug: igreja?.slug || "",
+    paroco: igreja?.paroco || "",
+    missas: igreja?.missas || [],
+    contato: igreja?.contato || {},
+    redesSociais: igreja?.redesSociais || [],
+    endereco,
+    ativo: igreja?.ativo ?? true,
+    imagemUrl: igreja?.imagemUrl || igreja?.imagem || "",
+  };
+};
+
 const UsuarioPage = () => {
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [paginacao, setPaginacao] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -261,6 +289,16 @@ const UsuarioPage = () => {
     setOpenIgrejasModal(false);
     setSelectedUser(null);
     setIgrejasUsuario([]);
+  };
+
+  const handleEditarIgreja = async (igrejaId) => {
+    try {
+      const igrejaCompleta = await buscarIgrejaCompletaPorId(igrejaId);
+      handleCloseIgrejasModal();
+      navigate("/igrejaEditar", { state: { row: normalizarIgrejaParaEdicao(igrejaCompleta) } });
+    } catch (error) {
+      console.error("Erro ao abrir igreja para edição:", error);
+    }
   };
 
   return (
@@ -615,8 +653,16 @@ const UsuarioPage = () => {
               </TableHead>
               <TableBody>
                 {igrejasUsuario.map((igreja) => (
-                  <TableRow key={igreja.id}>
-                    <TableCell>{igreja.nome}</TableCell>
+                  <TableRow key={igreja.id} hover>
+                    <TableCell>
+                      <Link
+                        component="button"
+                        underline="hover"
+                        onClick={() => handleEditarIgreja(igreja.id)}
+                      >
+                        {igreja.nome}
+                      </Link>
+                    </TableCell>
                     <TableCell>{igreja.uf}</TableCell>
                     <TableCell>{igreja.localidade}</TableCell>
                   </TableRow>
