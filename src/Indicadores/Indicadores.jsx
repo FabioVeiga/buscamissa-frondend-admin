@@ -37,7 +37,14 @@ const TOP_N = 10;
 // Etapa 5: altura fixa para o scroll interno quando houver mais linhas do que cabe.
 const ALTURA_TABELA = 360;
 
-const paraDataInput = (data) => data.toISOString().slice(0, 10);
+// Usa os componentes de data LOCAIS do navegador — toISOString() converte para UTC
+// e "vira o dia" antes da hora, ex: 22h no Brasil (UTC-3) já é o dia seguinte em UTC.
+const paraDataInput = (data) => {
+  const ano = data.getFullYear();
+  const mes = String(data.getMonth() + 1).padStart(2, "0");
+  const dia = String(data.getDate()).padStart(2, "0");
+  return `${ano}-${mes}-${dia}`;
+};
 
 // Atalhos de período — usados tanto no botão de atalho quanto no default inicial (competência atual).
 const periodoHoje = () => {
