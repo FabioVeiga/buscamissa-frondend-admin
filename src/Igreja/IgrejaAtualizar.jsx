@@ -12,6 +12,11 @@ import {
   Tab,
   Alert,
   AlertTitle,
+  Link,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
@@ -30,6 +35,8 @@ import ReportarProblemaModal from "./Components/ReportarProblemaModal";
 import IgrejaMetricasTab from "./Components/IgrejaMetricasTab";
 import AssistenteDivulgacao from "./Components/AssistenteDivulgacao";
 import IgrejaContatosHistorico from "./Components/IgrejaContatosHistorico";
+import { construirLinkIgreja } from "../services/mensagemDivulgacao";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 
 const IgrejaAtualizar = () => {
@@ -76,6 +83,7 @@ const IgrejaAtualizar = () => {
   });
 
   const [message, setMessage] = useState(errorMensage);
+  const [confirmarSemMissaAberto, setConfirmarSemMissaAberto] = useState(false);
   const [formDatamissas, setformDataMissas] = useState(state?.row?.missas || []);
   const [missas, setMissas] = useState([]);
   const [base64, setBase64] = useState("");
@@ -614,13 +622,15 @@ const IgrejaAtualizar = () => {
 
   const handleSubmit = () => {
     if (!formDatamissas || formDatamissas.length === 0) {
-      setMessage({
-        mensagem: "Erro: É necessário adicionar ao menos uma missa antes de editar a igreja!",
-        severity: "error",
-        show: true,
-      });
+      setConfirmarSemMissaAberto(true);
       return;
     }
+
+    prosseguirAposValidarMissas();
+  };
+
+  const prosseguirAposValidarMissas = () => {
+    setConfirmarSemMissaAberto(false);
 
     const emailContato = formData?.contato?.emailContato?.trim();
     const temCanal = (emailContato || urlInstagram || urlFacebook) && formData?.ativo;
@@ -658,6 +668,24 @@ const IgrejaAtualizar = () => {
           </AlertTitle>
           {state.row.reportarProblema.descricao}
         </Alert>
+      )}
+
+      {formData.nomeUnico && (
+        <Box sx={{ mb: 2, display: "flex", alignItems: "center", gap: 0.5 }}>
+          <Typography variant="body2" color="text.secondary">
+            Página no site:
+          </Typography>
+          <Link
+            href={construirLinkIgreja({ ...formData, endereco })}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="body2"
+            sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+          >
+            {construirLinkIgreja({ ...formData, endereco })}
+            <OpenInNewIcon fontSize="inherit" />
+          </Link>
+        </Box>
       )}
 
       <Tabs
@@ -858,12 +886,13 @@ const IgrejaAtualizar = () => {
               <Box
                 component="img"
                 src={
-                  base64 ? `${imagemMimeType};base64,${base64}` : formData.imagemUrl
+                  base64 ? `data:${imagemMimeType};base64,${base64}` : formData.imagemUrl
                 }
                 alt="Preview"
                 sx={{
                   maxWidth: "100%",
-                  maxHeight: "400px",
+                  maxHeight: "200px",
+                  objectFit: "contain",
                   border: "1px solid #ccc",
                   borderRadius: 1,
                 }}
@@ -991,6 +1020,19 @@ const IgrejaAtualizar = () => {
           onSuccess={() => setModalReportarProblemaOpen(false)}
         />
       )}
+
+      <Dialog open={confirmarSemMissaAberto} onClose={() => setConfirmarSemMissaAberto(false)}>
+        <DialogTitle>Salvar sem missa?</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            Nenhuma missa está cadastrada para esta igreja. Deseja continuar e salvar mesmo assim?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmarSemMissaAberto(false)}>Cancelar</Button>
+          <Button variant="contained" onClick={prosseguirAposValidarMissas}>Continuar sem missa</Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
