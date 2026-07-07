@@ -6,6 +6,10 @@ import {
   Typography,
   CircularProgress,
   Stack,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
@@ -24,6 +28,7 @@ import IgrejasCepModal from "./Components/IgrejasCepModal";
 const IgrejaCriar = () => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [confirmarSemMissaAberto, setConfirmarSemMissaAberto] = useState(false);
 
   const [formData, setFormData] = useState({
     nome: "",
@@ -47,6 +52,7 @@ const IgrejaCriar = () => {
   const [redeSociais, setRedeSociais] = useState([]);
   const [base64, setBase64] = useState("");
   const [fileName, setFileName] = useState("");
+  const [imagemMimeType, setImagemMimeType] = useState("image/png");
   const [urlInput, setUrlInput] = useState("");
 
   const [openCepReverso, setOpenCepReverso] = useState(false);
@@ -396,6 +402,7 @@ const IgrejaCriar = () => {
         const base64String = e.target.result.split(",")[1]; // Remove o cabeçalho 'data:image/jpeg;base64,'
         setBase64(base64String);
         setFileName(file.name);
+        setImagemMimeType(file.type || "image/png");
       };
 
       reader.readAsDataURL(file); // Lê o arquivo como uma DataURL
@@ -411,6 +418,7 @@ const IgrejaCriar = () => {
           const base64String = e.target.result.split(",")[1];
           setBase64(base64String);
           setFileName(name || "image");
+          setImagemMimeType(blob.type || "image/png");
           resolve(base64String);
         } catch (err) {
           reject(err);
@@ -432,10 +440,6 @@ const IgrejaCriar = () => {
       arrayAux.push("O campo Nome é obrigatório!")
     }
 
-    if (missas.length === 0) {
-      arrayAux.push("É necessário adicionar ao menos uma missa!")
-    }
-
     if (endereco === undefined) {
       arrayAux.push("É necessário ter o endereço preenchido!")
 
@@ -447,6 +451,16 @@ const IgrejaCriar = () => {
       return;
     }
 
+    if (missas.length === 0) {
+      setConfirmarSemMissaAberto(true);
+      return;
+    }
+
+    salvarIgreja();
+  };
+
+  const salvarIgreja = () => {
+    setConfirmarSemMissaAberto(false);
     setLoading(true);
 
     formData.missas = missas;
@@ -665,10 +679,12 @@ const IgrejaCriar = () => {
               {base64 && (
                   <Box
                       component="img"
-                      src={`data:image/png;base64,${base64}`}
+                      src={`data:${imagemMimeType};base64,${base64}`}
                       alt="Preview"
                       sx={{
                         maxWidth: "100%",
+                        maxHeight: "200px",
+                        objectFit: "contain",
                         border: "1px solid #ccc",
                         borderRadius: 2,
                       }}
@@ -759,6 +775,19 @@ const IgrejaCriar = () => {
             onClose={() => setIgrejasCepModalOpen(false)}
             onEditar={handleEditarIgrejaCep}
         />
+
+        <Dialog open={confirmarSemMissaAberto} onClose={() => setConfirmarSemMissaAberto(false)}>
+          <DialogTitle>Cadastrar sem missa?</DialogTitle>
+          <DialogContent>
+            <Typography variant="body2">
+              Nenhuma missa foi adicionada. Deseja continuar e cadastrar a igreja mesmo assim?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setConfirmarSemMissaAberto(false)}>Cancelar</Button>
+            <Button variant="contained" onClick={salvarIgreja}>Continuar sem missa</Button>
+          </DialogActions>
+        </Dialog>
       </>
   );
 };

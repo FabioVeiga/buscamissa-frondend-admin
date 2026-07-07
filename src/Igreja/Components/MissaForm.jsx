@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
     Box,
     TextField,
@@ -30,12 +30,14 @@ import SectionCard from "./SectionCard";
 const MissaForm = ({ missas = [], setMissas, onError }) => {
     const [novaMissa, setNovaMissa] = useState({ horario: "", diaSemana: [], observacao: "" });
     const [apoio, setApoio] = useState("");
+    const horarioRef = useRef(null);
 
     // Múltiplos horários
     const [multiOpen, setMultiOpen] = useState(false);
     const [multiDia, setMultiDia] = useState(0); // Domingo
     const [multiHorario, setMultiHorario] = useState("");
     const [multiHorarios, setMultiHorarios] = useState([]);
+    const multiHorarioRef = useRef(null);
 
     const handleChange = (field, value) => {
         setNovaMissa((prev) => ({ ...prev, [field]: value }));
@@ -72,6 +74,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
 
         setMissas((prev) => [...prev, ...novasMissas]);
         setNovaMissa({ horario: "", diaSemana: [], observacao: "" });
+        horarioRef.current?.focus();
     };
 
     const handleDeleteMissa = (indexToDelete) => {
@@ -83,6 +86,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
         if (multiHorarios.includes(multiHorario)) return;
         setMultiHorarios((prev) => [...prev, multiHorario]);
         setMultiHorario("");
+        multiHorarioRef.current?.focus();
     };
 
     const handleConfirmarMultiHorarios = () => {
@@ -118,6 +122,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                     <TextField
                         label="Horário"
                         type="time"
+                        inputRef={horarioRef}
                         value={novaMissa.horario}
                         onChange={(e) => handleChange("horario", e.target.value)}
                         sx={{ width: 150 }}
@@ -164,6 +169,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                             <TextField
                                 label="Horário"
                                 type="time"
+                                inputRef={multiHorarioRef}
                                 value={multiHorario}
                                 onChange={(e) => setMultiHorario(e.target.value)}
                                 sx={{ width: 150 }}
