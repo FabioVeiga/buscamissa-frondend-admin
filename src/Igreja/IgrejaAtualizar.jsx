@@ -100,6 +100,7 @@ const IgrejaAtualizar = () => {
   const [igrejasCepModalOpen, setIgrejasCepModalOpen] = useState(false);
   const [modalReportarProblemaOpen, setModalReportarProblemaOpen] = useState(false);
   const [igrejasEncontradasCep, setIgrejasEncontradasCep] = useState([]);
+  const [enderecoResolvidoCep, setEnderecoResolvidoCep] = useState(null);
   const [emailContatoModalOpen, setEmailContatoModalOpen] = useState(false);
   const [divulgarAvulso, setDivulgarAvulso] = useState(false);
   const [abaAtiva, setAbaAtiva] = useState(0);
@@ -193,6 +194,7 @@ const IgrejaAtualizar = () => {
 
       if (Array.isArray(igrejas) && igrejas.length > 0) {
         setIgrejasEncontradasCep(igrejas);
+        setEnderecoResolvidoCep(igrejas[0]?.dadosEndereco || null);
         setIgrejasCepModalOpen(true);
         return;
       }
@@ -238,6 +240,18 @@ const IgrejaAtualizar = () => {
     } finally {
       setCepLoading(false);
     }
+  };
+
+  // Aplica o endereço real (resolvido via ViaCEP) direto no formulário da igreja
+  // atual, sem precisar navegar para nenhuma das igrejas listadas no modal.
+  const handleUsarEnderecoCep = (enderecoResponse) => {
+    preencherEndereco(enderecoResponse);
+    setIgrejasCepModalOpen(false);
+    setMessage({
+      mensagem: "Endereço aplicado. Confira os campos antes de salvar.",
+      severity: "success",
+      show: true,
+    });
   };
 
   const preencherEndereco = (enderecoResponse, cepFallback = "") => {
@@ -991,10 +1005,12 @@ const IgrejaAtualizar = () => {
       <IgrejasCepModal
           open={igrejasCepModalOpen}
           igrejas={igrejasEncontradasCep}
+          endereco={enderecoResolvidoCep}
           loading={cepLoading}
           igrejaAtualId={formData.id}
           onClose={() => setIgrejasCepModalOpen(false)}
           onEditar={handleEditarIgrejaCep}
+          onUsarEndereco={handleUsarEnderecoCep}
       />
       <AssistenteDivulgacao
         open={emailContatoModalOpen}
