@@ -62,6 +62,7 @@ const IgrejaCriar = () => {
   const [cepReversoError, setCepReversoError] = useState("");
   const [igrejasCepModalOpen, setIgrejasCepModalOpen] = useState(false);
   const [igrejasEncontradasCep, setIgrejasEncontradasCep] = useState([]);
+  const [enderecoResolvidoCep, setEnderecoResolvidoCep] = useState(null);
 
   const { endereco, setEndereco } = useEndereco();
   const enderecoAtual = endereco || {};
@@ -218,6 +219,7 @@ const IgrejaCriar = () => {
 
       if (Array.isArray(igrejas) && igrejas.length > 0) {
         setIgrejasEncontradasCep(igrejas);
+        setEnderecoResolvidoCep(igrejas[0]?.dadosEndereco || null);
         setIgrejasCepModalOpen(true);
         return;
       }
@@ -247,6 +249,14 @@ const IgrejaCriar = () => {
     } finally {
       setCepLoading(false);
     }
+  };
+
+  // Aplica o endereço real (resolvido via ViaCEP) direto no formulário, sem
+  // precisar navegar para nenhuma das igrejas listadas no modal.
+  const handleUsarEnderecoCep = (enderecoResponse) => {
+    preencherEndereco(enderecoResponse);
+    setIgrejasCepModalOpen(false);
+    setMessage(["Endereço aplicado. Confira os campos antes de salvar."]);
   };
 
   const handleGeocode = async () => {
@@ -771,9 +781,11 @@ const IgrejaCriar = () => {
         <IgrejasCepModal
             open={igrejasCepModalOpen}
             igrejas={igrejasEncontradasCep}
+            endereco={enderecoResolvidoCep}
             loading={cepLoading}
             onClose={() => setIgrejasCepModalOpen(false)}
             onEditar={handleEditarIgrejaCep}
+            onUsarEndereco={handleUsarEnderecoCep}
         />
 
         <Dialog open={confirmarSemMissaAberto} onClose={() => setConfirmarSemMissaAberto(false)}>
