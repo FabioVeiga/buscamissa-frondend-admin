@@ -17,6 +17,7 @@ import {
   Checkbox,
   MenuItem,
   Link,
+  IconButton,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import Menu from "./Components/Menu";
@@ -32,6 +33,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import LockResetIcon from "@mui/icons-material/LockReset";
 import ChurchIcon from "@mui/icons-material/Church";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import Pagination from "./Components/Paginacao";
 import { buscarIgrejaCompletaPorId, normalizarIgrejaParaEdicao } from "./services/igrejaHelpers";
 
@@ -51,6 +54,14 @@ const FILTROS_PADRAO = {
   criacaoFim: "",
 };
 
+const ORDENACAO_PADRAO = { ordenarPor: "nome", decrescente: false };
+
+const OPCOES_ORDENACAO = [
+  { value: "nome", label: "Nome" },
+  { value: "email", label: "Email" },
+  { value: "criacao", label: "Data de criação" },
+];
+
 const UsuarioPage = () => {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
@@ -62,6 +73,7 @@ const UsuarioPage = () => {
   const [motivo, setMotivo] = useState("");
   const [filtros, setFiltros] = useState({ ...FILTROS_PADRAO });
   const [filtrosAplicados, setFiltrosAplicados] = useState({ ...FILTROS_PADRAO });
+  const [ordenacao, setOrdenacao] = useState({ ...ORDENACAO_PADRAO });
   const [openSenhaModal, setOpenSenhaModal] = useState(false);
   const [novaSenha, setNovaSenha] = useState("");
   const [senhaError, setSenhaError] = useState("");
@@ -153,7 +165,7 @@ const UsuarioPage = () => {
     }
   };
 
-  const buildQueryParams = (pageIndex, pageSize, aplicados) => {
+  const buildQueryParams = (pageIndex, pageSize, aplicados, ordem) => {
     const params = new URLSearchParams();
     params.set("Paginacao.PageIndex", pageIndex);
     params.set("Paginacao.PageSize", pageSize);
@@ -163,14 +175,16 @@ const UsuarioPage = () => {
     if (aplicados.bloqueado !== "") params.set("Bloqueado", aplicados.bloqueado);
     if (aplicados.criacaoInicio) params.set("CriacaoInicio", aplicados.criacaoInicio);
     if (aplicados.criacaoFim) params.set("CriacaoFim", aplicados.criacaoFim);
+    params.set("OrdenarPor", ordem.ordenarPor);
+    params.set("OrdemDecrescente", ordem.decrescente);
     return params.toString();
   };
 
-  const fetchUsuarios = async (pageIndex = 1, pageSize = 10, aplicados = filtrosAplicados) => {
+  const fetchUsuarios = async (pageIndex = 1, pageSize = 10, aplicados = filtrosAplicados, ordem = ordenacao) => {
     setIsLoading(true);
     try {
       const response = await api.get(
-        `/api/v1/Admin/usuario/buscar-por-filtro?${buildQueryParams(pageIndex, pageSize, aplicados)}`
+        `/api/v1/Admin/usuario/buscar-por-filtro?${buildQueryParams(pageIndex, pageSize, aplicados, ordem)}`
       );
       setData(response.data.data.usuarios);
       setPaginacao({
@@ -196,7 +210,20 @@ const UsuarioPage = () => {
   }, []);
 
   const handlePageChange = (newPageIndex) => {
-    fetchUsuarios(newPageIndex, paginacao.pageSize, filtrosAplicados);
+    fetchUsuarios(newPageIndex, paginacao.pageSize, filtrosAplicados, ordenacao);
+  };
+
+  // Ordenação aplica na hora, sem precisar clicar em "Filtrar".
+  const handleOrdenarPorChange = (event) => {
+    const nova = { ...ordenacao, ordenarPor: event.target.value };
+    setOrdenacao(nova);
+    fetchUsuarios(1, paginacao.pageSize || 10, filtrosAplicados, nova);
+  };
+
+  const handleToggleDirecaoOrdenacao = () => {
+    const nova = { ...ordenacao, decrescente: !ordenacao.decrescente };
+    setOrdenacao(nova);
+    fetchUsuarios(1, paginacao.pageSize || 10, filtrosAplicados, nova);
   };
 
   const handleFiltroChange = (campo) => (event) => {
@@ -351,6 +378,29 @@ const UsuarioPage = () => {
               value={filtros.criacaoFim}
               onChange={handleFiltroChange("criacaoFim")}
             />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              <TextField
+                select
+                fullWidth
+                size="small"
+                label="Ordenar por"
+                value={ordenacao.ordenarPor}
+                onChange={handleOrdenarPorChange}
+              >
+                {OPCOES_ORDENACAO.map((opcao) => (
+                  <MenuItem key={opcao.value} value={opcao.value}>
+                    {opcao.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <Tooltip title={ordenacao.decrescente ? "Decrescente" : "Crescente"}>
+                <IconButton onClick={handleToggleDirecaoOrdenacao}>
+                  {ordenacao.decrescente ? <ArrowDownwardIcon /> : <ArrowUpwardIcon />}
+                </IconButton>
+              </Tooltip>
+            </Stack>
           </Grid>
           <Grid size={{ xs: 12 }}>
             <Stack direction="row" spacing={1}>
