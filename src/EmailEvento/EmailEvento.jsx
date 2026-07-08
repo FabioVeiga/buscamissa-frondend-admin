@@ -33,12 +33,12 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PhoneCallbackIcon from "@mui/icons-material/PhoneCallback";
 import SendIcon from "@mui/icons-material/Send";
-import { useNavigate } from "react-router-dom";
 import Menu from "../Components/Menu";
 import Pagination from "../Components/Paginacao";
 import api from "../services/apiService";
 import ErrorSpan from "../ErrorSpan";
 import DashboardDivulgacao from "./DashboardDivulgacao";
+import IgrejaDetalheModal from "../Igreja/IgrejaDetalhesModal";
 import {
   gerarMensagemInstagram,
   gerarMensagemFacebook,
@@ -71,33 +71,7 @@ const abrirUrl = (url) => {
 
 const copiar = (texto) => navigator.clipboard.writeText(texto).catch(() => {});
 
-const buscarIgrejaCompletaPorId = async (id) => {
-  const response = await api.get(`/api/v2/Igreja/admin/${id}`);
-  return response.data?.data || response.data;
-};
-
-const normalizarIgrejaParaEdicao = (response) => {
-  const igreja = response?.igreja || response?.item || response?.data || response;
-  const endereco =
-    igreja?.endereco || igreja?.dadosEndereco || igreja?.dados?.endereco || response?.endereco || {};
-
-  return {
-    id: igreja?.id,
-    nome: igreja?.nome || "",
-    nomeUnico: igreja?.nomeUnico || "",
-    slug: igreja?.slug || "",
-    paroco: igreja?.paroco || "",
-    missas: igreja?.missas || [],
-    contato: igreja?.contato || {},
-    redesSociais: igreja?.redesSociais || [],
-    endereco,
-    ativo: igreja?.ativo ?? true,
-    imagemUrl: igreja?.imagemUrl || igreja?.imagem || "",
-  };
-};
-
 const EmailEventoPage = () => {
-  const navigate = useNavigate();
   const [dashboard, setDashboard] = useState(null);
   const [dashboardLoading, setDashboardLoading] = useState(true);
 
@@ -279,14 +253,9 @@ const EmailEventoPage = () => {
   const toggleSelecionado = (id) =>
     setSelecionados((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
-  const handleEditarIgreja = async (igrejaId) => {
-    try {
-      const igrejaCompleta = await buscarIgrejaCompletaPorId(igrejaId);
-      navigate("/igrejaEditar", { state: { row: normalizarIgrejaParaEdicao(igrejaCompleta) } });
-    } catch {
-      setMessage({ mensagem: "Não foi possível abrir a igreja para edição.", severity: "error", show: true });
-    }
-  };
+  const [detalheIgrejaId, setDetalheIgrejaId] = useState(null);
+  const abrirDetalheIgreja = (igrejaId) => setDetalheIgrejaId(igrejaId);
+  const fecharDetalheIgreja = () => setDetalheIgrejaId(null);
 
   return (
     <Menu>
@@ -443,7 +412,7 @@ const EmailEventoPage = () => {
                             </TableCell>
                           )}
                           <TableCell>
-                            <Link component="button" underline="hover" onClick={() => handleEditarIgreja(ig.id)}>
+                            <Link component="button" underline="hover" onClick={() => abrirDetalheIgreja(ig.id)}>
                               {ig.nome}
                             </Link>
                           </TableCell>
@@ -640,6 +609,12 @@ const EmailEventoPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <IgrejaDetalheModal
+        open={!!detalheIgrejaId}
+        handleClose={fecharDetalheIgreja}
+        igrejaId={detalheIgrejaId}
+      />
     </Menu>
   );
 };

@@ -23,10 +23,10 @@ import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import Grid from "@mui/material/Grid2";
-import { useNavigate } from "react-router-dom";
 import Menu from "../Components/Menu";
 import api from "../services/apiService";
 import ErrorSpan from "../ErrorSpan";
+import IgrejaDetalheModal from "../Igreja/IgrejaDetalhesModal";
 
 // Filtros de período são mantidos entre navegações (ex: ida e volta da edição de igreja).
 const FILTROS_STORAGE_KEY = "indicadores_filtro_periodo";
@@ -161,33 +161,7 @@ const RankingTable = ({ titulo, descricao, itens, onIgrejaClick }) => {
   );
 };
 
-const buscarIgrejaCompletaPorId = async (id) => {
-  const response = await api.get(`/api/v2/Igreja/admin/${id}`);
-  return response.data?.data || response.data;
-};
-
-const normalizarIgrejaParaEdicao = (response) => {
-  const igreja = response?.igreja || response?.item || response?.data || response;
-  const endereco =
-    igreja?.endereco || igreja?.dadosEndereco || igreja?.dados?.endereco || response?.endereco || {};
-
-  return {
-    id: igreja?.id,
-    nome: igreja?.nome || "",
-    nomeUnico: igreja?.nomeUnico || "",
-    slug: igreja?.slug || "",
-    paroco: igreja?.paroco || "",
-    missas: igreja?.missas || [],
-    contato: igreja?.contato || {},
-    redesSociais: igreja?.redesSociais || [],
-    endereco,
-    ativo: igreja?.ativo ?? true,
-    imagemUrl: igreja?.imagemUrl || igreja?.imagem || "",
-  };
-};
-
 const Indicadores = () => {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
   const [dados, setDados] = useState(null);
@@ -237,14 +211,8 @@ const Indicadores = () => {
     carregar(periodo);
   };
 
-  const handleIgrejaClick = async (igrejaId) => {
-    try {
-      const igrejaCompleta = await buscarIgrejaCompletaPorId(igrejaId);
-      navigate("/igrejaEditar", { state: { row: normalizarIgrejaParaEdicao(igrejaCompleta) } });
-    } catch {
-      setErro("Não foi possível abrir a igreja para edição.");
-    }
-  };
+  const [detalheIgrejaId, setDetalheIgrejaId] = useState(null);
+  const handleIgrejaClick = (igrejaId) => setDetalheIgrejaId(igrejaId);
 
   if (loading) {
     return (
@@ -399,6 +367,12 @@ const Indicadores = () => {
           </>
         )}
       </Stack>
+
+      <IgrejaDetalheModal
+        open={!!detalheIgrejaId}
+        handleClose={() => setDetalheIgrejaId(null)}
+        igrejaId={detalheIgrejaId}
+      />
     </Menu>
   );
 };

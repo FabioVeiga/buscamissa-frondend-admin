@@ -131,3 +131,7 @@ dist
 
 stats.html
 ajuda/*
+
+# macOS / tooling local
+.DS_Store
+.claude/
