@@ -66,8 +66,10 @@ const IgrejaSearchForm = ({
 
   useEffect(() => {
     // Busca o mapa de endereços (UF -> Cidades -> Bairros)
+    // ignorarCache: no admin precisamos ver imediatamente cidades/bairros recém
+    // ajustados, sem esperar o TTL de 10 minutos do cache do backend.
     api
-      .get(`/api/v1/Igreja/v2/obter-enderecos`)
+      .get(`/api/v1/Igreja/v2/obter-enderecos`, { params: { ignorarCache: true } })
       .then((response) => {
         const data = response.data?.data || {};
         setEnderecosMap(data);
