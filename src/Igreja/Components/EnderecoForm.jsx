@@ -43,7 +43,9 @@ const EnderecoForm = ({
             setEnderecosLoading(true);
 
             try {
-                const response = await api.get("/api/v1/Igreja/v2/obter-enderecos");
+                // ignorarCache: no admin precisamos ver imediatamente cidades/bairros recém
+                // ajustados, sem esperar o TTL de 10 minutos do cache do backend.
+                const response = await api.get("/api/v1/Igreja/v2/obter-enderecos", { params: { ignorarCache: true } });
                 const data = response.data?.data || response.data || {};
 
                 setEnderecosMap(data && typeof data === "object" ? data : {});
