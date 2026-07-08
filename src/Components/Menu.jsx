@@ -24,6 +24,7 @@ import BuildIcon from "@mui/icons-material/Build";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import EmailIcon from "@mui/icons-material/Email";
 import InsightsIcon from "@mui/icons-material/Insights";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -39,6 +40,7 @@ const navItems = [
   { path: "/home", label: "Dashboard", icon: HomeIcon },
   { path: "/usuario", label: "Usuários", icon: AccountCircleIcon },
   { path: "/igreja", label: "Igrejas", icon: ChurchIcon },
+  { path: "/aprovacoes", label: "Aprovações Pendentes", icon: FactCheckIcon },
   { path: "/solicitacoes", label: "Solicitações", icon: BuildIcon },
   { path: "/contribuidores", label: "Contribuidores", icon: CurrencyExchangeIcon },
   { path: "/email-evento", label: "Divulgação", icon: EmailIcon },
@@ -49,6 +51,7 @@ const pageTitles = {
   "/home": "Dashboard",
   "/usuario": "Usuários",
   "/igreja": "Igrejas",
+  "/aprovacoes": "Aprovações Pendentes",
   "/solicitacoes": "Solicitações",
   "/contribuidores": "Contribuidores",
   "/igrejaNovo": "Nova Igreja",

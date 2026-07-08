@@ -10,6 +10,7 @@ import SolicitacoesPage from './Solicitacoes';
 import Contribuidores from './Contribuidores';
 import EmailEventoPage from './EmailEvento/EmailEvento';
 import Indicadores from './Indicadores/Indicadores';
+import Aprovacoes from './Aprovacoes/Aprovacoes';
 import PrivateRoute from './PrivateRoute'
 
 
@@ -89,6 +90,14 @@ const App = () => {
                 element={
                     <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
                         <Indicadores />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/aprovacoes"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <Aprovacoes />
                     </PrivateRoute>
                 }
             />
