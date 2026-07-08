@@ -602,9 +602,6 @@ const IgrejaAtualizar = () => {
             severity: "success",
             show: true,
           });
-          setTimeout(() => {
-            navigate("/igreja");
-          }, 2000);
         })
         .catch((error) => {
           console.log(error);

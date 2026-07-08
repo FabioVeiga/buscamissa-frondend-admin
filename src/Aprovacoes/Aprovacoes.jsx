@@ -309,6 +309,7 @@ const Aprovacoes = () => {
                     <TableCell>Igreja</TableCell>
                     <TableCell>Cidade/UF</TableCell>
                     <TableCell>Tipo</TableCell>
+                    <TableCell>Usuário</TableCell>
                     <TableCell>Status</TableCell>
                     <TableCell>Data</TableCell>
                     <TableCell align="center">Ações</TableCell>
@@ -316,13 +317,27 @@ const Aprovacoes = () => {
                 </TableHead>
                 <TableBody>
                   {itens.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} align="center">Nenhum item encontrado.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={7} align="center">Nenhum item encontrado.</TableCell></TableRow>
                   ) : (
                     itens.map((item) => (
                       <TableRow key={item.controleId} hover>
                         <TableCell>{item.nomeIgreja}</TableCell>
                         <TableCell>{[item.cidade, item.uf].filter(Boolean).join(" / ") || "-"}</TableCell>
                         <TableCell>{item.tipo === "Criacao" ? "Criação" : "Alteração"}</TableCell>
+                        <TableCell>
+                          {item.usuarioNome ? (
+                            <>
+                              {item.usuarioNome}
+                              {item.usuarioEmail && (
+                                <Typography variant="caption" color="text.secondary" display="block">
+                                  {item.usuarioEmail}
+                                </Typography>
+                              )}
+                            </>
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">Ainda não atribuído</Typography>
+                          )}
+                        </TableCell>
                         <TableCell>{STATUS_LABELS[item.status] || item.status}</TableCell>
                         <TableCell>{formatarData(item.dataCriacao)}</TableCell>
                         <TableCell align="center">
@@ -370,6 +385,13 @@ const Aprovacoes = () => {
           {detalheLoading || !detalhe ? (
             <Box display="flex" justifyContent="center" py={4}><CircularProgress /></Box>
           ) : (
+            <>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              <strong>Usuário:</strong>{" "}
+              {detalhe.usuarioNome
+                ? `${detalhe.usuarioNome}${detalhe.usuarioEmail ? ` (${detalhe.usuarioEmail})` : ""}`
+                : "Ainda não atribuído"}
+            </Typography>
             <Grid container spacing={2} sx={{ mt: 0.5 }}>
               <Grid item xs={12} md={detalhe.dadosAtuais ? 6 : 12}>
                 <BlocoDados titulo="Atual (publicado)" dados={detalhe.dadosAtuais} />
@@ -384,6 +406,7 @@ const Aprovacoes = () => {
                 </Grid>
               )}
             </Grid>
+            </>
           )}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
