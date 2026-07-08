@@ -260,7 +260,7 @@ const IgrejaPage = () => {
       <IgrejaDetalheModal
         open={open}
         handleClose={handleClose}
-        igreja={igrejaModal}
+        igrejaId={igrejaModal?.id}
       />
       <ConfirmModal
         open={confirmModalOpen}

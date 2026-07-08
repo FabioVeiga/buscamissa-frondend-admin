@@ -33,6 +33,7 @@ import api from "../services/apiService";
 import ErrorSpan from "../ErrorSpan";
 import MissaForm from "../Igreja/Components/MissaForm";
 import { diasDaSemana } from "../utils";
+import { buscarIgrejaCompletaPorId, normalizarIgrejaParaEdicao } from "../services/igrejaHelpers";
 
 // Espelha BuscaMissa.Enums.StatusEnum (backend) — enums são serializados como número.
 const STATUS = {
@@ -65,31 +66,6 @@ const FILTROS_STATUS = [
 ];
 
 const formatarData = (valor) => (valor ? new Date(valor).toLocaleString("pt-BR") : "-");
-
-const buscarIgrejaCompletaPorId = async (id) => {
-  const response = await api.get(`/api/v2/Igreja/admin/${id}`);
-  return response.data?.data || response.data;
-};
-
-const normalizarIgrejaParaEdicao = (response) => {
-  const igreja = response?.igreja || response?.item || response?.data || response;
-  const endereco =
-    igreja?.endereco || igreja?.dadosEndereco || igreja?.dados?.endereco || response?.endereco || {};
-
-  return {
-    id: igreja?.id,
-    nome: igreja?.nome || "",
-    nomeUnico: igreja?.nomeUnico || "",
-    slug: igreja?.slug || "",
-    paroco: igreja?.paroco || "",
-    missas: igreja?.missas || [],
-    contato: igreja?.contato || {},
-    redesSociais: igreja?.redesSociais || [],
-    endereco,
-    ativo: igreja?.ativo ?? true,
-    imagemUrl: igreja?.imagemUrl || igreja?.imagem || "",
-  };
-};
 
 // Bloco comparativo (usado tanto para "Atual" quanto "Proposto" no modal de detalhe).
 const BlocoDados = ({ titulo, dados }) => (

@@ -33,6 +33,7 @@ import ClearIcon from "@mui/icons-material/Clear";
 import LockResetIcon from "@mui/icons-material/LockReset";
 import ChurchIcon from "@mui/icons-material/Church";
 import Pagination from "./Components/Paginacao";
+import { buscarIgrejaCompletaPorId, normalizarIgrejaParaEdicao } from "./services/igrejaHelpers";
 
 const PERFIS = [
   { id: 1, nome: "Admin" },
@@ -48,31 +49,6 @@ const FILTROS_PADRAO = {
   bloqueado: "",
   criacaoInicio: "",
   criacaoFim: "",
-};
-
-const buscarIgrejaCompletaPorId = async (id) => {
-  const response = await api.get(`/api/v2/Igreja/admin/${id}`);
-  return response.data?.data || response.data;
-};
-
-const normalizarIgrejaParaEdicao = (response) => {
-  const igreja = response?.igreja || response?.item || response?.data || response;
-  const endereco =
-    igreja?.endereco || igreja?.dadosEndereco || igreja?.dados?.endereco || response?.endereco || {};
-
-  return {
-    id: igreja?.id,
-    nome: igreja?.nome || "",
-    nomeUnico: igreja?.nomeUnico || "",
-    slug: igreja?.slug || "",
-    paroco: igreja?.paroco || "",
-    missas: igreja?.missas || [],
-    contato: igreja?.contato || {},
-    redesSociais: igreja?.redesSociais || [],
-    endereco,
-    ativo: igreja?.ativo ?? true,
-    imagemUrl: igreja?.imagemUrl || igreja?.imagem || "",
-  };
 };
 
 const UsuarioPage = () => {
