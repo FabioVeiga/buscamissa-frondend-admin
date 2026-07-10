@@ -276,7 +276,7 @@ const IgrejaSearchForm = ({
         }}
       >
         <Grid container spacing={2}>
-          <Grid size={1}>
+          <Grid size={{ xs: 6, sm: 1 }}>
             {/* Autocomplete UF */}
             <Autocomplete
               freeSolo
@@ -289,7 +289,7 @@ const IgrejaSearchForm = ({
               )}
             />
           </Grid>
-          <Grid size={4}>
+          <Grid size={{ xs: 6, sm: 4 }}>
             {/* Autocomplete Localidade */}
             <Autocomplete
               freeSolo
@@ -302,7 +302,7 @@ const IgrejaSearchForm = ({
               )}
             />
           </Grid>
-          <Grid size={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <TextField
               label="Bairro"
               value={formData.bairro}
@@ -310,7 +310,7 @@ const IgrejaSearchForm = ({
               fullWidth
             />
           </Grid>
-          <Grid size={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <TextField
               label="Nome"
               value={formData.nome}
@@ -318,7 +318,7 @@ const IgrejaSearchForm = ({
               fullWidth
             />
           </Grid>
-          <Grid size={2}>
+          <Grid size={{ xs: 6, sm: 2 }}>
             <TextField
               label="Id"
               value={formData.id}
@@ -326,7 +326,7 @@ const IgrejaSearchForm = ({
               fullWidth
             />
           </Grid>
-          <Grid size={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <TextField
               label="CEP"
               value={formData.cep}
@@ -334,7 +334,7 @@ const IgrejaSearchForm = ({
               fullWidth
             />
           </Grid>
-          <Grid size={3}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             <TextField
               label="Pároco"
               value={formData.paroco}
@@ -342,7 +342,7 @@ const IgrejaSearchForm = ({
               fullWidth
             />
           </Grid>
-          <Grid size={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             {/* Dia da semana */}
             <FormControl fullWidth>
               <InputLabel id="diaSemana-label">Dia da Semana</InputLabel>
@@ -364,7 +364,7 @@ const IgrejaSearchForm = ({
               </Select>
             </FormControl>
           </Grid>
-          <Grid size={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <TextField
               label="Horário"
               type="time"
