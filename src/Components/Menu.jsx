@@ -15,6 +15,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { useAuth } from "../Context/AuthContext";
+import SessaoCountdown from "./SessaoCountdown";
 import { useNavigate, useLocation } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -25,6 +26,7 @@ import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import EmailIcon from "@mui/icons-material/Email";
 import InsightsIcon from "@mui/icons-material/Insights";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
+import AnnouncementIcon from "@mui/icons-material/Announcement";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -41,6 +43,7 @@ const navItems = [
   { path: "/usuario", label: "Usuários", icon: AccountCircleIcon },
   { path: "/igreja", label: "Igrejas", icon: ChurchIcon },
   { path: "/aprovacoes", label: "Aprovações Pendentes", icon: FactCheckIcon },
+  { path: "/reportar-problema", label: "Problemas Reportados", icon: AnnouncementIcon },
   { path: "/solicitacoes", label: "Solicitações", icon: BuildIcon },
   { path: "/contribuidores", label: "Contribuidores", icon: CurrencyExchangeIcon },
   { path: "/email-evento", label: "Divulgação", icon: EmailIcon },
@@ -52,6 +55,7 @@ const pageTitles = {
   "/usuario": "Usuários",
   "/igreja": "Igrejas",
   "/aprovacoes": "Aprovações Pendentes",
+  "/reportar-problema": "Problemas Reportados",
   "/solicitacoes": "Solicitações",
   "/contribuidores": "Contribuidores",
   "/igrejaNovo": "Nova Igreja",
@@ -158,6 +162,11 @@ const Menu = ({ children }) => {
         })}
       </List>
       <Box sx={{ flex: 1 }} />
+      {(desktopOpen || isMobile) && (
+        <Box sx={{ px: 2, pt: 1 }}>
+          <SessaoCountdown />
+        </Box>
+      )}
       <List sx={{ px: 1.5, py: 1, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
         <ListItem disablePadding>
           <ListItemButton

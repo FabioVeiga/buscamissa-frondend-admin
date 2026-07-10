@@ -23,7 +23,7 @@ import {
     Divider,
     Tooltip,
 } from "@mui/material";
-import { Delete, Add, ExpandMore, ExpandLess } from "@mui/icons-material";
+import { Delete, Add, ExpandMore, ExpandLess, DeleteSweep } from "@mui/icons-material";
 import { diasDaSemana, formatarHorario, apenasNumeros } from "../../utils";
 import SectionCard from "./SectionCard";
 
@@ -38,6 +38,9 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
     const [multiHorario, setMultiHorario] = useState("");
     const [multiHorarios, setMultiHorarios] = useState([]);
     const multiHorarioRef = useRef(null);
+
+    // Seleção múltipla para deletar em lote
+    const [selecionadas, setSelecionadas] = useState([]);
 
     const handleChange = (field, value) => {
         setNovaMissa((prev) => ({ ...prev, [field]: value }));
@@ -79,6 +82,27 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
 
     const handleDeleteMissa = (indexToDelete) => {
         setMissas((prev) => prev.filter((_, index) => index !== indexToDelete));
+        setSelecionadas((prev) => prev.filter((i) => i !== indexToDelete));
+    };
+
+    const handleDeleteTodas = () => {
+        setMissas([]);
+        setSelecionadas([]);
+    };
+
+    const handleToggleSelecionada = (index) => {
+        setSelecionadas((prev) =>
+            prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+        );
+    };
+
+    const handleToggleSelecionarTodas = () => {
+        setSelecionadas((prev) => (prev.length === missas.length ? [] : missas.map((_, i) => i)));
+    };
+
+    const handleDeleteSelecionadas = () => {
+        setMissas((prev) => prev.filter((_, index) => !selecionadas.includes(index)));
+        setSelecionadas([]);
     };
 
     const handleAdicionarMultiHorario = () => {
@@ -271,32 +295,95 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                 />
 
                 {missas.length > 0 && (
-                    <TableContainer component={Paper} sx={{ mt: 1, borderRadius: 2 }}>
-                        <Table size="small">
-                            <TableHead>
-                                <TableRow sx={{ backgroundColor: "grey.100" }}>
-                                    <TableCell><strong>Horário</strong></TableCell>
-                                    <TableCell><strong>Dia</strong></TableCell>
-                                    <TableCell><strong>Observação</strong></TableCell>
-                                    <TableCell align="center"><strong>Ações</strong></TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {missas.map((missa, index) => (
-                                    <TableRow key={`${missa.horario}-${missa.diaSemana}-${index}`} hover>
-                                        <TableCell>{formatarHorario(missa.horario)}</TableCell>
-                                        <TableCell>{getDiaLabel(missa.diaSemana)}</TableCell>
-                                        <TableCell>{missa.observacao || "Sem observação"}</TableCell>
-                                        <TableCell align="center">
-                                            <IconButton color="error" onClick={() => handleDeleteMissa(index)}>
-                                                <Delete />
-                                            </IconButton>
+                    <>
+                        <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ mt: 1 }}>
+                            <Typography variant="body2" color="text.secondary">
+                                {selecionadas.length > 0
+                                    ? `${selecionadas.length} selecionada(s)`
+                                    : `${missas.length} missa(s) cadastrada(s)`}
+                            </Typography>
+                            <Stack direction="row" spacing={1}>
+                                {selecionadas.length > 0 && (
+                                    <Button
+                                        size="small"
+                                        color="error"
+                                        variant="outlined"
+                                        startIcon={<Delete />}
+                                        onClick={handleDeleteSelecionadas}
+                                    >
+                                        Deletar selecionadas ({selecionadas.length})
+                                    </Button>
+                                )}
+                                <Button
+                                    size="small"
+                                    color="error"
+                                    startIcon={<DeleteSweep />}
+                                    onClick={handleDeleteTodas}
+                                >
+                                    Deletar todas
+                                </Button>
+                            </Stack>
+                        </Box>
+
+                        <TableContainer component={Paper} sx={{ mt: 1, borderRadius: 2 }}>
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow sx={{ backgroundColor: "grey.100" }}>
+                                        <TableCell padding="checkbox">
+                                            <Checkbox
+                                                size="small"
+                                                indeterminate={selecionadas.length > 0 && selecionadas.length < missas.length}
+                                                checked={missas.length > 0 && selecionadas.length === missas.length}
+                                                onChange={handleToggleSelecionarTodas}
+                                            />
                                         </TableCell>
+                                        <TableCell><strong>Horário</strong></TableCell>
+                                        <TableCell><strong>Observação</strong></TableCell>
+                                        <TableCell align="center"><strong>Ações</strong></TableCell>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                                </TableHead>
+                                <TableBody>
+                                    {diasDaSemana.map((dia) => {
+                                        const missasDoDia = missas
+                                            .map((missa, index) => ({ missa, index }))
+                                            .filter(({ missa }) => Number(missa.diaSemana) === dia.value);
+
+                                        if (missasDoDia.length === 0) return null;
+
+                                        return (
+                                            <React.Fragment key={`grupo-${dia.value}`}>
+                                                <TableRow>
+                                                    <TableCell colSpan={4} sx={{ backgroundColor: "grey.50", py: 0.5 }}>
+                                                        <Typography variant="caption" fontWeight={700}>
+                                                            {dia.label}
+                                                        </Typography>
+                                                    </TableCell>
+                                                </TableRow>
+                                                {missasDoDia.map(({ missa, index }) => (
+                                                    <TableRow key={`${missa.horario}-${missa.diaSemana}-${index}`} hover selected={selecionadas.includes(index)}>
+                                                        <TableCell padding="checkbox">
+                                                            <Checkbox
+                                                                size="small"
+                                                                checked={selecionadas.includes(index)}
+                                                                onChange={() => handleToggleSelecionada(index)}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>{formatarHorario(missa.horario)}</TableCell>
+                                                        <TableCell>{missa.observacao || "Sem observação"}</TableCell>
+                                                        <TableCell align="center">
+                                                            <IconButton color="error" onClick={() => handleDeleteMissa(index)}>
+                                                                <Delete />
+                                                            </IconButton>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </>
                 )}
             </Box>
         </SectionCard>

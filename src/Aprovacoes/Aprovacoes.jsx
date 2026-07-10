@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Button,
+  Card,
+  CardContent,
   Chip,
   CircularProgress,
   Dialog,
@@ -21,6 +23,8 @@ import {
   TableRow,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -103,6 +107,8 @@ const BlocoDados = ({ titulo, dados }) => (
 
 const Aprovacoes = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [statusFiltro, setStatusFiltro] = useState(null);
   const [itens, setItens] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -251,6 +257,27 @@ const Aprovacoes = () => {
     }
   };
 
+  const renderAcoes = (item) => (
+    <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap justifyContent={isMobile ? "flex-start" : "center"}>
+      <Button size="small" startIcon={<VisibilityIcon />} onClick={() => abrirDetalhe(item)}>
+        Ver
+      </Button>
+      {item.status !== STATUS.FINALIZADO && item.status !== STATUS.REJEITADO && (
+        <>
+          <Button size="small" color="success" startIcon={<CheckCircleIcon />} onClick={() => aprovar(item.controleId)}>
+            Aprovar
+          </Button>
+          <Button size="small" color="secondary" startIcon={<EditIcon />} onClick={() => ajustar(item)}>
+            Ajustar
+          </Button>
+          <Button size="small" color="error" startIcon={<CancelIcon />} onClick={() => rejeitar(item.controleId)}>
+            Rejeitar
+          </Button>
+        </>
+      )}
+    </Stack>
+  );
+
   return (
     <Menu>
       <Stack spacing={2}>
@@ -272,90 +299,108 @@ const Aprovacoes = () => {
           <ErrorSpan errorMessage={message.mensagem} severity={message.severity} />
         )}
 
-        <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>Aprovações Pendentes</Typography>
-
-          {isLoading ? (
+        {isLoading ? (
+          <Paper sx={{ p: 2, borderRadius: 2 }}>
             <Box display="flex" justifyContent="center" py={6}><CircularProgress /></Box>
-          ) : (
-            <>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Igreja</TableCell>
-                    <TableCell>Cidade/UF</TableCell>
-                    <TableCell>Tipo</TableCell>
-                    <TableCell>Usuário</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Data</TableCell>
-                    <TableCell align="center">Ações</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {itens.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} align="center">Nenhum item encontrado.</TableCell></TableRow>
-                  ) : (
-                    itens.map((item) => (
-                      <TableRow key={item.controleId} hover>
-                        <TableCell>{item.nomeIgreja}</TableCell>
-                        <TableCell>{[item.cidade, item.uf].filter(Boolean).join(" / ") || "-"}</TableCell>
-                        <TableCell>{item.tipo === "Criacao" ? "Criação" : "Alteração"}</TableCell>
-                        <TableCell>
-                          {item.usuarioNome ? (
-                            <>
-                              {item.usuarioNome}
-                              {item.usuarioEmail && (
-                                <Typography variant="caption" color="text.secondary" display="block">
-                                  {item.usuarioEmail}
-                                </Typography>
-                              )}
-                            </>
-                          ) : (
-                            <Typography variant="body2" color="text.secondary">Ainda não atribuído</Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>{STATUS_LABELS[item.status] || item.status}</TableCell>
-                        <TableCell>{formatarData(item.dataCriacao)}</TableCell>
-                        <TableCell align="center">
-                          <Stack direction="row" spacing={0.5} justifyContent="center">
-                            <Button size="small" startIcon={<VisibilityIcon />} onClick={() => abrirDetalhe(item)}>
-                              Ver
-                            </Button>
-                            {item.status !== STATUS.FINALIZADO && item.status !== STATUS.REJEITADO && (
-                              <>
-                                <Button size="small" color="success" startIcon={<CheckCircleIcon />} onClick={() => aprovar(item.controleId)}>
-                                  Aprovar
-                                </Button>
-                                <Button size="small" color="secondary" startIcon={<EditIcon />} onClick={() => ajustar(item)}>
-                                  Ajustar
-                                </Button>
-                                <Button size="small" color="error" startIcon={<CancelIcon />} onClick={() => rejeitar(item.controleId)}>
-                                  Rejeitar
-                                </Button>
-                              </>
+          </Paper>
+        ) : isMobile ? (
+          <Paper sx={{ p: 2, borderRadius: 2 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>Aprovações Pendentes</Typography>
+            <Stack spacing={1.5}>
+              {itens.length === 0 ? (
+                <Typography color="text.secondary" textAlign="center" py={4}>Nenhum item encontrado.</Typography>
+              ) : (
+                itens.map((item) => (
+                  <Card key={item.controleId} variant="outlined">
+                    <CardContent sx={{ pb: 1, "&:last-child": { pb: 1 } }}>
+                      <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                        <Box>
+                          <Typography sx={{ fontWeight: 600 }}>{item.nomeIgreja}</Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {[item.cidade, item.uf].filter(Boolean).join(" / ") || "-"} · {item.tipo === "Criacao" ? "Criação" : "Alteração"}
+                          </Typography>
+                        </Box>
+                        <Chip label={STATUS_LABELS[item.status] || item.status} size="small" />
+                      </Stack>
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                        {item.usuarioNome || "Ainda não atribuído"} · {formatarData(item.dataCriacao)}
+                      </Typography>
+                      <Box sx={{ mt: 1 }}>{renderAcoes(item)}</Box>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </Stack>
+            <Pagination
+              pageIndex={paginacao.pageIndex}
+              totalPages={paginacao.totalPages}
+              hasPreviousPage={paginacao.hasPreviousPage}
+              hasNextPage={paginacao.hasNextPage}
+              onPageChange={buscar}
+            />
+          </Paper>
+        ) : (
+          <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>Aprovações Pendentes</Typography>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Igreja</TableCell>
+                  <TableCell>Cidade/UF</TableCell>
+                  <TableCell>Tipo</TableCell>
+                  <TableCell>Usuário</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Data</TableCell>
+                  <TableCell align="center">Ações</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {itens.length === 0 ? (
+                  <TableRow><TableCell colSpan={7} align="center">Nenhum item encontrado.</TableCell></TableRow>
+                ) : (
+                  itens.map((item) => (
+                    <TableRow key={item.controleId} hover>
+                      <TableCell>{item.nomeIgreja}</TableCell>
+                      <TableCell>{[item.cidade, item.uf].filter(Boolean).join(" / ") || "-"}</TableCell>
+                      <TableCell>{item.tipo === "Criacao" ? "Criação" : "Alteração"}</TableCell>
+                      <TableCell>
+                        {item.usuarioNome ? (
+                          <>
+                            {item.usuarioNome}
+                            {item.usuarioEmail && (
+                              <Typography variant="caption" color="text.secondary" display="block">
+                                {item.usuarioEmail}
+                              </Typography>
                             )}
-                          </Stack>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                          </>
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">Ainda não atribuído</Typography>
+                        )}
+                      </TableCell>
+                      <TableCell>{STATUS_LABELS[item.status] || item.status}</TableCell>
+                      <TableCell>{formatarData(item.dataCriacao)}</TableCell>
+                      <TableCell align="center">
+                        {renderAcoes(item)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
 
-              <Pagination
-                pageIndex={paginacao.pageIndex}
-                totalPages={paginacao.totalPages}
-                hasPreviousPage={paginacao.hasPreviousPage}
-                hasNextPage={paginacao.hasNextPage}
-                onPageChange={buscar}
-              />
-            </>
-          )}
-        </TableContainer>
+            <Pagination
+              pageIndex={paginacao.pageIndex}
+              totalPages={paginacao.totalPages}
+              hasPreviousPage={paginacao.hasPreviousPage}
+              hasNextPage={paginacao.hasNextPage}
+              onPageChange={buscar}
+            />
+          </TableContainer>
+        )}
       </Stack>
 
       {/* Modal de detalhe — comparativo antes/depois */}
-      <Dialog open={detalheAberto} onClose={fecharDetalhe} maxWidth="md" fullWidth>
+      <Dialog open={detalheAberto} onClose={fecharDetalhe} maxWidth="md" fullWidth fullScreen={isMobile}>
         <DialogTitle>Detalhe da solicitação</DialogTitle>
         <DialogContent>
           {detalheLoading || !detalhe ? (
@@ -399,7 +444,7 @@ const Aprovacoes = () => {
       </Dialog>
 
       {/* Modal de ajuste (só alteração) */}
-      <Dialog open={ajustarAberto} onClose={fecharAjustar} maxWidth="md" fullWidth>
+      <Dialog open={ajustarAberto} onClose={fecharAjustar} maxWidth="md" fullWidth fullScreen={isMobile}>
         <DialogTitle>Ajustar alteração antes de concluir</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>

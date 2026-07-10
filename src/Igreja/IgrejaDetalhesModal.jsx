@@ -72,7 +72,7 @@ const IgrejaDetalheModal = ({ open, handleClose, igrejaId }) => {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 500,
+          width: "min(500px, 92vw)",
           maxHeight: "85vh",
           overflowY: "auto",
           bgcolor: "background.paper",

@@ -18,13 +18,15 @@ import {
   MenuItem,
   Link,
   IconButton,
+  Card,
+  CardContent,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import Menu from "./Components/Menu";
 import api from "./services/apiService";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { CircularProgress, Box, Typography } from "@mui/material";
+import { CircularProgress, Box, Typography, useTheme, useMediaQuery } from "@mui/material";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
@@ -64,6 +66,8 @@ const OPCOES_ORDENACAO = [
 
 const UsuarioPage = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [data, setData] = useState([]);
   const [paginacao, setPaginacao] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -294,6 +298,36 @@ const UsuarioPage = () => {
     setIgrejasUsuario([]);
   };
 
+  // Compartilhado entre a linha da tabela (desktop) e o card (mobile).
+  const renderAcoes = (row) => (
+    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+      <Button variant="contained" color="primary" size="small" onClick={() => handleOpenDetailsModal(row)}>
+        Visualizar
+      </Button>
+      <Tooltip title={row.bloqueado ? "Clique para desbloquear o usuário" : "Clique para bloquear o usuário"}>
+        <Button
+          variant="contained"
+          color={row.bloqueado ? "error" : "success"}
+          size="small"
+          onClick={() => handleOpenModal(row)}
+        >
+          {row.bloqueado ? "Desbloquear" : "Bloquear"}
+        </Button>
+      </Tooltip>
+      <Tooltip title="Definir uma nova senha para o usuário">
+        <Button
+          variant="outlined"
+          color="warning"
+          size="small"
+          startIcon={<LockResetIcon />}
+          onClick={() => handleOpenSenhaModal(row)}
+        >
+          Resetar senha
+        </Button>
+      </Tooltip>
+    </Stack>
+  );
+
   const handleEditarIgreja = async (igrejaId) => {
     try {
       const igrejaCompleta = await buscarIgrejaCompletaPorId(igrejaId);
@@ -439,6 +473,38 @@ const UsuarioPage = () => {
               Carregando...
             </Typography>
           </Box>
+        ) : isMobile ? (
+          <Stack spacing={1.5}>
+            {data.items.map((row) => (
+              <Card key={row.id} variant="outlined">
+                <CardContent sx={{ pb: 1, "&:last-child": { pb: 1 } }}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                    <Box>
+                      <Typography sx={{ fontWeight: 600 }}>{row.nome}</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {perfil(row.perfil)}
+                      </Typography>
+                    </Box>
+                    <Typography variant="caption" color={row.bloqueado ? "error.main" : "text.secondary"}>
+                      {row.bloqueado ? "Bloqueado" : "Ativo"}
+                    </Typography>
+                  </Stack>
+                  <Tooltip title="Ver igrejas cadastradas por este usuário">
+                    <Button
+                      variant="text"
+                      size="small"
+                      startIcon={<ChurchIcon />}
+                      onClick={() => handleOpenIgrejasModal(row)}
+                      sx={{ mt: 0.5, pl: 0 }}
+                    >
+                      {row.totalIgrejas ?? 0} igreja(s)
+                    </Button>
+                  </Tooltip>
+                  <Box sx={{ mt: 1 }}>{renderAcoes(row)}</Box>
+                </CardContent>
+              </Card>
+            ))}
+          </Stack>
         ) : (
           <Table>
             <TableHead>
@@ -471,43 +537,7 @@ const UsuarioPage = () => {
                     </Tooltip>
                   </TableCell>
                   <TableCell>
-                    <Stack direction="row" spacing={1}>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        size="small"
-                        onClick={() => handleOpenDetailsModal(row)}
-                      >
-                        Visualizar
-                      </Button>
-                      <Tooltip
-                        title={
-                          row.bloqueado
-                            ? "Clique para desbloquear o usuário"
-                            : "Clique para bloquear o usuário"
-                        }
-                      >
-                        <Button
-                          variant="contained"
-                          color={row.bloqueado ? "error" : "success"}
-                          size="small"
-                          onClick={() => handleOpenModal(row)}
-                        >
-                          {row.bloqueado ? "Desbloquear" : "Bloquear"}
-                        </Button>
-                      </Tooltip>
-                      <Tooltip title="Definir uma nova senha para o usuário">
-                        <Button
-                          variant="outlined"
-                          color="warning"
-                          size="small"
-                          startIcon={<LockResetIcon />}
-                          onClick={() => handleOpenSenhaModal(row)}
-                        >
-                          Resetar senha
-                        </Button>
-                      </Tooltip>
-                    </Stack>
+                    {renderAcoes(row)}
                   </TableCell>
                 </TableRow>
               ))}
