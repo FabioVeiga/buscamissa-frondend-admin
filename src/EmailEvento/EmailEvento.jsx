@@ -276,7 +276,7 @@ const EmailEventoPage = () => {
               value={filtrosTexto.nome}
               onChange={(e) => setFiltrosTexto((p) => ({ ...p, nome: e.target.value }))}
               onKeyDown={(e) => e.key === "Enter" && handlePesquisar()}
-              sx={{ minWidth: 200 }}
+              sx={{ width: { xs: "100%", sm: 200 } }}
             />
             <TextField
               label="Cidade"
@@ -284,7 +284,7 @@ const EmailEventoPage = () => {
               value={filtrosTexto.cidade}
               onChange={(e) => setFiltrosTexto((p) => ({ ...p, cidade: e.target.value }))}
               onKeyDown={(e) => e.key === "Enter" && handlePesquisar()}
-              sx={{ minWidth: 160 }}
+              sx={{ width: { xs: "100%", sm: 160 } }}
             />
             <TextField
               label="UF"
@@ -292,12 +292,12 @@ const EmailEventoPage = () => {
               value={filtrosTexto.uf}
               onChange={(e) => setFiltrosTexto((p) => ({ ...p, uf: e.target.value.toUpperCase().slice(0, 2) }))}
               onKeyDown={(e) => e.key === "Enter" && handlePesquisar()}
-              sx={{ width: 90 }}
+              sx={{ width: { xs: "100%", sm: 90 } }}
             />
-            <Button variant="contained" size="small" onClick={handlePesquisar}>
+            <Button variant="contained" size="small" onClick={handlePesquisar} sx={{ width: { xs: "100%", sm: "auto" } }}>
               Pesquisar
             </Button>
-            <Button variant="outlined" size="small" onClick={handleLimpar}>
+            <Button variant="outlined" size="small" onClick={handleLimpar} sx={{ width: { xs: "100%", sm: "auto" } }}>
               Limpar
             </Button>
             <Button
@@ -306,7 +306,7 @@ const EmailEventoPage = () => {
               size="small"
               startIcon={<PhoneCallbackIcon />}
               onClick={abrirModalRegistroManual}
-              sx={{ ml: "auto" }}
+              sx={{ width: { xs: "100%", sm: "auto" }, ml: { sm: "auto" } }}
             >
               Registrar contato
             </Button>

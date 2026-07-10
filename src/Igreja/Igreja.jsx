@@ -15,6 +15,10 @@ import {
   Box,
   Chip,
   Typography,
+  Card,
+  CardContent,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import Menu from "../Components/Menu";
 import Pagination from "../Components/Paginacao";
@@ -36,6 +40,8 @@ import { useEffect } from "react";
 
 
 const IgrejaPage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [igrejas, setIgrejas] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [paginacao, setPaginacao] = useState({
@@ -255,6 +261,52 @@ const IgrejaPage = () => {
     }));
   };
 
+  // Compartilhado entre a linha da tabela (desktop) e o card (mobile).
+  const renderAcoes = (row) => (
+    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+      <Tooltip title="Detalhes">
+        <IconButton color="primary" onClick={() => handleOpen(row)}>
+          <OpenInNewIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Editar">
+        <IconButton color="primary" onClick={() => navigate("/IgrejaEditar", { state: { row } })}>
+          <EditIcon />
+        </IconButton>
+      </Tooltip>
+      {row.reportarProblema && (
+        <>
+          <Tooltip title="Problema reportado">
+            <IconButton color="warning" onClick={handleOpenModal}>
+              <AnnouncementIcon />
+            </IconButton>
+          </Tooltip>
+          <ReportarProblemaModal
+            open={problemaModalOpen}
+            onClose={handleCloseModal}
+            problemaId={row.reportarProblema.id}
+            nome={row.reportarProblema.nome}
+            email={row.reportarProblema.email}
+            descricao={row.reportarProblema.descricao}
+            onSuccess={handleSuccess}
+          />
+        </>
+      )}
+      {!row.ativo && (
+        <Tooltip title="Ativar">
+          <IconButton color="primary" onClick={() => handleOpenConfirmModal(row.id)}>
+            <HideSourceIcon />
+          </IconButton>
+        </Tooltip>
+      )}
+      <Tooltip title="Deletar">
+        <IconButton color="error" onClick={() => handleOpenDeleteModal(row.id)}>
+          <DeleteIcon />
+        </IconButton>
+      </Tooltip>
+    </Stack>
+  );
+
   return (
     <>
       <IgrejaDetalheModal
@@ -298,6 +350,65 @@ const IgrejaPage = () => {
               <Typography variant="h6" mt={2}>
                 Carregando...
               </Typography>
+            </Box>
+          ) : isMobile ? (
+            <Box sx={{ flex: 1, overflow: "auto" }}>
+              <Stack spacing={1.5}>
+                {igrejas.items && igrejas.items.length > 0 ? (
+                  igrejas.items.map((row) => (
+                    <Card key={row.id} variant="outlined">
+                      <CardContent sx={{ pb: 1, "&:last-child": { pb: 1 } }}>
+                        <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                          <Box>
+                            <Typography sx={{ fontWeight: 600 }}>{row.nome}</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {row.endereco?.localidade} / {row.endereco?.uf}
+                            </Typography>
+                          </Box>
+                          <Chip
+                            label={row.ativo ? "Ativo" : "Inativo"}
+                            size="small"
+                            color={row.ativo ? "success" : "default"}
+                          />
+                        </Stack>
+                        {row.endereco?.cep && (
+                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                            CEP: {row.endereco.cep}
+                          </Typography>
+                        )}
+                        {row.slug && (
+                          <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5 }}>
+                            <Link
+                              href={buildParoquiaUrl(row)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              underline="hover"
+                              sx={{
+                                maxWidth: "80%",
+                                display: "inline-block",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                                fontSize: "0.8125rem",
+                              }}
+                            >
+                              {shortParoquiaText(row)}
+                            </Link>
+                            <IconButton size="small" onClick={() => handleCopyUrl(buildParoquiaUrl(row))}>
+                              <ContentCopyIcon fontSize="small" />
+                            </IconButton>
+                          </Stack>
+                        )}
+                        <Box sx={{ mt: 1 }}>{renderAcoes(row)}</Box>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <Typography color="text.secondary" textAlign="center" py={4}>
+                    Não há dados disponíveis.
+                  </Typography>
+                )}
+              </Stack>
             </Box>
           ) : (
             <Box sx={{ flex: 1, overflow: "auto" }}>
@@ -392,73 +503,7 @@ const IgrejaPage = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Stack direction="row" spacing={1}>
-                          <Tooltip title="Detalhes">
-                            <IconButton
-                              color="primary"
-                              onClick={() => {
-                                handleOpen(row);
-                              }}
-                            >
-                              <OpenInNewIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Editar">
-                            <IconButton
-                              color="primary"
-                              onClick={() =>
-                                navigate("/IgrejaEditar", { state: { row } })
-                              }
-                            >
-                              <EditIcon />
-                            </IconButton>
-                          </Tooltip>
-                          {row.reportarProblema && (
-                            <>
-                              <Tooltip title="Problema reportado">
-                                <IconButton
-                                  color="warning"
-                                  onClick={handleOpenModal}
-                                >
-                                  <AnnouncementIcon />
-                                </IconButton>
-                              </Tooltip>
-                              <ReportarProblemaModal
-                                open={problemaModalOpen}
-                                onClose={handleCloseModal}
-                                problemaId={row.reportarProblema.id}
-                                nome={row.reportarProblema.nome}
-                                email={row.reportarProblema.email}
-                                descricao={row.reportarProblema.descricao}
-                                onSuccess={handleSuccess} // Passa uma função, não uma chamada direta
-                              />
-                            </>
-                          )}
-                          {!row.ativo ? (
-                           <Tooltip title="Ativar">
-                           <IconButton
-                             color="primary"
-                             onClick={() => {
-                               handleOpenConfirmModal(row.id);
-                             }}
-                           >
-                             <HideSourceIcon />
-                           </IconButton>
-                         </Tooltip>
-                          ) : (
-                            ""
-                          )}
-
-                          <Tooltip title="Deletar">
-                            <IconButton
-                              color="error"
-                              onClick={() => handleOpenDeleteModal(row.id)}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                          
-                        </Stack>
+                        {renderAcoes(row)}
                       </TableCell>
                     </TableRow>
                   ))

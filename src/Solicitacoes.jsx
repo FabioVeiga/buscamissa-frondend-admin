@@ -121,7 +121,14 @@ const SolicitacoesPage = () => {
     <Menu>
       <Box sx={{ p: { xs: 1, sm: 2 } }}>
         {/* Cabeçalho */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+        <Box
+          display="flex"
+          flexDirection={{ xs: "column", sm: "row" }}
+          justifyContent="space-between"
+          alignItems={{ xs: "stretch", sm: "center" }}
+          gap={2}
+          sx={{ mb: 3 }}
+        >
           <Box>
             <Typography variant="h5" fontWeight={700}>Solicitações</Typography>
             <Typography variant="body2" color="text.secondary">
@@ -129,13 +136,13 @@ const SolicitacoesPage = () => {
             </Typography>
           </Box>
 
-          <Box display="flex" gap={1} alignItems="center">
+          <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} gap={1} alignItems={{ xs: "stretch", sm: "center" }}>
             <Select
               value={filtroResolvida}
               onChange={handleFiltroChange}
               displayEmpty
               size="small"
-              sx={{ minWidth: 180 }}
+              sx={{ minWidth: { xs: "100%", sm: 180 } }}
             >
               <MenuItem value="">Todas</MenuItem>
               <MenuItem value="true">Resolvidas</MenuItem>
