@@ -11,6 +11,7 @@ import Contribuidores from './Contribuidores';
 import EmailEventoPage from './EmailEvento/EmailEvento';
 import Indicadores from './Indicadores/Indicadores';
 import Aprovacoes from './Aprovacoes/Aprovacoes';
+import ReportarProblemaPage from './ReportarProblema/ReportarProblema';
 import PrivateRoute from './PrivateRoute'
 
 
@@ -98,6 +99,14 @@ const App = () => {
                 element={
                     <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
                         <Aprovacoes />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/reportar-problema"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <ReportarProblemaPage />
                     </PrivateRoute>
                 }
             />

@@ -30,6 +30,7 @@ const EnderecoForm = ({
                       }) => {
     const [enderecosMap, setEnderecosMap] = useState({});
     const [enderecosLoading, setEnderecosLoading] = useState(false);
+    const [apoio, setApoio] = useState("");
 
     const handleChange = (field, value) => {
         setEndereco((prev) => ({
@@ -297,6 +298,19 @@ const EnderecoForm = ({
                         fullWidth
                         type="number"
                         inputProps={{ step: "0.000001" }}
+                    />
+                </Grid>
+
+                <Grid size={{ xs: 12 }}>
+                    <TextField
+                        label="Apoio"
+                        value={apoio}
+                        onChange={(e) => setApoio(e.target.value)}
+                        fullWidth
+                        multiline
+                        rows={3}
+                        placeholder="Anotações temporárias de apoio (não salvo)..."
+                        helperText="Este campo não é salvo."
                     />
                 </Grid>
             </Grid>
