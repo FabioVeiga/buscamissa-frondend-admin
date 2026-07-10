@@ -28,7 +28,7 @@ const RedirectModal = ({ targetPage, state }) => {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 400,
+          width: "min(400px, 92vw)",
           bgcolor: "background.paper",
           border: "2px solid #000",
           boxShadow: 24,
