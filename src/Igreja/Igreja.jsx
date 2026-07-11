@@ -332,6 +332,9 @@ const IgrejaPage = () => {
             height: "calc(100vh - 160px)",
           }}
         >
+          <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
+            Igrejas
+          </Typography>
           <IgrejaSearchForm
             onDataChange={handleDataChange}
             onLoadingChange={handleLoadingChange}
@@ -344,7 +347,7 @@ const IgrejaPage = () => {
               flexDirection="column"
               alignItems="center"
               justifyContent="center"
-              bgcolor="#f5f5f5"
+              py={4}
             >
               <CircularProgress size={60} />
               <Typography variant="h6" mt={2}>
@@ -352,7 +355,7 @@ const IgrejaPage = () => {
               </Typography>
             </Box>
           ) : isMobile ? (
-            <Box sx={{ flex: 1, overflow: "auto" }}>
+            <Box sx={{ flex: 1, overflow: "auto", mt: 2 }}>
               <Stack spacing={1.5}>
                 {igrejas.items && igrejas.items.length > 0 ? (
                   igrejas.items.map((row) => (
@@ -411,7 +414,7 @@ const IgrejaPage = () => {
               </Stack>
             </Box>
           ) : (
-            <Box sx={{ flex: 1, overflow: "auto" }}>
+            <Box sx={{ flex: 1, overflow: "auto", mt: 2 }}>
               <Table stickyHeader sx={{ minWidth: 900 }}>
               <TableHead>
                 <TableRow>
@@ -453,7 +456,7 @@ const IgrejaPage = () => {
                             />
                           ) : (
                             <Chip
-                              label="false"
+                              label="Sem CEP"
                               size="small"
                               color="error"
                               variant="outlined"
@@ -518,8 +521,7 @@ const IgrejaPage = () => {
               <TableFooter>
                 <TableRow>
                   <TableCell colSpan={8} align="right">
-                    Total de registros:{" "}
-                    {igrejas.items ? igrejas.items.length : 0}
+                    Total de registros: {paginacao.totalItems ?? 0}
                   </TableCell>
                 </TableRow>
               </TableFooter>
