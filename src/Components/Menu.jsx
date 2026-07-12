@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Drawer,
   List,
@@ -11,12 +11,14 @@ import {
   AppBar,
   Toolbar,
   Typography,
+  Badge,
   useTheme,
   useMediaQuery,
 } from "@mui/material";
 import { useAuth } from "../Context/AuthContext";
 import SessaoCountdown from "./SessaoCountdown";
 import { useNavigate, useLocation } from "react-router-dom";
+import api from "../services/apiService";
 import HomeIcon from "@mui/icons-material/Home";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ChurchIcon from "@mui/icons-material/Church";
@@ -42,9 +44,9 @@ const navItems = [
   { path: "/home", label: "Dashboard", icon: HomeIcon },
   { path: "/usuario", label: "Usuários", icon: AccountCircleIcon },
   { path: "/igreja", label: "Igrejas", icon: ChurchIcon },
-  { path: "/aprovacoes", label: "Aprovações Pendentes", icon: FactCheckIcon },
-  { path: "/reportar-problema", label: "Problemas Reportados", icon: AnnouncementIcon },
-  { path: "/solicitacoes", label: "Solicitações", icon: BuildIcon },
+  { path: "/aprovacoes", label: "Aprovações Pendentes", icon: FactCheckIcon, badgeKey: "aprovacoes" },
+  { path: "/reportar-problema", label: "Problemas Reportados", icon: AnnouncementIcon, badgeKey: "problemas" },
+  { path: "/solicitacoes", label: "Solicitações", icon: BuildIcon, badgeKey: "solicitacoes" },
   { path: "/contribuidores", label: "Contribuidores", icon: CurrencyExchangeIcon },
   { path: "/email-evento", label: "Divulgação", icon: EmailIcon },
   { path: "/indicadores", label: "Indicadores", icon: InsightsIcon },
@@ -75,6 +77,42 @@ const Menu = ({ children }) => {
 
   const drawerWidth = isMobile ? DRAWER_WIDTH : desktopOpen ? DRAWER_WIDTH : DRAWER_WIDTH_COLLAPSED;
   const pageTitle = pageTitles[location.pathname] || "Busca Missa Admin";
+
+  const [pendingCounts, setPendingCounts] = useState({
+    aprovacoes: 0,
+    problemas: 0,
+    solicitacoes: 0,
+  });
+
+  useEffect(() => {
+    const paginacaoUnica = { "Paginacao.PageIndex": 1, "Paginacao.PageSize": 1 };
+
+    api
+      .get("/api/v1/Aprovacao/pendentes", { params: paginacaoUnica })
+      .then((response) => {
+        const data = response.data?.data || response.data;
+        setPendingCounts((prev) => ({ ...prev, aprovacoes: data?.totalItems ?? 0 }));
+      })
+      .catch(() => {});
+
+    api
+      .get("/api/v1/Admin/igreja/reportar-problema", {
+        params: { Resolvido: false, ...paginacaoUnica },
+      })
+      .then((response) => {
+        const data = response.data?.data || response.data;
+        setPendingCounts((prev) => ({ ...prev, problemas: data?.totalItems ?? 0 }));
+      })
+      .catch(() => {});
+
+    api
+      .get("/api/v1/Admin/solicitacao", { params: { resolvida: false } })
+      .then((response) => {
+        const total = Array.isArray(response.data?.data) ? response.data.data.length : 0;
+        setPendingCounts((prev) => ({ ...prev, solicitacoes: total }));
+      })
+      .catch(() => {});
+  }, []);
 
   const handleNavigate = (path) => {
     navigate(path);
@@ -125,8 +163,9 @@ const Menu = ({ children }) => {
         )}
       </Box>
       <List sx={{ px: 1.5, py: 0 }}>
-        {navItems.map(({ path, label, icon: Icon }) => {
+        {navItems.map(({ path, label, icon: Icon, badgeKey }) => {
           const selected = location.pathname === path;
+          const badgeCount = badgeKey ? pendingCounts[badgeKey] : 0;
           return (
             <ListItem key={path} disablePadding sx={{ mb: 0.5 }}>
               <ListItemButton
@@ -151,7 +190,9 @@ const Menu = ({ children }) => {
                 }}
               >
                 <ListItemIcon sx={{ minWidth: desktopOpen || isMobile ? 40 : 36 }}>
-                  <Icon sx={{ fontSize: 22 }} />
+                  <Badge badgeContent={badgeCount} color="error" max={99} invisible={!badgeCount}>
+                    <Icon sx={{ fontSize: 22 }} />
+                  </Badge>
                 </ListItemIcon>
                 {(desktopOpen || isMobile) && (
                   <ListItemText primary={label} primaryTypographyProps={{ fontWeight: 500, fontSize: "0.9375rem" }} />
