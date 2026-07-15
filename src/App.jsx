@@ -12,6 +12,7 @@ import EmailEventoPage from './EmailEvento/EmailEvento';
 import Indicadores from './Indicadores/Indicadores';
 import Aprovacoes from './Aprovacoes/Aprovacoes';
 import ReportarProblemaPage from './ReportarProblema/ReportarProblema';
+import MesclarMetricas from './Igreja/MesclarMetricas';
 import PrivateRoute from './PrivateRoute'
 
 
@@ -107,6 +108,14 @@ const App = () => {
                 element={
                     <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
                         <ReportarProblemaPage />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/mesclar-metricas"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <MesclarMetricas />
                     </PrivateRoute>
                 }
             />
