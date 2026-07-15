@@ -77,10 +77,14 @@ const ReportarProblemaPage = () => {
 
   const resolvido = (item) => !!item.acaoRealizada;
 
-  const editarIgreja = async (igrejaId) => {
+  const editarIgreja = async (item) => {
     try {
-      const igrejaCompleta = await buscarIgrejaCompletaPorId(igrejaId);
-      navigate("/igrejaEditar", { state: { row: normalizarIgrejaParaEdicao(igrejaCompleta) } });
+      const igrejaCompleta = await buscarIgrejaCompletaPorId(item.igrejaId);
+      const row = normalizarIgrejaParaEdicao(igrejaCompleta);
+      // O endpoint de detalhe não traz o problema reportado (outra tabela);
+      // reaproveita os dados já carregados nesta listagem para o Alert em IgrejaAtualizar.jsx.
+      row.reportarProblema = { id: item.id, nome: item.nome, email: item.email, descricao: item.descricao };
+      navigate("/igrejaEditar", { state: { row } });
     } catch {
       // silencioso — usuário pode tentar de novo ou usar "Ver detalhes" -> Editar
     }
@@ -170,7 +174,7 @@ const ReportarProblemaPage = () => {
                               </IconButton>
                             </Tooltip>
                             <Tooltip title="Editar igreja">
-                              <IconButton size="small" onClick={() => editarIgreja(item.igrejaId)}>
+                              <IconButton size="small" onClick={() => editarIgreja(item)}>
                                 <EditIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>

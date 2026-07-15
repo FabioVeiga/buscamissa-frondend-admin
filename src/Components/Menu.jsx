@@ -29,6 +29,7 @@ import EmailIcon from "@mui/icons-material/Email";
 import InsightsIcon from "@mui/icons-material/Insights";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import AnnouncementIcon from "@mui/icons-material/Announcement";
+import MergeTypeIcon from "@mui/icons-material/MergeType";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -46,6 +47,7 @@ const navItems = [
   { path: "/igreja", label: "Igrejas", icon: ChurchIcon },
   { path: "/aprovacoes", label: "Aprovações Pendentes", icon: FactCheckIcon, badgeKey: "aprovacoes" },
   { path: "/reportar-problema", label: "Problemas Reportados", icon: AnnouncementIcon, badgeKey: "problemas" },
+  { path: "/mesclar-metricas", label: "Mesclar Métricas", icon: MergeTypeIcon },
   { path: "/solicitacoes", label: "Solicitações", icon: BuildIcon, badgeKey: "solicitacoes" },
   { path: "/contribuidores", label: "Contribuidores", icon: CurrencyExchangeIcon },
   { path: "/email-evento", label: "Divulgação", icon: EmailIcon },
@@ -58,6 +60,7 @@ const pageTitles = {
   "/igreja": "Igrejas",
   "/aprovacoes": "Aprovações Pendentes",
   "/reportar-problema": "Problemas Reportados",
+  "/mesclar-metricas": "Mesclar Métricas",
   "/solicitacoes": "Solicitações",
   "/contribuidores": "Contribuidores",
   "/igrejaNovo": "Nova Igreja",
