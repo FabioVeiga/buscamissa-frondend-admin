@@ -3,7 +3,10 @@ import axios from 'axios';
 // Configuração base do Axios
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'https://busca-missa.azurewebsites.net',
-  timeout: 10000, // Tempo limite para as requisições
+  // api-admin roda em App Service Free (F1), sem Always On — some depois de
+  // um tempo ocioso e o cold start da primeira requisição pode passar de 10s,
+  // estourando o timeout antigo e derrubando sempre a primeira tentativa.
+  timeout: 40000,
   headers: {
     'Content-Type': 'application/json',
   },
