@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "./Context/AuthContext";
 import Menu from "./Components/Menu";
 import {
@@ -28,6 +28,7 @@ const statCards = [
     icon: ChurchIcon,
     color: "#3b82f6",
     bgLight: "rgba(59, 130, 246, 0.1)",
+    path: "/igreja",
   },
   {
     key: "quantidadeMissas",
@@ -42,6 +43,7 @@ const statCards = [
     icon: WarningAmberIcon,
     color: "#f59e0b",
     bgLight: "rgba(245, 158, 11, 0.1)",
+    path: "/reportar-problema",
   },
   {
     key: "quantidadeSolicitacoesNaoAtendida",
@@ -49,6 +51,7 @@ const statCards = [
     icon: AssignmentIcon,
     color: "#8b5cf6",
     bgLight: "rgba(139, 92, 246, 0.1)",
+    path: "/solicitacoes",
   },
   {
     key: "quantidadeDeUsuarios",
@@ -56,11 +59,13 @@ const statCards = [
     icon: PeopleIcon,
     color: "#22c55e",
     bgLight: "rgba(34, 197, 94, 0.1)",
+    path: "/usuario",
   },
 ];
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState({
     quantidadesIgrejas: 0,
     quantidadeMissas: 0,
@@ -108,17 +113,20 @@ const Home = () => {
         </Box>
 
         <Grid container spacing={2}>
-          {statCards.map(({ key, label, icon: Icon, color, bgLight }) => (
+          {statCards.map(({ key, label, icon: Icon, color, bgLight, path }) => (
             <Grid item xs={12} sm={6} md={4} key={key}>
               <Card
+                onClick={path ? () => navigate(path) : undefined}
                 sx={{
                   height: "100%",
                   borderRadius: 2,
                   boxShadow: "0 1px 3px 0 rgba(0,0,0,0.06)",
                   border: "1px solid rgba(0,0,0,0.04)",
                   transition: "box-shadow 0.2s, transform 0.2s",
+                  ...(path && { cursor: "pointer" }),
                   "&:hover": {
                     boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                    ...(path && { transform: "translateY(-2px)" }),
                   },
                 }}
               >

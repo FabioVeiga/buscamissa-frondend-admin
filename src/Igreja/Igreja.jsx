@@ -329,7 +329,7 @@ const IgrejaPage = () => {
             borderRadius: 2,
             display: "flex",
             flexDirection: "column",
-            height: isMobile ? "auto" : "calc(100vh - 160px)",
+            height: isMobile ? "auto" : "100%",
           }}
         >
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
