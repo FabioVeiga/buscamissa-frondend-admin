@@ -597,7 +597,26 @@ const IgrejaAtualizar = () => {
 
     api
         .put("/api/v1/Admin/igreja/atualizar", req)
-        .then(() => {
+        .then((response) => {
+          // O backend recalcula o cidadeSlug (e, na primeira vez, slug/nomeUnico)
+          // a cada edição — sem sincronizar aqui, o link exibido para compartilhar
+          // ficava com o cidadeSlug antigo até a tela ser recarregada.
+          const igrejaAtualizada = response.data?.data?.response;
+          if (igrejaAtualizada) {
+            setFormData((prev) => ({
+              ...prev,
+              slug: igrejaAtualizada.slug ?? prev.slug,
+              nomeUnico: igrejaAtualizada.nomeUnico ?? prev.nomeUnico,
+              emailCriacaoEnviado: igrejaAtualizada.emailCriacaoEnviado ?? prev.emailCriacaoEnviado,
+            }));
+            if (igrejaAtualizada.endereco) {
+              setEndereco((prev) => ({
+                ...prev,
+                cidadeSlug: igrejaAtualizada.endereco.cidadeSlug,
+              }));
+            }
+          }
+
           setMessage({
             mensagem: "Igreja atualizada com sucesso!",
             severity: "success",
