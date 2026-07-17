@@ -39,9 +39,10 @@ const IgrejaContatosHistorico = ({ igrejaId, onLoad }) => {
       .then((res) => {
         const lista = res.data?.data || res.data || [];
         setContatos(lista.slice(0, 10));
-        onLoad?.(lista.length);
+        const canaisContatados = new Set(lista.map((c) => c.canal));
+        onLoad?.(lista.length, canaisContatados);
       })
-      .catch(() => { setContatos([]); onLoad?.(0); })
+      .catch(() => { setContatos([]); onLoad?.(0, new Set()); })
       .finally(() => setLoading(false));
   }, [igrejaId]);
 

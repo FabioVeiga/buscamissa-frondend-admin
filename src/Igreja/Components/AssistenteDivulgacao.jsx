@@ -141,11 +141,12 @@ const AssistenteDivulgacao = ({
   emailCriacaoEnviado,
   urlInstagram,
   urlFacebook,
+  instagramContatado,
+  facebookContatado,
   loading,
   opcaoEmail,
   onOpcaoEmailChange,
   onConfirmar,
-  modoAvulso = false,
 }) => {
   const email = igreja?.contato?.emailContato?.trim() || "";
   const nomeIgreja = igreja?.nome || "sua paróquia";
@@ -155,7 +156,9 @@ const AssistenteDivulgacao = ({
   const mensagemInstagram = gerarMensagemInstagram(nomeIgreja, link);
   const mensagemFacebook = gerarMensagemFacebook(nomeIgreja, link);
 
-  const temSecao = email || urlInstagram || urlFacebook;
+  const mostrarInstagram = urlInstagram && !instagramContatado;
+  const mostrarFacebook = urlFacebook && !facebookContatado;
+  const temSecao = email || mostrarInstagram || mostrarFacebook;
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -182,7 +185,7 @@ const AssistenteDivulgacao = ({
             />
           )}
 
-          {urlInstagram && (
+          {mostrarInstagram && (
             <SecaoSocial
               label="Instagram"
               url={urlInstagram}
@@ -193,7 +196,7 @@ const AssistenteDivulgacao = ({
             />
           )}
 
-          {urlFacebook && (
+          {mostrarFacebook && (
             <SecaoSocial
               label="Facebook"
               url={urlFacebook}
@@ -208,13 +211,11 @@ const AssistenteDivulgacao = ({
 
       <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
         <Button variant="outlined" color="inherit" onClick={onClose} disabled={loading}>
-          {modoAvulso ? "Fechar" : "Cancelar"}
+          Cancelar
         </Button>
-        {!modoAvulso && (
-          <Button variant="contained" onClick={onConfirmar} disabled={loading}>
-            Confirmar
-          </Button>
-        )}
+        <Button variant="contained" onClick={onConfirmar} disabled={loading}>
+          Confirmar
+        </Button>
       </DialogActions>
     </Dialog>
   );

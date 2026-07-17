@@ -12,6 +12,7 @@ import {
   Toolbar,
   Typography,
   Badge,
+  Collapse,
   useTheme,
   useMediaQuery,
 } from "@mui/material";
@@ -35,6 +36,9 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
+import SettingsIcon from "@mui/icons-material/Settings";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { SIDEBAR } from "../theme";
 
 const DRAWER_WIDTH = 260;
@@ -45,15 +49,27 @@ const TOP_BAR_HEIGHT_SM = 64;
 const navItems = [
   { path: "/home", label: "Dashboard", icon: HomeIcon },
   { path: "/usuario", label: "Usuários", icon: AccountCircleIcon },
-  { path: "/igreja", label: "Igrejas", icon: ChurchIcon },
-  { path: "/aprovacoes", label: "Aprovações Pendentes", icon: FactCheckIcon, badgeKey: "aprovacoes" },
-  { path: "/reportar-problema", label: "Problemas Reportados", icon: AnnouncementIcon, badgeKey: "problemas" },
-  { path: "/mesclar-metricas", label: "Mesclar Métricas", icon: MergeTypeIcon },
+  {
+    path: "/igreja",
+    label: "Igrejas",
+    icon: ChurchIcon,
+    children: [
+      { path: "/aprovacoes", label: "Aprovações Pendentes", icon: FactCheckIcon, badgeKey: "aprovacoes" },
+      { path: "/reportar-problema", label: "Problemas Reportados", icon: AnnouncementIcon, badgeKey: "problemas" },
+      { path: "/mesclar-metricas", label: "Mesclar Métricas", icon: MergeTypeIcon },
+      { path: "/email-evento", label: "Divulgação", icon: EmailIcon },
+    ],
+  },
   { path: "/solicitacoes", label: "Solicitações", icon: BuildIcon, badgeKey: "solicitacoes" },
   { path: "/contribuidores", label: "Contribuidores", icon: CurrencyExchangeIcon },
-  { path: "/email-evento", label: "Divulgação", icon: EmailIcon },
   { path: "/indicadores", label: "Indicadores", icon: InsightsIcon },
-  { path: "/feature-toggles", label: "Feature Toggles", icon: ToggleOnIcon },
+  {
+    label: "Configurações",
+    icon: SettingsIcon,
+    children: [
+      { path: "/feature-toggles", label: "Feature Toggles", icon: ToggleOnIcon },
+    ],
+  },
 ];
 
 const pageTitles = {
@@ -83,6 +99,21 @@ const Menu = ({ children }) => {
 
   const drawerWidth = isMobile ? DRAWER_WIDTH : desktopOpen ? DRAWER_WIDTH : DRAWER_WIDTH_COLLAPSED;
   const pageTitle = pageTitles[location.pathname] || "Busca Missa Admin";
+
+  const [openSubmenus, setOpenSubmenus] = useState({});
+
+  useEffect(() => {
+    const parentComRotaAtiva = navItems.find((item) =>
+      item.children?.some((child) => child.path === location.pathname)
+    );
+    if (parentComRotaAtiva) {
+      setOpenSubmenus((prev) => ({ ...prev, [parentComRotaAtiva.label]: true }));
+    }
+  }, [location.pathname]);
+
+  const toggleSubmenu = (label) => {
+    setOpenSubmenus((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
 
   const [pendingCounts, setPendingCounts] = useState({
     aprovacoes: 0,
@@ -169,42 +200,111 @@ const Menu = ({ children }) => {
         )}
       </Box>
       <List sx={{ px: 1.5, py: 0 }}>
-        {navItems.map(({ path, label, icon: Icon, badgeKey }) => {
-          const selected = location.pathname === path;
+        {navItems.map(({ path, label, icon: Icon, badgeKey, children: childItems }) => {
+          const selected = !!path && location.pathname === path;
           const badgeCount = badgeKey ? pendingCounts[badgeKey] : 0;
+          const showLabels = desktopOpen || isMobile;
+          const hasChildren = !!childItems?.length;
+          const isOpen = hasChildren && !!openSubmenus[label];
+          const childBadgeTotal = hasChildren
+            ? childItems.reduce((total, child) => total + (child.badgeKey ? pendingCounts[child.badgeKey] || 0 : 0), 0)
+            : 0;
+
+          const handleItemClick = () => {
+            if (hasChildren && !showLabels && !isMobile) {
+              // Sidebar recolhida: expandir para mostrar o submenu.
+              setDesktopOpen(true);
+              setOpenSubmenus((prev) => ({ ...prev, [label]: true }));
+              return;
+            }
+            if (hasChildren) {
+              toggleSubmenu(label);
+            }
+            if (path) {
+              handleNavigate(path);
+            }
+          };
+
           return (
-            <ListItem key={path} disablePadding sx={{ mb: 0.5 }}>
-              <ListItemButton
-                onClick={() => handleNavigate(path)}
-                selected={selected}
-                sx={{
-                  borderRadius: 2,
-                  py: 1.25,
-                  px: 1.5,
-                  color: SIDEBAR.text,
-                  ...(selected && {
-                    backgroundColor: SIDEBAR.bgActive,
-                    color: "#fff",
-                    borderLeft: "3px solid",
-                    borderLeftColor: SIDEBAR.borderActive,
-                    "& .MuiListItemIcon-root": { color: "#fff" },
-                  }),
-                  "&:hover": {
-                    backgroundColor: selected ? SIDEBAR.bgActive : SIDEBAR.bgHover,
-                  },
-                  "&.Mui-selected": { "&:hover": { backgroundColor: SIDEBAR.bgActive } },
-                }}
-              >
-                <ListItemIcon sx={{ minWidth: desktopOpen || isMobile ? 40 : 36 }}>
-                  <Badge badgeContent={badgeCount} color="error" max={99} invisible={!badgeCount}>
-                    <Icon sx={{ fontSize: 22 }} />
-                  </Badge>
-                </ListItemIcon>
-                {(desktopOpen || isMobile) && (
-                  <ListItemText primary={label} primaryTypographyProps={{ fontWeight: 500, fontSize: "0.9375rem" }} />
-                )}
-              </ListItemButton>
-            </ListItem>
+            <Box key={label}>
+              <ListItem disablePadding sx={{ mb: 0.5 }}>
+                <ListItemButton
+                  onClick={handleItemClick}
+                  selected={selected}
+                  sx={{
+                    borderRadius: 2,
+                    py: 1.25,
+                    px: 1.5,
+                    color: SIDEBAR.text,
+                    ...(selected && {
+                      backgroundColor: SIDEBAR.bgActive,
+                      color: "#fff",
+                      borderLeft: "3px solid",
+                      borderLeftColor: SIDEBAR.borderActive,
+                      "& .MuiListItemIcon-root": { color: "#fff" },
+                    }),
+                    "&:hover": {
+                      backgroundColor: selected ? SIDEBAR.bgActive : SIDEBAR.bgHover,
+                    },
+                    "&.Mui-selected": { "&:hover": { backgroundColor: SIDEBAR.bgActive } },
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: desktopOpen || isMobile ? 40 : 36 }}>
+                    <Badge badgeContent={badgeCount || childBadgeTotal} color="error" max={99} invisible={!badgeCount && !childBadgeTotal}>
+                      <Icon sx={{ fontSize: 22 }} />
+                    </Badge>
+                  </ListItemIcon>
+                  {showLabels && (
+                    <ListItemText primary={label} primaryTypographyProps={{ fontWeight: 500, fontSize: "0.9375rem" }} />
+                  )}
+                  {showLabels && hasChildren && (isOpen ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />)}
+                </ListItemButton>
+              </ListItem>
+
+              {hasChildren && showLabels && (
+                <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                  <List component="div" disablePadding sx={{ pl: 2 }}>
+                    {childItems.map((child) => {
+                      const childSelected = location.pathname === child.path;
+                      const childBadgeCount = child.badgeKey ? pendingCounts[child.badgeKey] : 0;
+                      const ChildIcon = child.icon;
+                      return (
+                        <ListItem key={child.path} disablePadding sx={{ mb: 0.5 }}>
+                          <ListItemButton
+                            onClick={() => handleNavigate(child.path)}
+                            selected={childSelected}
+                            sx={{
+                              borderRadius: 2,
+                              py: 1,
+                              px: 1.5,
+                              color: SIDEBAR.text,
+                              ...(childSelected && {
+                                backgroundColor: SIDEBAR.bgActive,
+                                color: "#fff",
+                                borderLeft: "3px solid",
+                                borderLeftColor: SIDEBAR.borderActive,
+                                "& .MuiListItemIcon-root": { color: "#fff" },
+                              }),
+                              "&:hover": {
+                                backgroundColor: childSelected ? SIDEBAR.bgActive : SIDEBAR.bgHover,
+                              },
+                              "&.Mui-selected": { "&:hover": { backgroundColor: SIDEBAR.bgActive } },
+                            }}
+                          >
+                            <ListItemIcon sx={{ minWidth: 36 }}>
+                              <Badge badgeContent={childBadgeCount} color="error" max={99} invisible={!childBadgeCount}>
+                                <ChildIcon sx={{ fontSize: 20 }} />
+                              </Badge>
+                            </ListItemIcon>
+                            <ListItemText primary={child.label} primaryTypographyProps={{ fontWeight: 500, fontSize: "0.875rem" }} />
+                          </ListItemButton>
+                        </ListItem>
+                      );
+                    })}
+                  </List>
+                </Collapse>
+              )}
+            </Box>
           );
         })}
       </List>

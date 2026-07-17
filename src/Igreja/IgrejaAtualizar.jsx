@@ -102,12 +102,13 @@ const IgrejaAtualizar = () => {
   const [igrejasEncontradasCep, setIgrejasEncontradasCep] = useState([]);
   const [enderecoResolvidoCep, setEnderecoResolvidoCep] = useState(null);
   const [emailContatoModalOpen, setEmailContatoModalOpen] = useState(false);
-  const [divulgarAvulso, setDivulgarAvulso] = useState(false);
   const [abaAtiva, setAbaAtiva] = useState(0);
 
   // Assistente de Divulgação
   const [divulgacaoOpcaoEmail, setDivulgacaoOpcaoEmail] = useState("");
-  const [jaFoiDivulgada, setJaFoiDivulgada] = useState(false);
+  const [canaisContatados, setCanaisContatados] = useState(new Set());
+  const instagramContatado = canaisContatados.has(2);
+  const facebookContatado = canaisContatados.has(3);
 
 
   // Carregar endereço do formData quando o componente monta
@@ -644,9 +645,12 @@ const IgrejaAtualizar = () => {
     setConfirmarSemMissaAberto(false);
 
     const emailContato = formData?.contato?.emailContato?.trim();
-    const temCanal = (emailContato || urlInstagram || urlFacebook) && formData?.ativo;
+    const temCanalPendente =
+      emailContato ||
+      (urlInstagram && !instagramContatado) ||
+      (urlFacebook && !facebookContatado);
 
-    if (temCanal) {
+    if (temCanalPendente && formData?.ativo) {
       setDivulgacaoOpcaoEmail("");
       setEmailContatoModalOpen(true);
       return;
@@ -956,16 +960,6 @@ const IgrejaAtualizar = () => {
           >
             Voltar
           </Button>
-          {!jaFoiDivulgada && (formData?.contato?.emailContato?.trim() || urlInstagram || urlFacebook) && (
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => { setDivulgarAvulso(true); setEmailContatoModalOpen(true); }}
-              disabled={loading}
-            >
-              Divulgar
-            </Button>
-          )}
           <Button
             variant="contained"
             color="primary"
@@ -995,7 +989,7 @@ const IgrejaAtualizar = () => {
 
       {abaAtiva === 0 && formData.id && (
         <Box sx={{ mt: 2 }}>
-          <IgrejaContatosHistorico igrejaId={formData.id} onLoad={(total) => setJaFoiDivulgada(total > 0)} />
+          <IgrejaContatosHistorico igrejaId={formData.id} onLoad={(_total, canais) => setCanaisContatados(canais)} />
         </Box>
       )}
 
@@ -1011,16 +1005,17 @@ const IgrejaAtualizar = () => {
       />
       <AssistenteDivulgacao
         open={emailContatoModalOpen}
-        onClose={() => { setEmailContatoModalOpen(false); setDivulgarAvulso(false); }}
+        onClose={() => setEmailContatoModalOpen(false)}
         igreja={{ ...formData, endereco }}
         emailCriacaoEnviado={formData?.emailCriacaoEnviado}
         urlInstagram={urlInstagram}
         urlFacebook={urlFacebook}
+        instagramContatado={instagramContatado}
+        facebookContatado={facebookContatado}
         loading={loading}
         opcaoEmail={divulgacaoOpcaoEmail}
         onOpcaoEmailChange={setDivulgacaoOpcaoEmail}
         onConfirmar={() => atualizarIgreja(divulgacaoOpcaoEmail || null)}
-        modoAvulso={divulgarAvulso}
       />
       {state?.row?.reportarProblema && (
         <ReportarProblemaModal
