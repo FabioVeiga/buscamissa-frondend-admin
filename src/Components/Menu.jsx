@@ -37,6 +37,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import SettingsIcon from "@mui/icons-material/Settings";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { SIDEBAR } from "../theme";
@@ -60,6 +61,7 @@ const navItems = [
       { path: "/email-evento", label: "Divulgação", icon: EmailIcon },
     ],
   },
+  { path: "/dioceses", label: "Dioceses", icon: AccountBalanceIcon },
   { path: "/solicitacoes", label: "Solicitações", icon: BuildIcon, badgeKey: "solicitacoes" },
   { path: "/contribuidores", label: "Contribuidores", icon: CurrencyExchangeIcon },
   { path: "/indicadores", label: "Indicadores", icon: InsightsIcon },
@@ -86,6 +88,7 @@ const pageTitles = {
   "/email-evento": "Divulgação das Igrejas",
   "/indicadores": "Indicadores",
   "/feature-toggles": "Feature Toggles",
+  "/dioceses": "Arquidioceses e Dioceses",
 };
 
 const Menu = ({ children }) => {

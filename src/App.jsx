@@ -14,6 +14,7 @@ import Aprovacoes from './Aprovacoes/Aprovacoes';
 import ReportarProblemaPage from './ReportarProblema/ReportarProblema';
 import MesclarMetricas from './Igreja/MesclarMetricas';
 import FeatureTogglesPage from './FeatureToggles';
+import DiocesesPage from './Dioceses';
 import PrivateRoute from './PrivateRoute'
 
 
@@ -125,6 +126,14 @@ const App = () => {
                 element={
                     <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
                         <FeatureTogglesPage />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/dioceses"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <DiocesesPage />
                     </PrivateRoute>
                 }
             />
