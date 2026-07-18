@@ -32,6 +32,7 @@ import FactCheckIcon from "@mui/icons-material/FactCheck";
 import AnnouncementIcon from "@mui/icons-material/Announcement";
 import MergeTypeIcon from "@mui/icons-material/MergeType";
 import ToggleOnIcon from "@mui/icons-material/ToggleOn";
+import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -56,6 +57,7 @@ const navItems = [
     icon: ChurchIcon,
     children: [
       { path: "/aprovacoes", label: "Aprovações Pendentes", icon: FactCheckIcon, badgeKey: "aprovacoes" },
+      { path: "/responsaveis", label: "Responsáveis Verificados", icon: VerifiedUserIcon, badgeKey: "responsaveis" },
       { path: "/reportar-problema", label: "Problemas Reportados", icon: AnnouncementIcon, badgeKey: "problemas" },
       { path: "/mesclar-metricas", label: "Mesclar Métricas", icon: MergeTypeIcon },
       { path: "/email-evento", label: "Divulgação", icon: EmailIcon },
@@ -89,6 +91,7 @@ const pageTitles = {
   "/indicadores": "Indicadores",
   "/feature-toggles": "Feature Toggles",
   "/dioceses": "Arquidioceses e Dioceses",
+  "/responsaveis": "Responsáveis Verificados",
 };
 
 const Menu = ({ children }) => {
@@ -122,6 +125,7 @@ const Menu = ({ children }) => {
     aprovacoes: 0,
     problemas: 0,
     solicitacoes: 0,
+    responsaveis: 0,
   });
 
   useEffect(() => {
@@ -142,6 +146,14 @@ const Menu = ({ children }) => {
       .then((response) => {
         const data = response.data?.data || response.data;
         setPendingCounts((prev) => ({ ...prev, problemas: data?.totalItems ?? 0 }));
+      })
+      .catch(() => {});
+
+    api
+      .get("/api/v1/admin/responsaveis/pendentes")
+      .then((response) => {
+        const total = Array.isArray(response.data?.data) ? response.data.data.length : 0;
+        setPendingCounts((prev) => ({ ...prev, responsaveis: total }));
       })
       .catch(() => {});
 
