@@ -32,6 +32,7 @@ import FactCheckIcon from "@mui/icons-material/FactCheck";
 import AnnouncementIcon from "@mui/icons-material/Announcement";
 import MergeTypeIcon from "@mui/icons-material/MergeType";
 import ToggleOnIcon from "@mui/icons-material/ToggleOn";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
@@ -64,6 +65,7 @@ const navItems = [
     ],
   },
   { path: "/dioceses", label: "Dioceses", icon: AccountBalanceIcon },
+  { path: "/notificacoes", label: "Notificações", icon: NotificationsIcon },
   { path: "/solicitacoes", label: "Solicitações", icon: BuildIcon, badgeKey: "solicitacoes" },
   { path: "/contribuidores", label: "Contribuidores", icon: CurrencyExchangeIcon },
   { path: "/indicadores", label: "Indicadores", icon: InsightsIcon },
@@ -91,6 +93,7 @@ const pageTitles = {
   "/indicadores": "Indicadores",
   "/feature-toggles": "Feature Toggles",
   "/dioceses": "Arquidioceses e Dioceses",
+  "/notificacoes": "Notificações",
   "/responsaveis": "Responsáveis Verificados",
 };
 
