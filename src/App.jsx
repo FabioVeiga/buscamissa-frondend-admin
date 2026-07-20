@@ -16,6 +16,7 @@ import MesclarMetricas from './Igreja/MesclarMetricas';
 import FeatureTogglesPage from './FeatureToggles';
 import DiocesesPage from './Dioceses';
 import ResponsaveisPage from './Responsaveis';
+import NotificacoesPage from './Notificacoes';
 import PrivateRoute from './PrivateRoute'
 
 
@@ -135,6 +136,14 @@ const App = () => {
                 element={
                     <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
                         <ResponsaveisPage />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/notificacoes"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <NotificacoesPage />
                     </PrivateRoute>
                 }
             />
