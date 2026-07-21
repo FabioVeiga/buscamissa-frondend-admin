@@ -20,6 +20,7 @@ import { useAuth } from "../Context/AuthContext";
 import SessaoCountdown from "./SessaoCountdown";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/apiService";
+import logoBM from "../assets/logoBM.svg";
 import HomeIcon from "@mui/icons-material/Home";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ChurchIcon from "@mui/icons-material/Church";
@@ -202,9 +203,7 @@ const Menu = ({ children }) => {
         }}
       >
         {(!isMobile && desktopOpen) && (
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#fff", letterSpacing: "-0.02em" }}>
-            Busca Missa
-          </Typography>
+          <img src={logoBM} alt="Busca Missa" style={{ height: 32, width: "auto" }} />
         )}
         {!isMobile && (
           <IconButton
@@ -376,9 +375,7 @@ const Menu = ({ children }) => {
           >
             {mobileOpen ? <CloseIcon /> : <MenuIcon />}
           </IconButton>
-          <Typography variant="subtitle1" fontWeight={700} noWrap sx={{ flex: 1, textAlign: "center" }}>
-            Busca Missa
-          </Typography>
+          <img src={logoBM} alt="Busca Missa" style={{ height: 28, width: "auto" }} />
           <Box sx={{ minWidth: 48 }} />
         </Toolbar>
       </AppBar>
