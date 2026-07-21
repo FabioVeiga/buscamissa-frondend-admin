@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Menu from "./Components/Menu";
 import {
+  Autocomplete,
   Table,
   TableBody,
   TableCell,
@@ -38,12 +39,18 @@ const TIPOS = [
 
 const FORM_VAZIO = { titulo: "", mensagem: "", tipo: 2, uf: "" };
 
+// Debounce simples para o autocomplete de paróquias
+let buscaTimer = null;
+
 const NotificacoesPage = () => {
   const [notificacoes, setNotificacoes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [dialogAberto, setDialogAberto] = useState(false);
   const [form, setForm] = useState(FORM_VAZIO);
+  const [igrejasSelecionadas, setIgrejasSelecionadas] = useState([]);
+  const [opcoesIgrejas, setOpcoesIgrejas] = useState([]);
+  const [buscandoIgrejas, setBuscandoIgrejas] = useState(false);
   const [preview, setPreview] = useState(null);
   const [carregandoPreview, setCarregandoPreview] = useState(false);
   const [enviando, setEnviando] = useState(false);
@@ -68,22 +75,42 @@ const NotificacoesPage = () => {
 
   const abrirNova = () => {
     setForm(FORM_VAZIO);
+    setIgrejasSelecionadas([]);
+    setOpcoesIgrejas([]);
     setPreview(null);
     setErroDialog(null);
     setDialogAberto(true);
   };
 
+  const buscarIgrejas = (texto) => {
+    clearTimeout(buscaTimer);
+    buscaTimer = setTimeout(async () => {
+      setBuscandoIgrejas(true);
+      try {
+        const response = await api.get("/api/v1/admin/notificacoes/igrejas-elegiveis", {
+          params: texto ? { busca: texto } : {},
+        });
+        setOpcoesIgrejas(response.data?.data || []);
+      } catch {
+        setOpcoesIgrejas([]);
+      } finally {
+        setBuscandoIgrejas(false);
+      }
+    }, 350);
+  };
+
   const buscarPreview = async () => {
-    if (!form.uf) {
+    if (!form.uf && igrejasSelecionadas.length === 0) {
       setPreview(null);
       return;
     }
     setCarregandoPreview(true);
     setErroDialog(null);
     try {
-      const response = await api.get("/api/v1/admin/notificacoes/preview", {
-        params: { uf: form.uf },
-      });
+      const params = {};
+      if (form.uf) params.uf = form.uf;
+      igrejasSelecionadas.forEach((ig, i) => (params[`igrejaIds[${i}]`] = ig.id));
+      const response = await api.get("/api/v1/admin/notificacoes/preview", { params });
       setPreview(response.data?.data || null);
     } catch (error) {
       console.error("Erro ao pré-visualizar destinatários:", error);
@@ -94,8 +121,12 @@ const NotificacoesPage = () => {
   };
 
   const enviar = async () => {
-    if (!form.titulo.trim() || !form.mensagem.trim() || !form.uf) {
-      setErroDialog("Preencha título, mensagem e a UF de destino.");
+    if (!form.titulo.trim() || !form.mensagem.trim()) {
+      setErroDialog("Preencha título e mensagem.");
+      return;
+    }
+    if (!form.uf && igrejasSelecionadas.length === 0) {
+      setErroDialog("Escolha ao menos uma paróquia ou uma UF de destino.");
       return;
     }
     setEnviando(true);
@@ -105,7 +136,8 @@ const NotificacoesPage = () => {
         titulo: form.titulo.trim(),
         mensagem: form.mensagem.trim(),
         tipo: form.tipo,
-        uf: form.uf,
+        uf: form.uf || null,
+        igrejaIds: igrejasSelecionadas.map((ig) => ig.id),
       });
       setDialogAberto(false);
       carregar();
@@ -227,8 +259,27 @@ const NotificacoesPage = () => {
               </MenuItem>
             ))}
           </TextField>
+          <Autocomplete
+            multiple
+            options={opcoesIgrejas}
+            value={igrejasSelecionadas}
+            loading={buscandoIgrejas}
+            getOptionLabel={(o) => `${o.nome}${o.cidade ? ` — ${o.cidade}/${o.uf}` : ""}`}
+            isOptionEqualToValue={(o, v) => o.id === v.id}
+            onOpen={() => buscarIgrejas("")}
+            onInputChange={(_, texto, motivo) => motivo === "input" && buscarIgrejas(texto)}
+            onChange={(_, valor) => {
+              setIgrejasSelecionadas(valor);
+              setPreview(null);
+            }}
+            noOptionsText="Nenhuma paróquia com responsável encontrada"
+            renderInput={(params) => (
+              <TextField {...params} label="Paróquias específicas"
+                helperText="Busque por nome ou cidade. Só aparecem igrejas com responsável verificado." />
+            )}
+          />
           <TextField
-            label="Enviar para UF"
+            label="Enviar para UF (opcional)"
             value={form.uf}
             onChange={(e) => {
               setForm({ ...form, uf: e.target.value });
@@ -236,7 +287,7 @@ const NotificacoesPage = () => {
             }}
             select
             fullWidth
-            helperText="Só chega a igrejas com responsável verificado aprovado nessa UF."
+            helperText="Além das selecionadas acima, envia para todas as igrejas com responsável nessa UF."
           >
             <MenuItem value="">
               <em>Selecione</em>
@@ -248,7 +299,7 @@ const NotificacoesPage = () => {
             ))}
           </TextField>
 
-          {form.uf && (
+          {(form.uf || igrejasSelecionadas.length > 0) && (
             <Box>
               <Button size="small" onClick={buscarPreview} disabled={carregandoPreview}>
                 {carregandoPreview ? "Verificando..." : "Ver quantas igrejas serão atingidas"}
@@ -256,7 +307,7 @@ const NotificacoesPage = () => {
               {preview && (
                 <Alert severity={preview.totalIgrejas === 0 ? "warning" : "info"} sx={{ mt: 1 }}>
                   {preview.totalIgrejas === 0
-                    ? "Nenhuma igreja com responsável verificado nessa UF."
+                    ? "Nenhuma igreja com responsável verificado nos critérios."
                     : `${preview.totalIgrejas} igreja(s) receberão: ${preview.amostra.join(", ")}${
                         preview.totalIgrejas > preview.amostra.length ? "..." : ""
                       }`}
