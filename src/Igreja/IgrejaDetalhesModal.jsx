@@ -14,8 +14,13 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Divider,
+  Link as MUILink,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import EmailIcon from "@mui/icons-material/Email";
+import PhoneIcon from "@mui/icons-material/Phone";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import { useNavigate } from "react-router-dom";
 import { diaDaSemana, formatarHorario } from "../utils";
 import { buscarIgrejaCompletaPorId, normalizarIgrejaParaEdicao } from "../services/igrejaHelpers";
@@ -148,7 +153,49 @@ const IgrejaDetalheModal = ({ open, handleClose, igrejaId }) => {
               </Table>
             </TableContainer>
 
-            <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 2 }}>
+            <Divider sx={{ my: 2 }} />
+
+            <Typography variant="body1" gutterBottom>
+              <strong>Contatos:</strong>
+            </Typography>
+
+            {igreja?.contato && (Object.values(igreja.contato).some(v => v)) ? (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                {igreja.contato.emailContato && (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <EmailIcon fontSize="small" color="action" />
+                    <MUILink href={`mailto:${igreja.contato.emailContato}`} target="_blank">
+                      {igreja.contato.emailContato}
+                    </MUILink>
+                  </Box>
+                )}
+                {(igreja.contato.ddd || igreja.contato.telefone) && (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <PhoneIcon fontSize="small" color="action" />
+                    <Typography variant="body2">
+                      ({igreja.contato.ddd}) {igreja.contato.telefone}
+                    </Typography>
+                  </Box>
+                )}
+                {(igreja.contato.dddWhatsApp || igreja.contato.telefoneWhatsApp) && (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <WhatsAppIcon fontSize="small" color="action" />
+                    <MUILink
+                      href={`https://wa.me/${igreja.contato.dddWhatsApp}${igreja.contato.telefoneWhatsApp}`}
+                      target="_blank"
+                    >
+                      ({igreja.contato.dddWhatsApp}) {igreja.contato.telefoneWhatsApp}
+                    </MUILink>
+                  </Box>
+                )}
+              </Box>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                Nenhum contato cadastrado.
+              </Typography>
+            )}
+
+            <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 3 }}>
               <Button variant="outlined" onClick={handleClose}>
                 Fechar
               </Button>

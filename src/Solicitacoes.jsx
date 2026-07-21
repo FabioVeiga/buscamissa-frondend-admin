@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { Link, CheckCircle, Cancel, OpenInNew, Search } from "@mui/icons-material";
 import api from "./services/apiService";
+import IgrejaDetalheModal from "./Igreja/IgrejaDetalhesModal";
 
 const SolicitacoesPage = () => {
   const [solicitacoes, setSolicitacoes] = useState([]);
@@ -23,6 +24,8 @@ const SolicitacoesPage = () => {
   const [linkUrl, setLinkUrl] = useState("");
   const [linkTexto, setLinkTexto] = useState("");
   const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
+  const [igrejaModalOpen, setIgrejaModalOpen] = useState(false);
+  const [selectedIgrejaId, setSelectedIgrejaId] = useState(null);
   const respostaRef = useRef(null);
 
   const showToast = (message, severity = "success") =>
@@ -96,6 +99,17 @@ const SolicitacoesPage = () => {
     const d = new Date(data);
     if (isNaN(d.getTime())) return "—";
     return d.toLocaleDateString("pt-BR");
+  };
+
+  const handleOpenIgrejaModal = (igrejaId) => {
+    if (!igrejaId) return;
+    setSelectedIgrejaId(igrejaId);
+    setIgrejaModalOpen(true);
+  };
+
+  const handleCloseIgrejaModal = () => {
+    setIgrejaModalOpen(false);
+    setSelectedIgrejaId(null);
   };
 
   const handleInserirLink = () => {
@@ -172,6 +186,7 @@ const SolicitacoesPage = () => {
                 <TableRow sx={{ backgroundColor: "grey.100" }}>
                   <TableCell><strong>ID</strong></TableCell>
                   <TableCell><strong>Solicitante</strong></TableCell>
+                  <TableCell><strong>Igreja</strong></TableCell>
                   <TableCell><strong>Assunto</strong></TableCell>
                   <TableCell><strong>Mensagem</strong></TableCell>
                   <TableCell><strong>Status</strong></TableCell>
@@ -192,6 +207,28 @@ const SolicitacoesPage = () => {
                         <Typography variant="body2" color="text.secondary">#{s.id}</Typography>
                       </TableCell>
                       <TableCell>{s.nomeSolicitante || "—"}</TableCell>
+                      <TableCell>
+                        {s.igrejaId ? (
+                          <Typography
+                            component="button"
+                            variant="body2"
+                            onClick={() => handleOpenIgrejaModal(s.igrejaId)}
+                            sx={{
+                              background: "none",
+                              border: "none",
+                              padding: 0,
+                              cursor: "pointer",
+                              color: "primary.main",
+                              textDecoration: "underline",
+                              "&:hover": { textDecoration: "none", fontWeight: 600 },
+                            }}
+                          >
+                            #{s.igrejaId}
+                          </Typography>
+                        ) : (
+                          "—"
+                        )}
+                      </TableCell>
                       <TableCell>{s.assunto || "—"}</TableCell>
                       <TableCell sx={{ maxWidth: 260 }}>
                         <Typography
@@ -229,7 +266,7 @@ const SolicitacoesPage = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                    <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
                       <Typography color="text.secondary">Nenhuma solicitação encontrada.</Typography>
                     </TableCell>
                   </TableRow>
@@ -238,7 +275,7 @@ const SolicitacoesPage = () => {
 
               <TableFooter>
                 <TableRow>
-                  <TableCell colSpan={7} align="right">
+                  <TableCell colSpan={8} align="right">
                     <Typography variant="body2" color="text.secondary">
                       Total: {solicitacoes?.length ?? 0} registro(s)
                     </Typography>
@@ -249,6 +286,13 @@ const SolicitacoesPage = () => {
           )}
         </TableContainer>
       </Box>
+
+      {/* Modal de detalhes da Igreja */}
+      <IgrejaDetalheModal
+        open={igrejaModalOpen}
+        handleClose={handleCloseIgrejaModal}
+        igrejaId={selectedIgrejaId}
+      />
 
       {/* Modal de atendimento */}
       <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm">
