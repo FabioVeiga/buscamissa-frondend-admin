@@ -32,11 +32,14 @@ import FactCheckIcon from "@mui/icons-material/FactCheck";
 import AnnouncementIcon from "@mui/icons-material/Announcement";
 import MergeTypeIcon from "@mui/icons-material/MergeType";
 import ToggleOnIcon from "@mui/icons-material/ToggleOn";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import SettingsIcon from "@mui/icons-material/Settings";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { SIDEBAR } from "../theme";
@@ -55,11 +58,14 @@ const navItems = [
     icon: ChurchIcon,
     children: [
       { path: "/aprovacoes", label: "Aprovações Pendentes", icon: FactCheckIcon, badgeKey: "aprovacoes" },
+      { path: "/responsaveis", label: "Responsáveis Verificados", icon: VerifiedUserIcon, badgeKey: "responsaveis" },
       { path: "/reportar-problema", label: "Problemas Reportados", icon: AnnouncementIcon, badgeKey: "problemas" },
       { path: "/mesclar-metricas", label: "Mesclar Métricas", icon: MergeTypeIcon },
       { path: "/email-evento", label: "Divulgação", icon: EmailIcon },
     ],
   },
+  { path: "/dioceses", label: "Dioceses", icon: AccountBalanceIcon },
+  { path: "/notificacoes", label: "Notificações", icon: NotificationsIcon },
   { path: "/solicitacoes", label: "Solicitações", icon: BuildIcon, badgeKey: "solicitacoes" },
   { path: "/contribuidores", label: "Contribuidores", icon: CurrencyExchangeIcon },
   { path: "/indicadores", label: "Indicadores", icon: InsightsIcon },
@@ -86,6 +92,9 @@ const pageTitles = {
   "/email-evento": "Divulgação das Igrejas",
   "/indicadores": "Indicadores",
   "/feature-toggles": "Feature Toggles",
+  "/dioceses": "Arquidioceses e Dioceses",
+  "/notificacoes": "Notificações",
+  "/responsaveis": "Responsáveis Verificados",
 };
 
 const Menu = ({ children }) => {
@@ -119,6 +128,7 @@ const Menu = ({ children }) => {
     aprovacoes: 0,
     problemas: 0,
     solicitacoes: 0,
+    responsaveis: 0,
   });
 
   useEffect(() => {
@@ -139,6 +149,14 @@ const Menu = ({ children }) => {
       .then((response) => {
         const data = response.data?.data || response.data;
         setPendingCounts((prev) => ({ ...prev, problemas: data?.totalItems ?? 0 }));
+      })
+      .catch(() => {});
+
+    api
+      .get("/api/v1/admin/responsaveis/pendentes")
+      .then((response) => {
+        const total = Array.isArray(response.data?.data) ? response.data.data.length : 0;
+        setPendingCounts((prev) => ({ ...prev, responsaveis: total }));
       })
       .catch(() => {});
 
