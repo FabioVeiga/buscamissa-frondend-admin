@@ -5,15 +5,8 @@ import {
   Button,
   Card,
   CircularProgress,
-  Link,
   Paper,
   Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   TextField,
   Tooltip,
   Typography,
@@ -22,7 +15,16 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import ShareIcon from "@mui/icons-material/Share";
+import HomeIcon from "@mui/icons-material/Home";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import TrendingDownIcon from "@mui/icons-material/TrendingDown";
+import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 import Grid from "@mui/material/Grid2";
+import { LineChart } from "@mui/x-charts/LineChart";
+import { BarChart } from "@mui/x-charts/BarChart";
 import Menu from "../Components/Menu";
 import api from "../services/apiService";
 import ErrorSpan from "../ErrorSpan";
@@ -34,8 +36,9 @@ const FILTROS_STORAGE_KEY = "indicadores_filtro_periodo";
 // Etapa 2: número fixo de linhas em todos os rankings.
 const TOP_N = 10;
 
-// Etapa 5: altura fixa para o scroll interno quando houver mais linhas do que cabe.
-const ALTURA_TABELA = 360;
+// Altura fixa dos gráficos de ranking (barra por igreja).
+const ALTURA_POR_LINHA = 34;
+const ALTURA_MINIMA_RANKING = 220;
 
 // Usa os componentes de data LOCAIS do navegador — toISOString() converte para UTC
 // e "vira o dia" antes da hora, ex: 22h no Brasil (UTC-3) já é o dia seguinte em UTC.
@@ -94,69 +97,116 @@ const formatarDataHora = (data) =>
       })
     : "—";
 
-// Etapa 4: card de estatística padronizado — título em cima, valor em destaque embaixo.
-const StatCard = ({ titulo, valor }) => (
-  <Card variant="outlined" sx={{ p: 2, textAlign: "center" }}>
-    <Typography variant="body2" color="text.secondary">
-      {titulo}
-    </Typography>
-    <Typography variant="h4" fontWeight={700}>
-      {valor ?? 0}
-    </Typography>
+// Datas da série vêm como "yyyy-MM-dd" (DateOnly do backend) — evita o parse
+// nativo do JS "cair um dia" por causa de fuso (new Date("yyyy-MM-dd") é UTC).
+const formatarDataCurta = (dataIso) => {
+  if (!dataIso) return "";
+  const [, mes, dia] = dataIso.split("-");
+  return `${dia}/${mes}`;
+};
+
+// Variação percentual vs. período anterior de mesma duração. `null` quando o
+// backend não calculou (visão "todo o histórico" não tem "anterior").
+const calcularTendencia = (atual, anterior) => {
+  if (anterior === null || anterior === undefined) return null;
+  if (anterior === 0) return atual > 0 ? { percentual: 100, novo: true } : null;
+  const percentual = ((atual - anterior) / anterior) * 100;
+  return { percentual: Math.round(percentual * 10) / 10, novo: false };
+};
+
+const TendenciaBadge = ({ tendencia }) => {
+  if (!tendencia) return null;
+  const subindo = tendencia.percentual > 0;
+  const estavel = tendencia.percentual === 0;
+  const Icon = estavel ? TrendingFlatIcon : subindo ? TrendingUpIcon : TrendingDownIcon;
+  const cor = estavel ? "text.secondary" : subindo ? "success.main" : "error.main";
+  const texto = tendencia.novo
+    ? "novo"
+    : `${tendencia.percentual > 0 ? "+" : ""}${tendencia.percentual}%`;
+
+  return (
+    <Stack direction="row" alignItems="center" spacing={0.3} sx={{ color: cor, mt: 0.5 }}>
+      <Icon sx={{ fontSize: 16 }} />
+      <Typography variant="caption" fontWeight={600} sx={{ color: "inherit" }}>
+        {texto} vs. período anterior
+      </Typography>
+    </Stack>
+  );
+};
+
+// Card de estatística com ícone, cor e badge de tendência (quando disponível).
+const StatCard = ({ titulo, valor, icon: Icon, color, tendencia }) => (
+  <Card variant="outlined" sx={{ p: 2, height: "100%" }}>
+    <Stack direction="row" spacing={2} alignItems="flex-start">
+      <Box
+        sx={{
+          width: 44,
+          height: 44,
+          borderRadius: 2,
+          bgcolor: `${color}1a`,
+          color,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon sx={{ fontSize: 24 }} />
+      </Box>
+      <Box sx={{ minWidth: 0 }}>
+        <Typography variant="body2" color="text.secondary" fontWeight={500}>
+          {titulo}
+        </Typography>
+        <Typography variant="h4" fontWeight={700} sx={{ color, mt: 0.25 }}>
+          {valor ?? 0}
+        </Typography>
+        <TendenciaBadge tendencia={tendencia} />
+      </Box>
+    </Stack>
   </Card>
 );
 
-// Etapa 5: cabeçalho, espaçamento e altura padronizados em todos os rankings.
-// Etapa 6: cidade/UF exibidos como subtítulo junto ao nome da igreja.
-const RankingTable = ({ titulo, descricao, itens, onIgrejaClick }) => {
+// Gráfico de barras horizontal por ranking — clicar numa barra abre o modal da igreja.
+const RankingBarChart = ({ titulo, descricao, itens, onIgrejaClick }) => {
   const linhas = (itens || []).slice(0, TOP_N);
+  const altura = Math.max(ALTURA_MINIMA_RANKING, linhas.length * ALTURA_POR_LINHA + 60);
+
+  const truncar = (texto, max = 26) =>
+    texto && texto.length > max ? `${texto.slice(0, max - 1)}…` : texto;
 
   return (
     <Paper sx={{ p: 2, borderRadius: 2, height: "100%" }}>
-      <Stack direction="row" alignItems="center" spacing={0.5} mb={2}>
+      <Stack direction="row" alignItems="center" spacing={0.5} mb={1}>
         <Typography variant="h6">{titulo}</Typography>
         <Tooltip title={descricao} arrow>
           <InfoOutlinedIcon fontSize="small" color="action" sx={{ cursor: "help" }} />
         </Tooltip>
       </Stack>
-      <TableContainer sx={{ maxHeight: ALTURA_TABELA }}>
-        <Table size="small" stickyHeader>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 700, width: 48 }}>#</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Igreja</TableCell>
-              <TableCell sx={{ fontWeight: 700 }} align="right">Quantidade</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {linhas.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={3} align="center">
-                  Sem dados no período selecionado.
-                </TableCell>
-              </TableRow>
-            )}
-            {linhas.map((item, index) => (
-              <TableRow key={item.igrejaId} hover>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>
-                  <Link
-                    component="button"
-                    underline="hover"
-                    onClick={() => onIgrejaClick(item.igrejaId)}
-                  >
-                    {item.nome}
-                  </Link>
-                  <Typography variant="caption" color="text.secondary" display="block">
-                    {item.cidade} • {item.uf}
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">{item.quantidade}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {linhas.length === 0 ? (
+        <Box sx={{ py: 4, textAlign: "center" }}>
+          <Typography variant="body2" color="text.secondary">
+            Sem dados no período selecionado.
+          </Typography>
+        </Box>
+      ) : (
+        <BarChart
+          dataset={linhas.map((item) => ({
+            nome: truncar(item.nome),
+            quantidade: item.quantidade,
+          }))}
+          yAxis={[{ dataKey: "nome", scaleType: "band" }]}
+          xAxis={[{ min: 0 }]}
+          series={[{ dataKey: "quantidade", label: "Quantidade", color: "#3b82f6" }]}
+          layout="horizontal"
+          height={altura}
+          margin={{ left: 140, right: 20, top: 10, bottom: 20 }}
+          onItemClick={(_event, item) => {
+            const igreja = linhas[item.dataIndex];
+            if (igreja) onIgrejaClick(igreja.igrejaId);
+          }}
+          slotProps={{ legend: { hidden: true } }}
+        />
+      )}
     </Paper>
   );
 };
@@ -236,7 +286,9 @@ const Indicadores = () => {
   }
 
   const totais = dados.cards || {};
+  const totaisAnteriores = dados.totaisAnteriores || null;
   const rankings = dados.rankings || {};
+  const serieTemporal = dados.serieTemporal || [];
   const periodoAtivo = filtros.dataInicial || filtros.dataFinal;
 
   // Etapa 10: empty state quando não há nenhum registro no período informado.
@@ -244,6 +296,7 @@ const Indicadores = () => {
     !totais.visualizacoes &&
     !totais.favoritos &&
     !totais.compartilhamentos &&
+    !totais.visualizacoesHome &&
     !(rankings.maisVisualizadas || []).length &&
     !(rankings.maisFavoritadas || []).length &&
     !(rankings.maisCompartilhadas || []).length &&
@@ -319,44 +372,90 @@ const Indicadores = () => {
         ) : (
           <>
             <Grid container spacing={2}>
-              <Grid size={4}>
-                <StatCard titulo="Visualizações" valor={totais.visualizacoes} />
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <StatCard
+                  titulo="Visualizações"
+                  valor={totais.visualizacoes}
+                  icon={VisibilityIcon}
+                  color="#3b82f6"
+                  tendencia={calcularTendencia(totais.visualizacoes, totaisAnteriores?.visualizacoes)}
+                />
               </Grid>
-              <Grid size={4}>
-                <StatCard titulo="Favoritos" valor={totais.favoritos} />
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <StatCard
+                  titulo="Favoritos"
+                  valor={totais.favoritos}
+                  icon={FavoriteIcon}
+                  color="#ec4899"
+                  tendencia={calcularTendencia(totais.favoritos, totaisAnteriores?.favoritos)}
+                />
               </Grid>
-              <Grid size={4}>
-                <StatCard titulo="Compartilhamentos" valor={totais.compartilhamentos} />
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <StatCard
+                  titulo="Compartilhamentos"
+                  valor={totais.compartilhamentos}
+                  icon={ShareIcon}
+                  color="#8b5cf6"
+                  tendencia={calcularTendencia(totais.compartilhamentos, totaisAnteriores?.compartilhamentos)}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <StatCard
+                  titulo="Visualizações da Home"
+                  valor={totais.visualizacoesHome}
+                  icon={HomeIcon}
+                  color="#10b981"
+                  tendencia={calcularTendencia(totais.visualizacoesHome, totaisAnteriores?.visualizacoesHome)}
+                />
               </Grid>
             </Grid>
 
+            {serieTemporal.length > 0 && (
+              <Paper sx={{ p: 2, borderRadius: 2 }}>
+                <Typography variant="h6" mb={1}>Evolução diária</Typography>
+                <LineChart
+                  dataset={serieTemporal}
+                  xAxis={[{ dataKey: "data", scaleType: "point", valueFormatter: formatarDataCurta }]}
+                  series={[
+                    { dataKey: "visualizacoes", label: "Visualizações", color: "#3b82f6", showMark: false },
+                    { dataKey: "favoritos", label: "Favoritos", color: "#ec4899", showMark: false },
+                    { dataKey: "compartilhamentos", label: "Compartilhamentos", color: "#8b5cf6", showMark: false },
+                    { dataKey: "visualizacoesHome", label: "Visualizações da Home", color: "#10b981", showMark: false },
+                  ]}
+                  height={320}
+                  margin={{ left: 40, right: 20, top: 20, bottom: 30 }}
+                  grid={{ horizontal: true }}
+                />
+              </Paper>
+            )}
+
             <Grid container spacing={2}>
-              <Grid size={6}>
-                <RankingTable
+              <Grid size={{ xs: 12, md: 6 }}>
+                <RankingBarChart
                   titulo="Igrejas mais visualizadas"
                   descricao="Quantas vezes a página da igreja foi acessada no site público. Cada visitante conta só uma vez a cada 30 minutos, para evitar contagem duplicada em atualizações de página (F5)."
                   itens={rankings.maisVisualizadas}
                   onIgrejaClick={handleIgrejaClick}
                 />
               </Grid>
-              <Grid size={6}>
-                <RankingTable
+              <Grid size={{ xs: 12, md: 6 }}>
+                <RankingBarChart
                   titulo="Igrejas mais favoritadas"
                   descricao="Quantas vezes usuários marcaram a igreja como favorita no site público (botão de coração)."
                   itens={rankings.maisFavoritadas}
                   onIgrejaClick={handleIgrejaClick}
                 />
               </Grid>
-              <Grid size={6}>
-                <RankingTable
+              <Grid size={{ xs: 12, md: 6 }}>
+                <RankingBarChart
                   titulo="Igrejas mais compartilhadas"
                   descricao="Quantas vezes o link da igreja foi compartilhado pelo botão de compartilhar no site público."
                   itens={rankings.maisCompartilhadas}
                   onIgrejaClick={handleIgrejaClick}
                 />
               </Grid>
-              <Grid size={6}>
-                <RankingTable
+              <Grid size={{ xs: 12, md: 6 }}>
+                <RankingBarChart
                   titulo="Igrejas com mais rotas abertas"
                   descricao="Quantas vezes usuários clicaram em 'Como chegar' para abrir a rota da igreja no mapa."
                   itens={rankings.maisRotasAbertas}
