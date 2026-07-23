@@ -22,6 +22,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 const statCards = [
   {
@@ -81,6 +82,14 @@ const statCards = [
     path: "/responsaveis",
     badge: "responsaveis",
   },
+  {
+    key: "visualizacoesHome",
+    label: "Visualizações da Home",
+    icon: VisibilityIcon,
+    color: "#10b981",
+    bgLight: "rgba(16, 185, 129, 0.1)",
+    path: "/indicadores",
+  },
 ];
 
 const Home = () => {
@@ -91,6 +100,7 @@ const Home = () => {
     quantidadeMissas: 0,
     quantidadeAprovacoesPendentes: 0,
     quantidadeResponsaveisPendentes: 0,
+    visualizacoesHome: 0,
   });
 
   const fetchData = () => {
@@ -113,6 +123,16 @@ const Home = () => {
       .then((response) => {
         const total = Array.isArray(response.data?.data) ? response.data.data.length : 0;
         setData(prev => ({ ...prev, quantidadeResponsaveisPendentes: total }));
+      })
+      .catch(() => {});
+
+    // Sem período informado, /indicadores considera todo o histórico —
+    // mesma fonte já usada na tela de Indicadores.
+    api
+      .get("/api/v1/admin/indicadores")
+      .then((response) => {
+        const visualizacoesHome = response.data?.data?.cards?.visualizacoesHome ?? 0;
+        setData(prev => ({ ...prev, visualizacoesHome }));
       })
       .catch(() => {});
   };
