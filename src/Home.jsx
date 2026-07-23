@@ -20,6 +20,8 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import PeopleIcon from "@mui/icons-material/People";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
+import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 
 const statCards = [
   {
@@ -61,6 +63,24 @@ const statCards = [
     bgLight: "rgba(34, 197, 94, 0.1)",
     path: "/usuario",
   },
+  {
+    key: "quantidadeAprovacoesPendentes",
+    label: "Aprovações Pendentes",
+    icon: FactCheckIcon,
+    color: "#06b6d4",
+    bgLight: "rgba(6, 182, 212, 0.1)",
+    path: "/aprovacoes",
+    badge: "aprovacoes",
+  },
+  {
+    key: "quantidadeResponsaveisPendentes",
+    label: "Responsáveis Verificados",
+    icon: VerifiedUserIcon,
+    color: "#ec4899",
+    bgLight: "rgba(236, 72, 153, 0.1)",
+    path: "/responsaveis",
+    badge: "responsaveis",
+  },
 ];
 
 const Home = () => {
@@ -69,13 +89,32 @@ const Home = () => {
   const [data, setData] = useState({
     quantidadesIgrejas: 0,
     quantidadeMissas: 0,
+    quantidadeAprovacoesPendentes: 0,
+    quantidadeResponsaveisPendentes: 0,
   });
 
   const fetchData = () => {
     api
       .get("/api/v1/admin/igreja/infos")
-      .then((response) => setData(response.data.data))
+      .then((response) => setData(prev => ({ ...prev, ...response.data.data })))
       .catch((error) => console.error("Error fetching data:", error));
+
+    const paginacao = { "Paginacao.PageIndex": 1, "Paginacao.PageSize": 1 };
+    api
+      .get("/api/v1/Aprovacao/pendentes", { params: paginacao })
+      .then((response) => {
+        const total = response.data?.data?.totalItems ?? 0;
+        setData(prev => ({ ...prev, quantidadeAprovacoesPendentes: total }));
+      })
+      .catch(() => {});
+
+    api
+      .get("/api/v1/admin/responsaveis/pendentes")
+      .then((response) => {
+        const total = Array.isArray(response.data?.data) ? response.data.data.length : 0;
+        setData(prev => ({ ...prev, quantidadeResponsaveisPendentes: total }));
+      })
+      .catch(() => {});
   };
 
   useEffect(() => {
