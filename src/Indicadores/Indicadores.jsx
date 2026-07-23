@@ -5,8 +5,15 @@ import {
   Button,
   Card,
   CircularProgress,
+  Link,
   Paper,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Tooltip,
   Typography,
@@ -24,7 +31,6 @@ import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 import Grid from "@mui/material/Grid2";
 import { LineChart } from "@mui/x-charts/LineChart";
-import { BarChart } from "@mui/x-charts/BarChart";
 import Menu from "../Components/Menu";
 import api from "../services/apiService";
 import ErrorSpan from "../ErrorSpan";
@@ -36,9 +42,8 @@ const FILTROS_STORAGE_KEY = "indicadores_filtro_periodo";
 // Etapa 2: número fixo de linhas em todos os rankings.
 const TOP_N = 10;
 
-// Altura fixa dos gráficos de ranking (barra por igreja).
-const ALTURA_POR_LINHA = 34;
-const ALTURA_MINIMA_RANKING = 220;
+// Etapa 5: altura fixa para o scroll interno quando houver mais linhas do que cabe.
+const ALTURA_TABELA = 360;
 
 // Usa os componentes de data LOCAIS do navegador — toISOString() converte para UTC
 // e "vira o dia" antes da hora, ex: 22h no Brasil (UTC-3) já é o dia seguinte em UTC.
@@ -166,47 +171,57 @@ const StatCard = ({ titulo, valor, icon: Icon, color, tendencia }) => (
   </Card>
 );
 
-// Gráfico de barras horizontal por ranking — clicar numa barra abre o modal da igreja.
-const RankingBarChart = ({ titulo, descricao, itens, onIgrejaClick }) => {
+// Etapa 5: cabeçalho, espaçamento e altura padronizados em todos os rankings.
+// Etapa 6: cidade/UF exibidos como subtítulo junto ao nome da igreja.
+const RankingTable = ({ titulo, descricao, itens, onIgrejaClick }) => {
   const linhas = (itens || []).slice(0, TOP_N);
-  const altura = Math.max(ALTURA_MINIMA_RANKING, linhas.length * ALTURA_POR_LINHA + 60);
-
-  const truncar = (texto, max = 26) =>
-    texto && texto.length > max ? `${texto.slice(0, max - 1)}…` : texto;
 
   return (
     <Paper sx={{ p: 2, borderRadius: 2, height: "100%" }}>
-      <Stack direction="row" alignItems="center" spacing={0.5} mb={1}>
+      <Stack direction="row" alignItems="center" spacing={0.5} mb={2}>
         <Typography variant="h6">{titulo}</Typography>
         <Tooltip title={descricao} arrow>
           <InfoOutlinedIcon fontSize="small" color="action" sx={{ cursor: "help" }} />
         </Tooltip>
       </Stack>
-      {linhas.length === 0 ? (
-        <Box sx={{ py: 4, textAlign: "center" }}>
-          <Typography variant="body2" color="text.secondary">
-            Sem dados no período selecionado.
-          </Typography>
-        </Box>
-      ) : (
-        <BarChart
-          dataset={linhas.map((item) => ({
-            nome: truncar(item.nome),
-            quantidade: item.quantidade,
-          }))}
-          yAxis={[{ dataKey: "nome", scaleType: "band" }]}
-          xAxis={[{ min: 0 }]}
-          series={[{ dataKey: "quantidade", label: "Quantidade", color: "#3b82f6" }]}
-          layout="horizontal"
-          height={altura}
-          margin={{ left: 140, right: 20, top: 10, bottom: 20 }}
-          onItemClick={(_event, item) => {
-            const igreja = linhas[item.dataIndex];
-            if (igreja) onIgrejaClick(igreja.igrejaId);
-          }}
-          slotProps={{ legend: { hidden: true } }}
-        />
-      )}
+      <TableContainer sx={{ maxHeight: ALTURA_TABELA }}>
+        <Table size="small" stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontWeight: 700, width: 48 }}>#</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Igreja</TableCell>
+              <TableCell sx={{ fontWeight: 700 }} align="right">Quantidade</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {linhas.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={3} align="center">
+                  Sem dados no período selecionado.
+                </TableCell>
+              </TableRow>
+            )}
+            {linhas.map((item, index) => (
+              <TableRow key={item.igrejaId} hover>
+                <TableCell>{index + 1}</TableCell>
+                <TableCell>
+                  <Link
+                    component="button"
+                    underline="hover"
+                    onClick={() => onIgrejaClick(item.igrejaId)}
+                  >
+                    {item.nome}
+                  </Link>
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    {item.cidade} • {item.uf}
+                  </Typography>
+                </TableCell>
+                <TableCell align="right">{item.quantidade}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Paper>
   );
 };
@@ -431,7 +446,7 @@ const Indicadores = () => {
 
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, md: 6 }}>
-                <RankingBarChart
+                <RankingTable
                   titulo="Igrejas mais visualizadas"
                   descricao="Quantas vezes a página da igreja foi acessada no site público. Cada visitante conta só uma vez a cada 30 minutos, para evitar contagem duplicada em atualizações de página (F5)."
                   itens={rankings.maisVisualizadas}
@@ -439,7 +454,7 @@ const Indicadores = () => {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <RankingBarChart
+                <RankingTable
                   titulo="Igrejas mais favoritadas"
                   descricao="Quantas vezes usuários marcaram a igreja como favorita no site público (botão de coração)."
                   itens={rankings.maisFavoritadas}
@@ -447,7 +462,7 @@ const Indicadores = () => {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <RankingBarChart
+                <RankingTable
                   titulo="Igrejas mais compartilhadas"
                   descricao="Quantas vezes o link da igreja foi compartilhado pelo botão de compartilhar no site público."
                   itens={rankings.maisCompartilhadas}
@@ -455,7 +470,7 @@ const Indicadores = () => {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 6 }}>
-                <RankingBarChart
+                <RankingTable
                   titulo="Igrejas com mais rotas abertas"
                   descricao="Quantas vezes usuários clicaram em 'Como chegar' para abrir a rota da igreja no mapa."
                   itens={rankings.maisRotasAbertas}
