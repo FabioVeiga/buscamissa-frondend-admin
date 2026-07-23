@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import api from "./services/apiService";
+import analyticsService from "./services/analyticsService";
 import MissaCardHome from "./Components/MissaCardHome";
 import ChurchIcon from "@mui/icons-material/Church";
 import ScheduleIcon from "@mui/icons-material/Schedule";
@@ -22,6 +23,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 const statCards = [
   {
@@ -81,6 +83,13 @@ const statCards = [
     path: "/responsaveis",
     badge: "responsaveis",
   },
+  {
+    key: "visitantesHoje",
+    label: "Visitantes (Hoje)",
+    icon: VisibilityIcon,
+    color: "#10b981",
+    bgLight: "rgba(16, 185, 129, 0.1)",
+  },
 ];
 
 const Home = () => {
@@ -91,6 +100,7 @@ const Home = () => {
     quantidadeMissas: 0,
     quantidadeAprovacoesPendentes: 0,
     quantidadeResponsaveisPendentes: 0,
+    visitantesHoje: 0,
   });
 
   const fetchData = () => {
@@ -115,10 +125,18 @@ const Home = () => {
         setData(prev => ({ ...prev, quantidadeResponsaveisPendentes: total }));
       })
       .catch(() => {});
+
+    analyticsService
+      .obterVisitantes("dia")
+      .then((result) => {
+        setData(prev => ({ ...prev, visitantesHoje: result.total ?? 0 }));
+      })
+      .catch(() => {});
   };
 
   useEffect(() => {
     fetchData();
+    analyticsService.rastrear("home_view");
   }, []);
 
   if (!isAuthenticated) {
