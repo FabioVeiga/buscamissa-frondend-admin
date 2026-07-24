@@ -784,7 +784,7 @@ const IgrejaAtualizar = () => {
                   }
                   label="Ativo"
               />
-              {state?.row?.usuarioId && (
+              {state?.row?.temResponsavelAprovado && (
                 <Chip
                     label="Tem responsável"
                     size="small"
