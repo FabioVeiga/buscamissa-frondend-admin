@@ -468,7 +468,7 @@ const IgrejaPage = () => {
                       <TableCell>
                         <Stack direction="row" spacing={1} alignItems="center">
                           <Typography sx={{ fontWeight: 600 }}>{row.nome}</Typography>
-                          {row.usuarioId && (
+                          {row.temResponsavelAprovado && (
                             <Chip
                               label="Responsável"
                               size="small"
