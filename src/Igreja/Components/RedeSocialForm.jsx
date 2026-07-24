@@ -19,10 +19,12 @@ import {
   Snackbar,
   TextField,
   Typography,
+  Link,
 } from "@mui/material";
-import { Delete } from "@mui/icons-material";
+import { Delete, OpenInNew } from "@mui/icons-material";
 import api from "../../services/apiService";
 import { useRedesSociais } from "../../hooks/useRedesSociais";
+import { construirUrlRedeSocial } from "../../utils/redeSocialUrl";
 
 const RedeSocialForm = ({
                           redesSociaisExistentes,
@@ -231,12 +233,22 @@ const RedeSocialForm = ({
                         mb: 1,
                       }}
                   >
-                    <Typography>
-                      <strong>
-                        {obterNomePorId(rede.tipoRedeSocial)}:
-                      </strong>{" "}
-                      {rede.nomeDoPerfil}
-                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Typography>
+                        <strong>
+                          {obterNomePorId(rede.tipoRedeSocial)}:
+                        </strong>
+                      </Typography>
+                      <Link
+                          href={construirUrlRedeSocial(rede.tipoRedeSocial, rede.nomeDoPerfil)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                      >
+                        {rede.nomeDoPerfil}
+                        <OpenInNew fontSize="small" />
+                      </Link>
+                    </Box>
 
                     <IconButton color="error" onClick={() => handleOpenModal(rede)}>
                       <Delete />

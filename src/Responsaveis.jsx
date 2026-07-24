@@ -26,6 +26,7 @@ import {
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import BlockIcon from "@mui/icons-material/Block";
+import EditIcon from "@mui/icons-material/Edit";
 import api from "./services/apiService";
 
 const STATUS_META = {
@@ -46,6 +47,12 @@ const ResponsaveisPage = () => {
   const [motivo, setMotivo] = useState("");
   const [salvando, setSalvando] = useState(false);
   const [erroDialog, setErroDialog] = useState(null);
+
+  // Dialog de edição
+  const [dialogEdicao, setDialogEdicao] = useState(null);
+  const [formEdicao, setFormEdicao] = useState({ cargoInformado: "", observacaoSolicitacao: "" });
+  const [salvandoEdicao, setSalvandoEdicao] = useState(false);
+  const [erroEdicao, setErroEdicao] = useState(null);
 
   const carregar = useCallback(async () => {
     setIsLoading(true);
@@ -103,6 +110,36 @@ const ResponsaveisPage = () => {
     aprovar: "Aprovar responsável",
     rejeitar: "Rejeitar solicitação",
     revogar: "Revogar acesso",
+  };
+
+  const abrirEdicao = (registro) => {
+    setDialogEdicao(registro);
+    setFormEdicao({
+      cargoInformado: registro.cargoInformado || "",
+      observacaoSolicitacao: registro.observacaoSolicitacao || "",
+    });
+    setErroEdicao(null);
+  };
+
+  const salvarEdicao = async () => {
+    if (!dialogEdicao) return;
+
+    setSalvandoEdicao(true);
+    setErroEdicao(null);
+
+    try {
+      await api.put(`/api/v1/admin/responsaveis/${dialogEdicao.id}/editar`, formEdicao);
+      setDialogEdicao(null);
+      carregar();
+    } catch (error) {
+      const mensagem =
+        error.response?.data?.data ??
+        error.response?.data?.message ??
+        "Erro ao atualizar. Tente novamente.";
+      setErroEdicao(typeof mensagem === "string" ? mensagem : "Erro ao processar. Tente novamente.");
+    } finally {
+      setSalvandoEdicao(false);
+    }
   };
 
   return (
@@ -183,6 +220,16 @@ const ResponsaveisPage = () => {
                       <TableCell align="center" sx={{ whiteSpace: "nowrap" }}>
                         {r.status === "PendenteVerificacao" && (
                           <>
+                            <Tooltip title="Editar informações">
+                              <Button
+                                size="small"
+                                color="inherit"
+                                startIcon={<EditIcon />}
+                                onClick={() => abrirEdicao(r)}
+                              >
+                                Editar
+                              </Button>
+                            </Tooltip>
                             <Tooltip title="Aprovar (envia e-mail)">
                               <Button
                                 size="small"
@@ -206,16 +253,28 @@ const ResponsaveisPage = () => {
                           </>
                         )}
                         {r.status === "Aprovado" && (
-                          <Tooltip title="Revogar acesso com motivo (envia e-mail)">
-                            <Button
-                              size="small"
-                              color="error"
-                              startIcon={<BlockIcon />}
-                              onClick={() => abrirAcao(r, "revogar")}
-                            >
-                              Revogar
-                            </Button>
-                          </Tooltip>
+                          <>
+                            <Tooltip title="Editar informações">
+                              <Button
+                                size="small"
+                                color="inherit"
+                                startIcon={<EditIcon />}
+                                onClick={() => abrirEdicao(r)}
+                              >
+                                Editar
+                              </Button>
+                            </Tooltip>
+                            <Tooltip title="Revogar acesso com motivo (envia e-mail)">
+                              <Button
+                                size="small"
+                                color="error"
+                                startIcon={<BlockIcon />}
+                                onClick={() => abrirAcao(r, "revogar")}
+                              >
+                                Revogar
+                              </Button>
+                            </Tooltip>
+                          </>
                         )}
                       </TableCell>
                     </TableRow>
@@ -286,6 +345,54 @@ const ResponsaveisPage = () => {
                 disabled={salvando}
               >
                 {salvando ? "Processando..." : tituloAcao[dialogAcao.acao]}
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
+
+      <Dialog
+        open={!!dialogEdicao}
+        onClose={() => !salvandoEdicao && setDialogEdicao(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        {dialogEdicao && (
+          <>
+            <DialogTitle>Editar responsável</DialogTitle>
+            <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: "8px !important" }}>
+              {erroEdicao && <Alert severity="error">{erroEdicao}</Alert>}
+              <Typography variant="body2" color="text.secondary">
+                Editando: <strong>{dialogEdicao.usuarioNome}</strong> — <strong>{dialogEdicao.igrejaNome}</strong>
+              </Typography>
+              <TextField
+                label="Cargo Informado"
+                value={formEdicao.cargoInformado}
+                onChange={(e) => setFormEdicao({ ...formEdicao, cargoInformado: e.target.value })}
+                fullWidth
+                placeholder="ex: Pároco, Secretária, etc."
+              />
+              <TextField
+                label="Observação da Solicitação"
+                value={formEdicao.observacaoSolicitacao}
+                onChange={(e) => setFormEdicao({ ...formEdicao, observacaoSolicitacao: e.target.value })}
+                multiline
+                minRows={3}
+                fullWidth
+                placeholder="Observações adicionais..."
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setDialogEdicao(null)} disabled={salvandoEdicao}>
+                Cancelar
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={salvarEdicao}
+                disabled={salvandoEdicao}
+              >
+                {salvandoEdicao ? "Salvando..." : "Salvar"}
               </Button>
             </DialogActions>
           </>

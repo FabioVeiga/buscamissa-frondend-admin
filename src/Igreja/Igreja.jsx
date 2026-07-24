@@ -466,7 +466,17 @@ const IgrejaPage = () => {
                         </Tooltip>
                       </TableCell>
                       <TableCell>
-                        <Typography sx={{ fontWeight: 600 }}>{row.nome}</Typography>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Typography sx={{ fontWeight: 600 }}>{row.nome}</Typography>
+                          {row.usuarioId && (
+                            <Chip
+                              label="Responsável"
+                              size="small"
+                              color="primary"
+                              variant="outlined"
+                            />
+                          )}
+                        </Stack>
                       </TableCell>
                       <TableCell>
                         {row.slug ? (
