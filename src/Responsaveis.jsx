@@ -27,7 +27,9 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import BlockIcon from "@mui/icons-material/Block";
 import EditIcon from "@mui/icons-material/Edit";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import api from "./services/apiService";
+import { useNavigate } from "react-router-dom";
 
 const STATUS_META = {
   PendenteVerificacao: { label: "Pendente", color: "warning" },
@@ -38,6 +40,7 @@ const STATUS_META = {
 
 // Abas: 0 = fila de pendentes, 1 = histórico completo
 const ResponsaveisPage = () => {
+  const navigate = useNavigate();
   const [aba, setAba] = useState(0);
   const [registros, setRegistros] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -218,6 +221,16 @@ const ResponsaveisPage = () => {
                         <Chip size="small" label={meta.label} color={meta.color} />
                       </TableCell>
                       <TableCell align="center" sx={{ whiteSpace: "nowrap" }}>
+                        <Tooltip title="Ir para edição da Igreja">
+                          <Button
+                            size="small"
+                            color="primary"
+                            startIcon={<OpenInNewIcon />}
+                            onClick={() => navigate("/igrejas/editar", { state: { row: { id: r.igrejaId } } })}
+                          >
+                            Igreja
+                          </Button>
+                        </Tooltip>
                         {r.status === "PendenteVerificacao" && (
                           <>
                             <Tooltip title="Editar informações">
