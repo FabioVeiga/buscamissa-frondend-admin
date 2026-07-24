@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Chip,
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
@@ -772,16 +773,26 @@ const IgrejaAtualizar = () => {
             subtitle="Dados principais da igreja."
         >
           <Box display="flex" flexDirection="column" gap={2}>
-            <FormControlLabel
-                control={
-                  <Switch
-                      checked={formData?.ativo ?? false}
-                      onChange={(e) => handleChange("ativo", e.target.checked)}
-                      color="primary"
-                  />
-                }
-                label="Ativo"
-            />
+            <Stack direction="row" spacing={1} alignItems="center">
+              <FormControlLabel
+                  control={
+                    <Switch
+                        checked={formData?.ativo ?? false}
+                        onChange={(e) => handleChange("ativo", e.target.checked)}
+                        color="primary"
+                    />
+                  }
+                  label="Ativo"
+              />
+              {state?.row?.usuarioId && (
+                <Chip
+                    label="Tem responsável"
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                />
+              )}
+            </Stack>
 
             <TextField
                 label="Nome da Igreja"
