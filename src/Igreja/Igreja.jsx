@@ -29,6 +29,7 @@ import HideSourceIcon from "@mui/icons-material/HideSource";
 import AnnouncementIcon from "@mui/icons-material/Announcement";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import DeleteIcon from '@mui/icons-material/Delete';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Link from '@mui/material/Link';
 import { useNavigate } from "react-router-dom";
@@ -206,6 +207,18 @@ const IgrejaPage = () => {
       });
   };
 
+  const handleRestaurar = (igrejaId) => {
+    api
+      .post(`/api/v1/Admin/igreja/restaurar/${igrejaId}`)
+      .then((response) => {
+        console.log(response.data?.data?.mensagemAplicacao || "Igreja restaurada");
+        fetchIgrejas(paginacao.pageIndex, paginacao.pageSize, searchFilters);
+      })
+      .catch((error) => {
+        console.error("Erro ao restaurar igreja:", error);
+      });
+  };
+
   const buildIgrejasEndpoint = (pageIndex, pageSize, filters) => {
     const params = new URLSearchParams();
     if (filters?.ativo !== undefined && filters.ativo !== "") {
@@ -221,6 +234,7 @@ const IgrejaPage = () => {
     if (filters?.reportarProblema !== undefined && filters.reportarProblema !== "") {
       params.append("reportarProblema", filters.reportarProblema);
     }
+    if (filters?.mostrarDeletadas) params.append("mostrarDeletadas", true);
     params.append("Paginacao.PageIndex", pageIndex);
     params.append("Paginacao.PageSize", pageSize);
     return `/api/v1/admin/igreja/buscar-por-filtro?${params.toString()}`;
@@ -299,11 +313,19 @@ const IgrejaPage = () => {
           </IconButton>
         </Tooltip>
       )}
-      <Tooltip title="Deletar">
-        <IconButton color="error" onClick={() => handleOpenDeleteModal(row.id)}>
-          <DeleteIcon />
-        </IconButton>
-      </Tooltip>
+      {row.deletadoEm ? (
+        <Tooltip title="Restaurar">
+          <IconButton color="success" onClick={() => handleRestaurar(row.id)}>
+            <RestoreFromTrashIcon />
+          </IconButton>
+        </Tooltip>
+      ) : (
+        <Tooltip title="Deletar">
+          <IconButton color="error" onClick={() => handleOpenDeleteModal(row.id)}>
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
+      )}
     </Stack>
   );
 
@@ -368,11 +390,16 @@ const IgrejaPage = () => {
                               {row.endereco?.localidade} / {row.endereco?.uf}
                             </Typography>
                           </Box>
-                          <Chip
-                            label={row.ativo ? "Ativo" : "Inativo"}
-                            size="small"
-                            color={row.ativo ? "success" : "default"}
-                          />
+                          <Stack direction="row" spacing={0.5}>
+                            {row.deletadoEm && (
+                              <Chip label="Excluída" size="small" color="error" />
+                            )}
+                            <Chip
+                              label={row.ativo ? "Ativo" : "Inativo"}
+                              size="small"
+                              color={row.ativo ? "success" : "default"}
+                            />
+                          </Stack>
                         </Stack>
                         {row.endereco?.cep && (
                           <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
@@ -475,6 +502,9 @@ const IgrejaPage = () => {
                               color="primary"
                               variant="outlined"
                             />
+                          )}
+                          {row.deletadoEm && (
+                            <Chip label="Excluída" size="small" color="error" />
                           )}
                         </Stack>
                       </TableCell>

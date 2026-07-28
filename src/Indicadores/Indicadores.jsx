@@ -26,6 +26,13 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ShareIcon from "@mui/icons-material/Share";
 import HomeIcon from "@mui/icons-material/Home";
+import FunctionsIcon from "@mui/icons-material/Functions";
+import LocationCityIcon from "@mui/icons-material/LocationCity";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import ChecklistIcon from "@mui/icons-material/Checklist";
+import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
+import LoginIcon from "@mui/icons-material/Login";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
@@ -171,6 +178,37 @@ const StatCard = ({ titulo, valor, icon: Icon, color, tendencia }) => (
   </Card>
 );
 
+// Card compacto para os indicadores secundários (visualizações de página, favoritos, compartilhamentos).
+const MiniStatCard = ({ titulo, valor, icon: Icon, color }) => (
+  <Card variant="outlined" sx={{ p: 1.5, height: "100%" }}>
+    <Stack direction="row" spacing={1.5} alignItems="center">
+      <Box
+        sx={{
+          width: 34,
+          height: 34,
+          borderRadius: 1.5,
+          bgcolor: `${color}1a`,
+          color,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon sx={{ fontSize: 18 }} />
+      </Box>
+      <Box sx={{ minWidth: 0 }}>
+        <Typography variant="caption" color="text.secondary" fontWeight={500} noWrap>
+          {titulo}
+        </Typography>
+        <Typography variant="h6" fontWeight={700} sx={{ color }}>
+          {valor ?? 0}
+        </Typography>
+      </Box>
+    </Stack>
+  </Card>
+);
+
 // Etapa 5: cabeçalho, espaçamento e altura padronizados em todos os rankings.
 // Etapa 6: cidade/UF exibidos como subtítulo junto ao nome da igreja.
 const RankingTable = ({ titulo, descricao, itens, onIgrejaClick }) => {
@@ -305,9 +343,11 @@ const Indicadores = () => {
   const rankings = dados.rankings || {};
   const serieTemporal = dados.serieTemporal || [];
   const periodoAtivo = filtros.dataInicial || filtros.dataFinal;
+  const paginas = totais.paginas || {};
 
   // Etapa 10: empty state quando não há nenhum registro no período informado.
   const semDados =
+    !totais.totalGeral &&
     !totais.visualizacoes &&
     !totais.favoritos &&
     !totais.compartilhamentos &&
@@ -386,6 +426,43 @@ const Indicadores = () => {
           </Paper>
         ) : (
           <>
+            <Paper
+              sx={{
+                p: 2.5,
+                borderRadius: 2,
+                bgcolor: "#6366f11a",
+                border: "1px solid",
+                borderColor: "#6366f14d",
+              }}
+            >
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Box
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: 2,
+                    bgcolor: "#6366f11a",
+                    color: "#6366f1",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <FunctionsIcon sx={{ fontSize: 30 }} />
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                    Total geral de indicadores clicados no site
+                  </Typography>
+                  <Typography variant="h3" fontWeight={700} sx={{ color: "#6366f1" }}>
+                    {totais.totalGeral ?? 0}
+                  </Typography>
+                  <TendenciaBadge tendencia={calcularTendencia(totais.totalGeral, totaisAnteriores?.totalGeral)} />
+                </Box>
+              </Stack>
+            </Paper>
+
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                 <StatCard
@@ -422,6 +499,33 @@ const Indicadores = () => {
                   color="#10b981"
                   tendencia={calcularTendencia(totais.visualizacoesHome, totaisAnteriores?.visualizacoesHome)}
                 />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={1.5}>
+              <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
+                <MiniStatCard titulo="Cidades" valor={paginas.cidades} icon={LocationCityIcon} color="#0ea5e9" />
+              </Grid>
+              <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
+                <MiniStatCard titulo="Missa Agora" valor={paginas.missaAgora} icon={AccessTimeIcon} color="#f59e0b" />
+              </Grid>
+              <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
+                <MiniStatCard titulo="Como Funciona" valor={paginas.comoFunciona} icon={HelpOutlineIcon} color="#14b8a6" />
+              </Grid>
+              <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
+                <MiniStatCard titulo="Minhas Igrejas" valor={paginas.minhasIgrejas} icon={ChecklistIcon} color="#ec4899" />
+              </Grid>
+              <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
+                <MiniStatCard titulo="Guia Responsável" valor={paginas.guiaResponsavel} icon={VerifiedUserIcon} color="#8b5cf6" />
+              </Grid>
+              <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
+                <MiniStatCard titulo="Entrar" valor={paginas.entrar} icon={LoginIcon} color="#64748b" />
+              </Grid>
+              <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
+                <MiniStatCard titulo="Favoritos" valor={totais.favoritos} icon={FavoriteIcon} color="#ec4899" />
+              </Grid>
+              <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
+                <MiniStatCard titulo="Compartilhamentos" valor={totais.compartilhamentos} icon={ShareIcon} color="#8b5cf6" />
               </Grid>
             </Grid>
 
