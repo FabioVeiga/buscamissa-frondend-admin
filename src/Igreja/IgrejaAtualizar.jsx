@@ -35,6 +35,7 @@ import IgrejasCepModal from "./Components/IgrejasCepModal";
 import ReportarProblemaModal from "./Components/ReportarProblemaModal";
 import IgrejaMetricasTab from "./Components/IgrejaMetricasTab";
 import IgrejaCircunscricaoTab from "./Components/IgrejaCircunscricaoTab";
+import IgrejaHierarquiaTab from "./Components/IgrejaHierarquiaTab";
 import AssistenteDivulgacao from "./Components/AssistenteDivulgacao";
 import IgrejaContatosHistorico from "./Components/IgrejaContatosHistorico";
 import { construirLinkIgreja } from "../services/mensagemDivulgacao";
@@ -810,6 +811,12 @@ const IgrejaAtualizar = () => {
                 fullWidth
             />
           </Box>
+        </SectionCard>
+        <SectionCard
+            title="Hierarquia"
+            subtitle="Tipo da unidade (Paróquia/Capela/Comunidade/Santuário/Outro) e paróquia-sede."
+        >
+          <IgrejaHierarquiaTab igrejaId={formData.id} />
         </SectionCard>
         <SectionCard
             title="Diocese / Arquidiocese"
