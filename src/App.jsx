@@ -15,6 +15,8 @@ import ReportarProblemaPage from './ReportarProblema/ReportarProblema';
 import MesclarMetricas from './Igreja/MesclarMetricas';
 import FeatureTogglesPage from './FeatureToggles';
 import DiocesesPage from './Dioceses';
+import SolicitacoesVinculoCapelaPage from './SolicitacoesVinculoCapela';
+import CandidatosTipoIgrejaPage from './CandidatosTipoIgreja';
 import ResponsaveisPage from './Responsaveis';
 import NotificacoesPage from './Notificacoes';
 import PrivateRoute from './PrivateRoute'
@@ -152,6 +154,22 @@ const App = () => {
                 element={
                     <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
                         <DiocesesPage />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/solicitacoes-vinculo-capela"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <SolicitacoesVinculoCapelaPage />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/candidatos-tipo-igreja"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <CandidatosTipoIgrejaPage />
                     </PrivateRoute>
                 }
             />

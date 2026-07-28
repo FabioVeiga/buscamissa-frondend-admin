@@ -60,6 +60,8 @@ const navItems = [
     children: [
       { path: "/aprovacoes", label: "Aprovações Pendentes", icon: FactCheckIcon, badgeKey: "aprovacoes" },
       { path: "/responsaveis", label: "Responsáveis Verificados", icon: VerifiedUserIcon, badgeKey: "responsaveis" },
+      { path: "/solicitacoes-vinculo-capela", label: "Vínculos de Capela", icon: AccountBalanceIcon },
+      { path: "/candidatos-tipo-igreja", label: "Candidatas a Reclassificação", icon: AccountBalanceIcon },
       { path: "/reportar-problema", label: "Problemas Reportados", icon: AnnouncementIcon, badgeKey: "problemas" },
       { path: "/mesclar-metricas", label: "Mesclar Métricas", icon: MergeTypeIcon },
       { path: "/email-evento", label: "Divulgação", icon: EmailIcon },
@@ -96,6 +98,8 @@ const pageTitles = {
   "/dioceses": "Arquidioceses e Dioceses",
   "/notificacoes": "Notificações",
   "/responsaveis": "Responsáveis Verificados",
+  "/solicitacoes-vinculo-capela": "Vínculos de Capela",
+  "/candidatos-tipo-igreja": "Candidatas a Reclassificação",
 };
 
 const Menu = ({ children }) => {
