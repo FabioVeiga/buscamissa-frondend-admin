@@ -15,15 +15,7 @@ import {
 } from "@mui/material";
 import api from "../../services/apiService";
 import ErrorSpan from "../../ErrorSpan";
-
-// Espelha Enums/TipoIgrejaEnum.cs do backend — o banco persiste o int cru.
-const TIPOS_IGREJA = [
-  { valor: 1, nome: "Paróquia" },
-  { valor: 2, nome: "Capela" },
-  { valor: 3, nome: "Comunidade" },
-  { valor: 4, nome: "Santuário" },
-  { valor: 99, nome: "Outro" },
-];
+import { TIPOS_IGREJA } from "../constants/tiposIgreja";
 
 const IgrejaHierarquiaTab = ({ igrejaId, uf }) => {
   const [loading, setLoading] = useState(true);

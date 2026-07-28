@@ -10,6 +10,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
@@ -24,6 +28,7 @@ import EnderecoForm from "./Components/EnderecoForm";
 import SectionCard from "./Components/SectionCard";
 import RedesSociaisCriarSection from "./Components/RedesSociaisCriarSection";
 import IgrejasCepModal from "./Components/IgrejasCepModal";
+import { TIPOS_IGREJA } from "./constants/tiposIgreja";
 
 const IgrejaCriar = () => {
   const [message, setMessage] = useState("");
@@ -32,6 +37,7 @@ const IgrejaCriar = () => {
 
   const [formData, setFormData] = useState({
     nome: "",
+    tipoIgreja: 1,
     paroco: "",
     imagem: "",
     contato: {
@@ -98,6 +104,7 @@ const IgrejaCriar = () => {
   const limparFormulario = () => {
     setFormData({
       nome: "",
+      tipoIgreja: 1,
       paroco: "",
       imagem: "",
       contato: {
@@ -560,6 +567,22 @@ const IgrejaCriar = () => {
               subtitle="Informe os dados principais da igreja."
           >
             <Box display="flex" flexDirection="column" gap={2}>
+              <FormControl fullWidth required>
+                <InputLabel id="tipo-igreja-label">Tipo</InputLabel>
+                <Select
+                    labelId="tipo-igreja-label"
+                    label="Tipo"
+                    value={formData.tipoIgreja}
+                    onChange={(e) => handleChange("tipoIgreja", e.target.value)}
+                >
+                  {TIPOS_IGREJA.map((t) => (
+                      <MenuItem key={t.valor} value={t.valor}>
+                        {t.nome}
+                      </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
               <TextField
                   label="Nome da Igreja"
                   value={formData.nome}
