@@ -34,6 +34,7 @@ import SectionCard from "./Components/SectionCard";
 import IgrejasCepModal from "./Components/IgrejasCepModal";
 import ReportarProblemaModal from "./Components/ReportarProblemaModal";
 import IgrejaMetricasTab from "./Components/IgrejaMetricasTab";
+import IgrejaCircunscricaoTab from "./Components/IgrejaCircunscricaoTab";
 import AssistenteDivulgacao from "./Components/AssistenteDivulgacao";
 import IgrejaContatosHistorico from "./Components/IgrejaContatosHistorico";
 import { construirLinkIgreja } from "../services/mensagemDivulgacao";
@@ -730,10 +731,13 @@ const IgrejaAtualizar = () => {
       >
         <Tab label="Dados" />
         <Tab label="Métricas" />
+        <Tab label="Diocese" />
       </Tabs>
 
       {abaAtiva === 1 ? (
         <IgrejaMetricasTab igrejaId={formData.id} />
+      ) : abaAtiva === 2 ? (
+        <IgrejaCircunscricaoTab igrejaId={formData.id} />
       ) : (
       <SectionCard
         component="form"
