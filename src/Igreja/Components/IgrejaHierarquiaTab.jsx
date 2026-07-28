@@ -25,7 +25,7 @@ const TIPOS_IGREJA = [
   { valor: 99, nome: "Outro" },
 ];
 
-const IgrejaHierarquiaTab = ({ igrejaId }) => {
+const IgrejaHierarquiaTab = ({ igrejaId, uf }) => {
   const [loading, setLoading] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
@@ -65,13 +65,17 @@ const IgrejaHierarquiaTab = ({ igrejaId }) => {
       return;
     }
     setBuscandoParoquia(true);
+    const params = { nome: nome.trim(), ativo: true, "Paginacao.PageIndex": 1, "Paginacao.PageSize": 20 };
+    if (uf) params.uf = uf;
     api
-      .get(`/api/v1/admin/igreja/buscar-por-filtro`, {
-        params: { nome: nome.trim(), ativo: true, "Paginacao.PageIndex": 1, "Paginacao.PageSize": 20 },
-      })
+      .get(`/api/v1/admin/igreja/buscar-por-filtro`, { params })
       .then((response) => {
         const itens = response.data?.data?.items || [];
-        setOpcoesParoquia(itens.filter((i) => i.id !== igrejaId).map((i) => ({ id: i.id, nome: i.nome })));
+        setOpcoesParoquia(
+          itens
+            .filter((i) => i.id !== igrejaId)
+            .map((i) => ({ id: i.id, nome: i.nome, uf: i.endereco?.uf, cidade: i.endereco?.localidade }))
+        );
       })
       .catch(() => setOpcoesParoquia([]))
       .finally(() => setBuscandoParoquia(false));
@@ -148,11 +152,19 @@ const IgrejaHierarquiaTab = ({ igrejaId }) => {
 
         {tipoIgreja !== 1 && (
           <Autocomplete
-            sx={{ minWidth: 320 }}
+            sx={{ minWidth: 380 }}
             size="small"
             options={opcoesParoquia}
             loading={buscandoParoquia}
-            getOptionLabel={(p) => p.nome}
+            getOptionLabel={(p) => `${p.nome}${p.cidade ? ` — ${p.cidade}/${p.uf}` : ""} (#${p.id})`}
+            renderOption={(props, p) => (
+              <li {...props} key={p.id}>
+                {p.nome} — {p.cidade}/{p.uf}{" "}
+                <Typography component="span" variant="caption" color="text.secondary" sx={{ ml: 0.5 }}>
+                  (ID {p.id})
+                </Typography>
+              </li>
+            )}
             isOptionEqualToValue={(a, b) => a.id === b.id}
             value={paroquiaPai}
             onChange={(e, novoValor) => setParoquiaPai(novoValor)}

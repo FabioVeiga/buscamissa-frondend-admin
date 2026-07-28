@@ -816,7 +816,7 @@ const IgrejaAtualizar = () => {
             title="Hierarquia"
             subtitle="Tipo da unidade (Paróquia/Capela/Comunidade/Santuário/Outro) e paróquia-sede."
         >
-          <IgrejaHierarquiaTab igrejaId={formData.id} />
+          <IgrejaHierarquiaTab igrejaId={formData.id} uf={endereco?.uf} />
         </SectionCard>
         <SectionCard
             title="Diocese / Arquidiocese"
