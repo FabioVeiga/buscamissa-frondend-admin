@@ -60,6 +60,7 @@ const navItems = [
     children: [
       { path: "/aprovacoes", label: "Aprovações Pendentes", icon: FactCheckIcon, badgeKey: "aprovacoes" },
       { path: "/responsaveis", label: "Responsáveis Verificados", icon: VerifiedUserIcon, badgeKey: "responsaveis" },
+      { path: "/solicitacoes-vinculo-capela", label: "Vínculos de Capela", icon: AccountBalanceIcon },
       { path: "/reportar-problema", label: "Problemas Reportados", icon: AnnouncementIcon, badgeKey: "problemas" },
       { path: "/mesclar-metricas", label: "Mesclar Métricas", icon: MergeTypeIcon },
       { path: "/email-evento", label: "Divulgação", icon: EmailIcon },
@@ -96,6 +97,7 @@ const pageTitles = {
   "/dioceses": "Arquidioceses e Dioceses",
   "/notificacoes": "Notificações",
   "/responsaveis": "Responsáveis Verificados",
+  "/solicitacoes-vinculo-capela": "Vínculos de Capela",
 };
 
 const Menu = ({ children }) => {
