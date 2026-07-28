@@ -26,6 +26,7 @@ const FILTROS_PADRAO = {
   ativo: true,
   reportarProblema: false,
   semCoordenadas: false,
+  mostrarDeletadas: false,
 };
 
 const IgrejaSearchForm = ({
@@ -182,6 +183,7 @@ const IgrejaSearchForm = ({
     if (filtros.horario !== "") endPoint += `&horario=${filtros.horario}`;
     if (filtros.reportarProblema !== "") endPoint += `&reportarProblema=${filtros.reportarProblema}`;
     if (filtros.semCoordenadas) endPoint += `&semCoordenadas=true`;
+    if (filtros.mostrarDeletadas) endPoint += `&mostrarDeletadas=true`;
 
     let paginacao = `&Paginacao.PageIndex=1&Paginacao.PageSize=10`;
     endPoint += paginacao;
@@ -453,6 +455,15 @@ const IgrejaSearchForm = ({
                 />
               }
               label="Sem coordenadas"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.mostrarDeletadas}
+                  onChange={(e) => handleChange("mostrarDeletadas", e.target.checked)}
+                />
+              }
+              label="Mostrar excluídas"
             />
           </Box>
 

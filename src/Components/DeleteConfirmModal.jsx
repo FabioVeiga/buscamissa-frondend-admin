@@ -31,7 +31,7 @@ const DeleteConfirmModal = ({ open, onClose, onConfirm, targetId }) => {
       <DialogTitle>Confirmar exclusão</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Esta ação excluirá permanentemente o registro. Para confirmar, digite o ID da igreja abaixo e clique em "Confirmar".
+          A igreja será ocultada do site público, mas os dados são mantidos e a exclusão pode ser desfeita depois (botão &quot;Restaurar&quot;). Para confirmar, digite o ID da igreja abaixo e clique em &quot;Confirmar&quot;.
         </DialogContentText>
         <Box mt={2}>
           <TextField
