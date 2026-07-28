@@ -731,13 +731,10 @@ const IgrejaAtualizar = () => {
       >
         <Tab label="Dados" />
         <Tab label="Métricas" />
-        <Tab label="Diocese" />
       </Tabs>
 
       {abaAtiva === 1 ? (
         <IgrejaMetricasTab igrejaId={formData.id} />
-      ) : abaAtiva === 2 ? (
-        <IgrejaCircunscricaoTab igrejaId={formData.id} />
       ) : (
       <SectionCard
         component="form"
@@ -813,6 +810,12 @@ const IgrejaAtualizar = () => {
                 fullWidth
             />
           </Box>
+        </SectionCard>
+        <SectionCard
+            title="Diocese / Arquidiocese"
+            subtitle="Circunscrição eclesiástica desta igreja, e capelas/comunidades vinculadas."
+        >
+          <IgrejaCircunscricaoTab igrejaId={formData.id} />
         </SectionCard>
         <SectionCard
             title="Imagem"

@@ -1,15 +1,16 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 import {
+  Autocomplete,
   Box,
   Button,
   Chip,
   CircularProgress,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
+  List,
+  ListItem,
+  ListItemText,
   Stack,
+  TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
@@ -29,12 +30,13 @@ const IgrejaCircunscricaoTab = ({ igrejaId }) => {
   const [erro, setErro] = useState("");
   const [mensagem, setMensagem] = useState("");
   const [efetiva, setEfetiva] = useState(null);
+  const [capelas, setCapelas] = useState([]);
 
   const [dioceses, setDioceses] = useState([]);
   const [arquidioceses, setArquidioceses] = useState([]);
   const [tipo, setTipo] = useState("diocese"); // "diocese" | "arquidiocese"
-  const [dioceseId, setDioceseId] = useState("");
-  const [arquidioceseId, setArquidioceseId] = useState("");
+  const [dioceseSelecionada, setDioceseSelecionada] = useState(null);
+  const [arquidioceseSelecionada, setArquidioceseSelecionada] = useState(null);
 
   const carregar = () => {
     if (!igrejaId) return;
@@ -45,25 +47,30 @@ const IgrejaCircunscricaoTab = ({ igrejaId }) => {
       api.get(`/api/v1/admin/igreja/${igrejaId}/diocese`),
       api.get(`/api/v1/admin/dioceses`),
       api.get(`/api/v1/admin/arquidioceses`),
+      api.get(`/api/v1/admin/igreja/${igrejaId}/capelas`),
     ])
-      .then(([respEfetiva, respDioceses, respArquidioceses]) => {
+      .then(([respEfetiva, respDioceses, respArquidioceses, respCapelas]) => {
         const dados = respEfetiva.data?.data;
         setEfetiva(dados);
         setDioceses(respDioceses.data?.data || []);
         setArquidioceses(respArquidioceses.data?.data || []);
+        setCapelas(respCapelas.data?.data || []);
+
+        const listaDioceses = respDioceses.data?.data || [];
+        const listaArquidioceses = respArquidioceses.data?.data || [];
 
         if (dados?.dioceseId) {
           setTipo("diocese");
-          setDioceseId(dados.dioceseId);
-          setArquidioceseId("");
+          setDioceseSelecionada(listaDioceses.find((d) => d.id === dados.dioceseId) || null);
+          setArquidioceseSelecionada(null);
         } else if (dados?.arquidioceseId) {
           setTipo("arquidiocese");
-          setArquidioceseId(dados.arquidioceseId);
-          setDioceseId("");
+          setArquidioceseSelecionada(listaArquidioceses.find((a) => a.id === dados.arquidioceseId) || null);
+          setDioceseSelecionada(null);
         } else {
           setTipo("diocese");
-          setDioceseId("");
-          setArquidioceseId("");
+          setDioceseSelecionada(null);
+          setArquidioceseSelecionada(null);
         }
       })
       .catch(() => {
@@ -79,7 +86,9 @@ const IgrejaCircunscricaoTab = ({ igrejaId }) => {
 
   const handleSalvar = () => {
     const body =
-      tipo === "diocese" ? { dioceseId, arquidioceseId: null } : { dioceseId: null, arquidioceseId };
+      tipo === "diocese"
+        ? { dioceseId: dioceseSelecionada?.id ?? null, arquidioceseId: null }
+        : { dioceseId: null, arquidioceseId: arquidioceseSelecionada?.id ?? null };
 
     if (!body.dioceseId && !body.arquidioceseId) {
       setErro("Selecione uma diocese ou uma arquidiocese.");
@@ -119,7 +128,7 @@ const IgrejaCircunscricaoTab = ({ igrejaId }) => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" sx={{ py: 6 }}>
+      <Box display="flex" justifyContent="center" alignItems="center" sx={{ py: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -128,16 +137,7 @@ const IgrejaCircunscricaoTab = ({ igrejaId }) => {
   const origemInfo = efetiva?.origem ? ORIGEM_LABEL[efetiva.origem] : null;
 
   return (
-    <Box
-      sx={{
-        margin: "0 auto",
-        padding: 2,
-        border: "1px solid #ccc",
-        borderRadius: 2,
-        width: "100%",
-        boxSizing: "border-box",
-      }}
-    >
+    <Box>
       {erro && (
         <Box sx={{ mb: 2 }}>
           <ErrorSpan errorMessage={erro} severity="error" />
@@ -181,39 +181,29 @@ const IgrejaCircunscricaoTab = ({ igrejaId }) => {
         <ToggleButton value="arquidiocese">Direto na Arquidiocese</ToggleButton>
       </ToggleButtonGroup>
 
-      <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
+      <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mb: 3 }}>
         {tipo === "diocese" ? (
-          <FormControl size="small" sx={{ minWidth: 280 }}>
-            <InputLabel id="diocese-label">Diocese</InputLabel>
-            <Select
-              labelId="diocese-label"
-              label="Diocese"
-              value={dioceseId}
-              onChange={(e) => setDioceseId(e.target.value)}
-            >
-              {dioceses.map((d) => (
-                <MenuItem key={d.id} value={d.id}>
-                  {d.nome} ({d.uf})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Autocomplete
+            sx={{ minWidth: 320 }}
+            size="small"
+            options={dioceses}
+            getOptionLabel={(d) => `${d.nome} (${d.uf})`}
+            isOptionEqualToValue={(a, b) => a.id === b.id}
+            value={dioceseSelecionada}
+            onChange={(e, novoValor) => setDioceseSelecionada(novoValor)}
+            renderInput={(params) => <TextField {...params} label="Diocese" placeholder="Digite para buscar" />}
+          />
         ) : (
-          <FormControl size="small" sx={{ minWidth: 280 }}>
-            <InputLabel id="arquidiocese-label">Arquidiocese</InputLabel>
-            <Select
-              labelId="arquidiocese-label"
-              label="Arquidiocese"
-              value={arquidioceseId}
-              onChange={(e) => setArquidioceseId(e.target.value)}
-            >
-              {arquidioceses.map((a) => (
-                <MenuItem key={a.id} value={a.id}>
-                  {a.nome} ({a.uf})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Autocomplete
+            sx={{ minWidth: 320 }}
+            size="small"
+            options={arquidioceses}
+            getOptionLabel={(a) => `${a.nome} (${a.uf})`}
+            isOptionEqualToValue={(a, b) => a.id === b.id}
+            value={arquidioceseSelecionada}
+            onChange={(e, novoValor) => setArquidioceseSelecionada(novoValor)}
+            renderInput={(params) => <TextField {...params} label="Arquidiocese" placeholder="Digite para buscar" />}
+          />
         )}
 
         <Button variant="contained" onClick={handleSalvar} disabled={salvando}>
@@ -225,6 +215,28 @@ const IgrejaCircunscricaoTab = ({ igrejaId }) => {
           </Button>
         )}
       </Stack>
+
+      <Typography variant="subtitle2" sx={{ mb: 1 }}>
+        Capelas / comunidades vinculadas
+      </Typography>
+      {capelas.length === 0 ? (
+        <Typography variant="body2" color="text.secondary">
+          Nenhuma capela/comunidade vinculada a esta paróquia.
+        </Typography>
+      ) : (
+        <List dense disablePadding>
+          {capelas.map((c) => (
+            <ListItem key={c.id} disableGutters>
+              <ListItemText
+                primary={c.nome}
+                secondary={c.tipoIgreja}
+              />
+              {c.deletada && <Chip label="Excluída" size="small" color="error" sx={{ mr: 1 }} />}
+              {!c.ativo && <Chip label="Inativa" size="small" />}
+            </ListItem>
+          ))}
+        </List>
+      )}
     </Box>
   );
 };
