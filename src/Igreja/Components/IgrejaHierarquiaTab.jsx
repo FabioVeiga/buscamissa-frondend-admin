@@ -74,10 +74,6 @@ const IgrejaHierarquiaTab = ({ igrejaId, uf }) => {
   };
 
   const handleSalvar = () => {
-    if (tipoIgreja !== 1 && !paroquiaPai) {
-      setErro("Selecione a paróquia-sede (ou mude o tipo para Paróquia).");
-      return;
-    }
     setSalvando(true);
     setErro("");
     setMensagem("");
@@ -118,8 +114,9 @@ const IgrejaHierarquiaTab = ({ igrejaId, uf }) => {
       )}
 
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Corrige o tipo da unidade e, se for capela/comunidade/santuário/outro, a paróquia-sede.
-        Útil pra registros antigos importados como Paróquia por padrão.
+        Corrige o tipo da unidade e, opcionalmente, a paróquia-sede. Útil pra registros
+        antigos importados como Paróquia por padrão. A paróquia-sede não é obrigatória —
+        deixe em branco se a unidade não depende de nenhuma paróquia.
       </Typography>
 
       <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
