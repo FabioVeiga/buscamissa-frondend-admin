@@ -560,6 +560,8 @@ const IgrejaAtualizar = () => {
         ? {
           ...endereco,
           cep: apenasNumeros(endereco.cep),
+          latitude: endereco.latitude === "" ? null : endereco.latitude,
+          longitude: endereco.longitude === "" ? null : endereco.longitude,
         }
         : null;
 

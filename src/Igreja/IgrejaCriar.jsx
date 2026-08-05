@@ -499,6 +499,8 @@ const IgrejaCriar = () => {
       formData.endereco = {
         ...formData.endereco,
         cep: apenasNumeros(formData.endereco.cep),
+        latitude: formData.endereco.latitude === "" ? null : formData.endereco.latitude,
+        longitude: formData.endereco.longitude === "" ? null : formData.endereco.longitude,
       };
     }
     console.log(formData);
