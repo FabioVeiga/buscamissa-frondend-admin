@@ -17,6 +17,7 @@ import {
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import api from "./services/apiService";
+import { buscarIgrejaCompletaPorId, normalizarIgrejaParaEdicao } from "./services/igrejaHelpers";
 import { useNavigate } from "react-router-dom";
 
 const CandidatosTipoIgrejaPage = () => {
@@ -25,6 +26,7 @@ const CandidatosTipoIgrejaPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [aplicandoId, setAplicandoId] = useState(null);
   const [aplicados, setAplicados] = useState(new Set());
+  const [carregandoVerId, setCarregandoVerId] = useState(null);
 
   const carregar = () => {
     setIsLoading(true);
@@ -49,6 +51,18 @@ const CandidatosTipoIgrejaPage = () => {
       .then(() => setAplicados((prev) => new Set(prev).add(registro.id)))
       .catch(() => {})
       .finally(() => setAplicandoId(null));
+  };
+
+  const ver = async (registro) => {
+    setCarregandoVerId(registro.id);
+    try {
+      const igrejaCompleta = await buscarIgrejaCompletaPorId(registro.id);
+      navigate("/igrejaEditar", { state: { row: normalizarIgrejaParaEdicao(igrejaCompleta) } });
+    } catch {
+      alert("Não foi possível carregar os dados desta igreja.");
+    } finally {
+      setCarregandoVerId(null);
+    }
   };
 
   return (
@@ -112,7 +126,8 @@ const CandidatosTipoIgrejaPage = () => {
                             size="small"
                             color="primary"
                             startIcon={<OpenInNewIcon />}
-                            onClick={() => navigate("/igrejaEditar", { state: { row: { id: r.id } } })}
+                            disabled={carregandoVerId === r.id}
+                            onClick={() => ver(r)}
                           >
                             Ver
                           </Button>

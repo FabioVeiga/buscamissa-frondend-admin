@@ -4,5 +4,7 @@ export const TIPOS_IGREJA = [
   { valor: 2, nome: "Capela" },
   { valor: 3, nome: "Comunidade" },
   { valor: 4, nome: "Santuário" },
+  { valor: 5, nome: "Basílica" },
+  { valor: 6, nome: "Catedral" },
   { valor: 99, nome: "Outro" },
 ];
