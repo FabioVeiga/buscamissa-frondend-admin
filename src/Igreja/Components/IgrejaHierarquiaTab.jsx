@@ -36,8 +36,7 @@ const IgrejaHierarquiaTab = ({ igrejaId, uf }) => {
       .get(`/api/v1/admin/igreja/${igrejaId}/hierarquia`)
       .then((response) => {
         const dados = response.data?.data;
-        const tipoValor = TIPOS_IGREJA.find((t) => t.nome === dados?.tipoIgreja)?.valor ?? 1;
-        setTipoIgreja(tipoValor);
+        setTipoIgreja(dados?.tipoIgreja ?? 1);
         setParoquiaPai(
           dados?.igrejaPaiId ? { id: dados.igrejaPaiId, nome: dados.igrejaPaiNome } : null
         );
