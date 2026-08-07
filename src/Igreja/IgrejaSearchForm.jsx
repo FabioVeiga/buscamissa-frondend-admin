@@ -26,6 +26,7 @@ const FILTROS_PADRAO = {
   ativo: true,
   reportarProblema: false,
   semCoordenadas: false,
+  semRedesSociais: false,
   mostrarDeletadas: false,
 };
 
@@ -183,6 +184,7 @@ const IgrejaSearchForm = ({
     if (filtros.horario !== "") endPoint += `&horario=${filtros.horario}`;
     if (filtros.reportarProblema !== "") endPoint += `&reportarProblema=${filtros.reportarProblema}`;
     if (filtros.semCoordenadas) endPoint += `&semCoordenadas=true`;
+    if (filtros.semRedesSociais) endPoint += `&semRedesSociais=true`;
     if (filtros.mostrarDeletadas) endPoint += `&mostrarDeletadas=true`;
 
     let paginacao = `&Paginacao.PageIndex=1&Paginacao.PageSize=10`;
@@ -455,6 +457,15 @@ const IgrejaSearchForm = ({
                 />
               }
               label="Sem coordenadas"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.semRedesSociais}
+                  onChange={(e) => handleChange("semRedesSociais", e.target.checked)}
+                />
+              }
+              label="Sem redes sociais"
             />
             <FormControlLabel
               control={
