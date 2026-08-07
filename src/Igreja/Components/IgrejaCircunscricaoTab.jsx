@@ -18,10 +18,16 @@ import {
 import api from "../../services/apiService";
 import ErrorSpan from "../../ErrorSpan";
 
+// Espelha Dtos/DioceseDtos.cs OrigemDioceseEfetiva do backend — serializado
+// como número (sem JsonStringEnumConverter), não como nome do enum.
+const ORIGEM_NENHUMA = 0;
+const ORIGEM_DIRETA = 1;
+const ORIGEM_HERDADA = 2;
+
 const ORIGEM_LABEL = {
-  Nenhuma: null,
-  Direta: { label: "Vínculo direto", color: "primary" },
-  Herdada: { label: "Herdada da paróquia-sede", color: "default" },
+  [ORIGEM_NENHUMA]: null,
+  [ORIGEM_DIRETA]: { label: "Vínculo direto", color: "primary" },
+  [ORIGEM_HERDADA]: { label: "Herdada da paróquia-sede", color: "default" },
 };
 
 const IgrejaCircunscricaoTab = ({ igrejaId }) => {
@@ -168,6 +174,11 @@ const IgrejaCircunscricaoTab = ({ igrejaId }) => {
           </Typography>
         )}
         {origemInfo && <Chip label={origemInfo.label} size="small" color={origemInfo.color} />}
+        {efetiva?.origem === ORIGEM_DIRETA && (
+          <Button variant="outlined" color="error" size="small" onClick={handleRemover} disabled={salvando}>
+            Remover vínculo
+          </Button>
+        )}
       </Stack>
 
       <ToggleButtonGroup
@@ -209,11 +220,6 @@ const IgrejaCircunscricaoTab = ({ igrejaId }) => {
         <Button variant="contained" onClick={handleSalvar} disabled={salvando}>
           Salvar vínculo
         </Button>
-        {efetiva?.origem === "Direta" && (
-          <Button variant="outlined" color="error" onClick={handleRemover} disabled={salvando}>
-            Remover vínculo
-          </Button>
-        )}
       </Stack>
 
       <Typography variant="subtitle2" sx={{ mb: 1 }}>
