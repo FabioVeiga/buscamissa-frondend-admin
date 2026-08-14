@@ -31,25 +31,81 @@ import {
 // CanalContatoEnum: Email=1, Instagram=2, Facebook=3
 const copiar = (texto) => navigator.clipboard.writeText(texto).catch(() => {});
 
-const SecaoEmail = ({ email, emailCriacaoEnviado, opcao, onChange }) => (
-  <Stack spacing={1}>
-    <Typography variant="subtitle2" fontWeight={600}>
-      E-mail
-    </Typography>
-    <Typography variant="body2" color="text.secondary">
-      {email}
-    </Typography>
-    <RadioGroup value={opcao} onChange={(e) => onChange(e.target.value)}>
-      <FormControlLabel value="" control={<Radio size="small" />} label="Não enviar" />
-      {!emailCriacaoEnviado && (
-        <FormControlLabel value="criacao" control={<Radio size="small" />} label="Enviar e-mail de criação" />
-      )}
-      <FormControlLabel value="alteracao" control={<Radio size="small" />} label="Enviar e-mail de alteração" />
-    </RadioGroup>
-  </Stack>
-);
+const SecaoEmail = ({ email, emailCriacaoEnviado, opcao, onChange, igrejaId, onContatoRegistrado }) => {
+  const [registrando, setRegistrando] = useState(false);
+  const [registrado, setRegistrado] = useState(false);
+  const [erro, setErro] = useState("");
 
-const SecaoSocial = ({ label, url, mensagem, link, igrejaId, canal }) => {
+  const handleRegistrar = async () => {
+    setRegistrando(true);
+    setErro("");
+    try {
+      await api.post("/api/v1/Admin/email-evento/registrar-contato", {
+        igrejaId,
+        tipo: 99,
+        canal: 1,
+        destinoContato: email,
+        dataEnvio: new Date().toISOString(),
+      });
+      setRegistrado(true);
+      onContatoRegistrado?.(1);
+    } catch {
+      setErro("Não foi possível registrar o contato.");
+    } finally {
+      setRegistrando(false);
+    }
+  };
+
+  return (
+    <Stack spacing={1}>
+      <Typography variant="subtitle2" fontWeight={600}>
+        E-mail
+      </Typography>
+      <Typography variant="body2" color="text.secondary">
+        {email}
+      </Typography>
+      <RadioGroup value={opcao} onChange={(e) => onChange(e.target.value)}>
+        <FormControlLabel value="" control={<Radio size="small" />} label="Não enviar" />
+        {!emailCriacaoEnviado && (
+          <FormControlLabel value="criacao" control={<Radio size="small" />} label="Enviar e-mail de criação" />
+        )}
+        <FormControlLabel value="alteracao" control={<Radio size="small" />} label="Enviar e-mail de alteração" />
+      </RadioGroup>
+
+      <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
+        {registrado ? (
+          <Chip
+            icon={<CheckCircleIcon />}
+            label="Contato registrado"
+            color="success"
+            size="small"
+            variant="outlined"
+          />
+        ) : (
+          <Tooltip title="Use quando já contatou por outro meio (telefone, presencial) e não quer enviar e-mail automático">
+            <Button
+              size="small"
+              variant="contained"
+              color="success"
+              onClick={handleRegistrar}
+              disabled={registrando}
+              startIcon={registrando ? <CircularProgress size={14} color="inherit" /> : null}
+            >
+              Registrar contato realizado
+            </Button>
+          </Tooltip>
+        )}
+        {erro && (
+          <Typography variant="caption" color="error">
+            {erro}
+          </Typography>
+        )}
+      </Stack>
+    </Stack>
+  );
+};
+
+const SecaoSocial = ({ label, url, mensagem, link, igrejaId, canal, onContatoRegistrado }) => {
   const [registrando, setRegistrando] = useState(false);
   const [registrado, setRegistrado] = useState(false);
   const [erro, setErro] = useState("");
@@ -71,6 +127,7 @@ const SecaoSocial = ({ label, url, mensagem, link, igrejaId, canal }) => {
         dataEnvio: new Date().toISOString(),
       });
       setRegistrado(true);
+      onContatoRegistrado?.(canal);
     } catch {
       setErro("Não foi possível registrar o contato.");
     } finally {
@@ -147,6 +204,7 @@ const AssistenteDivulgacao = ({
   opcaoEmail,
   onOpcaoEmailChange,
   onConfirmar,
+  onContatoRegistrado,
 }) => {
   const email = igreja?.contato?.emailContato?.trim() || "";
   const nomeIgreja = igreja?.nome || "sua paróquia";
@@ -182,6 +240,8 @@ const AssistenteDivulgacao = ({
               emailCriacaoEnviado={emailCriacaoEnviado}
               opcao={opcaoEmail}
               onChange={onOpcaoEmailChange}
+              igrejaId={igrejaId}
+              onContatoRegistrado={onContatoRegistrado}
             />
           )}
 
@@ -193,6 +253,7 @@ const AssistenteDivulgacao = ({
               link={link}
               igrejaId={igrejaId}
               canal={2}
+              onContatoRegistrado={onContatoRegistrado}
             />
           )}
 
@@ -204,6 +265,7 @@ const AssistenteDivulgacao = ({
               link={link}
               igrejaId={igrejaId}
               canal={3}
+              onContatoRegistrado={onContatoRegistrado}
             />
           )}
         </Stack>
