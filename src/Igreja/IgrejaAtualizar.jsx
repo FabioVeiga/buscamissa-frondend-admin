@@ -110,6 +110,7 @@ const IgrejaAtualizar = () => {
   // Assistente de Divulgação
   const [divulgacaoOpcaoEmail, setDivulgacaoOpcaoEmail] = useState("");
   const [canaisContatados, setCanaisContatados] = useState(new Set());
+  const emailContatado = canaisContatados.has(1);
   const instagramContatado = canaisContatados.has(2);
   const facebookContatado = canaisContatados.has(3);
 
@@ -606,6 +607,13 @@ const IgrejaAtualizar = () => {
           // O backend recalcula o cidadeSlug (e, na primeira vez, slug/nomeUnico)
           // a cada edição — sem sincronizar aqui, o link exibido para compartilhar
           // ficava com o cidadeSlug antigo até a tela ser recarregada.
+          // Marca o e-mail como já contatado nesta sessão — sem isso, o modal
+          // reaparecia a cada "Salvar" seguinte (IgrejaContatosHistorico só
+          // recarrega no mount, não depois de um novo evento registrado agora).
+          if (tipoEmailContato) {
+            setCanaisContatados((prev) => new Set(prev).add(1));
+          }
+
           const igrejaAtualizada = response.data?.data?.response;
           if (igrejaAtualizada) {
             setFormData((prev) => ({
@@ -670,7 +678,7 @@ const IgrejaAtualizar = () => {
 
     const emailContato = formData?.contato?.emailContato?.trim();
     const temCanalPendente =
-      emailContato ||
+      (emailContato && !emailContatado) ||
       (urlInstagram && !instagramContatado) ||
       (urlFacebook && !facebookContatado);
 
