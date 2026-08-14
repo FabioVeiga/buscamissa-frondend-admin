@@ -1070,6 +1070,7 @@ const IgrejaAtualizar = () => {
         opcaoEmail={divulgacaoOpcaoEmail}
         onOpcaoEmailChange={setDivulgacaoOpcaoEmail}
         onConfirmar={() => atualizarIgreja(divulgacaoOpcaoEmail || null)}
+        onContatoRegistrado={(canal) => setCanaisContatados((prev) => new Set(prev).add(canal))}
       />
       {state?.row?.reportarProblema && (
         <ReportarProblemaModal
