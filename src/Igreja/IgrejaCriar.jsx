@@ -38,6 +38,7 @@ const IgrejaCriar = () => {
   const [formData, setFormData] = useState({
     nome: "",
     tipoIgreja: 1,
+    tipoIgrejaDescricao: "",
     paroco: "",
     imagem: "",
     contato: {
@@ -105,6 +106,7 @@ const IgrejaCriar = () => {
     setFormData({
       nome: "",
       tipoIgreja: 1,
+    tipoIgrejaDescricao: "",
       paroco: "",
       imagem: "",
       contato: {
@@ -584,6 +586,16 @@ const IgrejaCriar = () => {
                   ))}
                 </Select>
               </FormControl>
+
+              {formData.tipoIgreja === 99 && (
+                  <TextField
+                      label="Descrição do tipo"
+                      helperText='Substitui o prefixo "Outro" no nome (ex.: "Oratório", "Mosteiro").'
+                      value={formData.tipoIgrejaDescricao}
+                      onChange={(e) => handleChange("tipoIgrejaDescricao", e.target.value)}
+                      fullWidth
+                  />
+              )}
 
               <TextField
                   label="Nome da Igreja"
