@@ -21,6 +21,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import LanguageIcon from "@mui/icons-material/Language";
 import { useNavigate } from "react-router-dom";
 import { diaDaSemana, formatarHorario } from "../utils";
 import { buscarIgrejaCompletaPorId, normalizarIgrejaParaEdicao } from "../services/igrejaHelpers";
@@ -189,6 +190,14 @@ const IgrejaDetalheModal = ({ open, handleClose, igrejaId }) => {
                       target="_blank"
                     >
                       ({igreja.contato.dddWhatsApp}) {igreja.contato.telefoneWhatsApp}
+                    </MUILink>
+                  </Box>
+                )}
+                {igreja.contato.website && (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <LanguageIcon fontSize="small" color="action" />
+                    <MUILink href={igreja.contato.website} target="_blank">
+                      {igreja.contato.website}
                     </MUILink>
                   </Box>
                 )}
