@@ -52,6 +52,15 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                         fullWidth
                     />
                 </Grid>
+
+                <Grid size={12}>
+                    <TextField
+                        label="Website"
+                        value={contato.website || ""}
+                        onChange={(e) => handleChange("website", e.target.value.trim())}
+                        fullWidth
+                    />
+                </Grid>
             </Grid>
         </SectionCard>
     );
