@@ -25,6 +25,10 @@ const IgrejaDetalhe = () => {
         </Typography>
 
         <Typography variant="subtitle1" gutterBottom>
+          <strong>Id:</strong> {data.id}
+        </Typography>
+
+        <Typography variant="subtitle1" gutterBottom>
           <strong>Paroco:</strong> {data.paroco}
         </Typography>
 
