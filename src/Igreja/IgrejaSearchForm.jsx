@@ -17,7 +17,6 @@ const FILTROS_PADRAO = {
   id: "",
   uf: "",
   localidade: "",
-  bairro: "",
   cep: "",
   nome: "",
   slug: "",
@@ -112,7 +111,6 @@ const IgrejaSearchForm = ({
 
     if (
       filtrosCompletos.id ||
-      filtrosCompletos.bairro ||
       filtrosCompletos.cep ||
       filtrosCompletos.slug
     ) {
@@ -166,8 +164,6 @@ const IgrejaSearchForm = ({
       endPoint += `&uf=${filtros.uf}`;
     if (filtros.localidade !== "")
       endPoint += `&localidade=${filtros.localidade}`;
-    if (filtros.bairro !== "")
-      endPoint += `&bairro=${filtros.bairro}`;
     if (filtros.cep !== "")
       endPoint += `&cep=${filtros.cep}`;
     if (filtros.nome !== "")
@@ -339,14 +335,6 @@ const IgrejaSearchForm = ({
 
         <Collapse in={mostrarMaisFiltros}>
           <Grid container spacing={2}>
-            <Grid size={{ xs: 6, sm: 3 }}>
-              <TextField
-                label="Bairro"
-                value={formData.bairro}
-                onChange={(e) => handleChange("bairro", e.target.value)}
-                fullWidth
-              />
-            </Grid>
             <Grid size={{ xs: 6, sm: 2 }}>
               <TextField
                 label="Id"
