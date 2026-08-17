@@ -107,6 +107,10 @@ const IgrejaDetalheModal = ({ open, handleClose, igrejaId }) => {
             )}
 
             <Typography variant="body1" gutterBottom>
+              <strong>Id:</strong> {igreja?.id}
+            </Typography>
+
+            <Typography variant="body1" gutterBottom>
               <strong>Pároco:</strong> {igreja?.paroco || "Não informado"}
             </Typography>
 

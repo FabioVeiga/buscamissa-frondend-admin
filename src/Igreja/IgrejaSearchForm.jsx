@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from "react";
-import { Box, TextField, MenuItem, FormControl, InputLabel, Select, Switch, FormControlLabel, Button, Autocomplete, CircularProgress, Collapse } from "@mui/material";
+import { Box, TextField, Switch, FormControlLabel, Button, Autocomplete, CircularProgress, Collapse } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import api from "../services/apiService";
 import { IconButton, Tooltip } from "@mui/material";
@@ -10,23 +10,20 @@ import ClearIcon from "@mui/icons-material/Clear";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useNavigate } from "react-router-dom";
-import { diaDaSemana, ufs } from "../utils";
+import { ufs } from "../utils";
 import ErrorSpan from "../ErrorSpan";
 
 const FILTROS_PADRAO = {
   id: "",
   uf: "",
   localidade: "",
-  bairro: "",
   cep: "",
   nome: "",
-  paroco: "",
-  diaSemana: "",
-  horario: "",
+  slug: "",
   ativo: true,
   reportarProblema: false,
   semCoordenadas: false,
-  semRedesSociais: false,
+  semInstagram: false,
   mostrarDeletadas: false,
 };
 
@@ -114,11 +111,8 @@ const IgrejaSearchForm = ({
 
     if (
       filtrosCompletos.id ||
-      filtrosCompletos.bairro ||
       filtrosCompletos.cep ||
-      filtrosCompletos.paroco ||
-      filtrosCompletos.diaSemana !== "" ||
-      filtrosCompletos.horario
+      filtrosCompletos.slug
     ) {
       setMostrarMaisFiltros(true);
     }
@@ -133,7 +127,6 @@ const IgrejaSearchForm = ({
       autoLoad &&
       (filtrosCompletos.uf ||
         filtrosCompletos.nome ||
-        filtrosCompletos.diaSemana ||
         filtrosCompletos.cep ||
         filtrosCompletos.id)
     ) {
@@ -171,20 +164,15 @@ const IgrejaSearchForm = ({
       endPoint += `&uf=${filtros.uf}`;
     if (filtros.localidade !== "")
       endPoint += `&localidade=${filtros.localidade}`;
-    if (filtros.bairro !== "")
-      endPoint += `&bairro=${filtros.bairro}`;
     if (filtros.cep !== "")
       endPoint += `&cep=${filtros.cep}`;
     if (filtros.nome !== "")
       endPoint += `&nome=${filtros.nome}`;
-    if (filtros.paroco !== "")
-      endPoint += `&paroco=${filtros.paroco}`;
-    if (filtros.diaSemana !== "")
-      endPoint += `&diadasemana=${filtros.diaSemana}`;
-    if (filtros.horario !== "") endPoint += `&horario=${filtros.horario}`;
+    if (filtros.slug !== "")
+      endPoint += `&slug=${filtros.slug}`;
     if (filtros.reportarProblema !== "") endPoint += `&reportarProblema=${filtros.reportarProblema}`;
     if (filtros.semCoordenadas) endPoint += `&semCoordenadas=true`;
-    if (filtros.semRedesSociais) endPoint += `&semRedesSociais=true`;
+    if (filtros.semInstagram) endPoint += `&semInstagram=true`;
     if (filtros.mostrarDeletadas) endPoint += `&mostrarDeletadas=true`;
 
     let paginacao = `&Paginacao.PageIndex=1&Paginacao.PageSize=10`;
@@ -347,14 +335,6 @@ const IgrejaSearchForm = ({
 
         <Collapse in={mostrarMaisFiltros}>
           <Grid container spacing={2}>
-            <Grid size={{ xs: 6, sm: 3 }}>
-              <TextField
-                label="Bairro"
-                value={formData.bairro}
-                onChange={(e) => handleChange("bairro", e.target.value)}
-                fullWidth
-              />
-            </Grid>
             <Grid size={{ xs: 6, sm: 2 }}>
               <TextField
                 label="Id"
@@ -373,45 +353,10 @@ const IgrejaSearchForm = ({
             </Grid>
             <Grid size={{ xs: 6, sm: 4 }}>
               <TextField
-                label="Pároco"
-                value={formData.paroco}
-                onChange={(e) => handleChange("paroco", e.target.value)}
+                label="Slug"
+                value={formData.slug}
+                onChange={(e) => handleChange("slug", e.target.value)}
                 fullWidth
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              {/* Dia da semana */}
-              <FormControl fullWidth>
-                <InputLabel id="diaSemana-label">Dia da Semana</InputLabel>
-                <Select
-                  labelId="diaSemana-label"
-                  value={formData.diaSemana}
-                  onChange={(e) => handleChange("diaSemana", e.target.value)}
-                >
-                  {/* Opção vazia */}
-                  <MenuItem value="">
-                    <em>Selecione</em>
-                  </MenuItem>
-                  {/* Dias da semana */}
-                  {[0, 1, 2, 3, 4, 5, 6].map((dia) => (
-                    <MenuItem key={dia} value={dia}>
-                      {diaDaSemana(dia)}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <TextField
-                label="Horário"
-                type="time"
-                value={formData.horario}
-                onChange={(e) => handleChange("horario", e.target.value)}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                inputProps={{
-                  step: 300, // Opcional: Incremento em segundos (300 = 5 minutos)
-                }}
               />
             </Grid>
           </Grid>
@@ -461,11 +406,11 @@ const IgrejaSearchForm = ({
             <FormControlLabel
               control={
                 <Switch
-                  checked={formData.semRedesSociais}
-                  onChange={(e) => handleChange("semRedesSociais", e.target.checked)}
+                  checked={formData.semInstagram}
+                  onChange={(e) => handleChange("semInstagram", e.target.checked)}
                 />
               }
-              label="Sem redes sociais"
+              label="Sem Instagram"
             />
             <FormControlLabel
               control={
