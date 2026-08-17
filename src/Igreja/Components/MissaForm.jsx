@@ -27,6 +27,8 @@ import { Delete, Add, ExpandMore, ExpandLess, DeleteSweep } from "@mui/icons-mat
 import { diasDaSemana, formatarHorario, apenasNumeros } from "../../utils";
 import SectionCard from "./SectionCard";
 
+const OBSERVACOES_ATALHO = ["1º do mês", "Última do mês", "Pelos falecidos", "Novena"];
+
 const MissaForm = ({ missas = [], setMissas, onError }) => {
     const [novaMissa, setNovaMissa] = useState({ horario: "", diaSemana: [], observacao: "" });
     const [apoio, setApoio] = useState("");
@@ -44,6 +46,13 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
 
     const handleChange = (field, value) => {
         setNovaMissa((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const handleAdicionarTagObservacao = (tag) => {
+        setNovaMissa((prev) => ({
+            ...prev,
+            observacao: prev.observacao ? `${prev.observacao}, ${tag}` : tag,
+        }));
     };
 
     const handleToggleDiaSemana = (dia) => {
@@ -281,6 +290,18 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                     multiline
                     minRows={2}
                 />
+
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    {OBSERVACOES_ATALHO.map((tag) => (
+                        <Chip
+                            key={tag}
+                            label={tag}
+                            size="small"
+                            variant="outlined"
+                            onClick={() => handleAdicionarTagObservacao(tag)}
+                        />
+                    ))}
+                </Stack>
 
                 <TextField
                     label="Apoio"
