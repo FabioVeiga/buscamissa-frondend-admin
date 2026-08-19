@@ -7,7 +7,7 @@ import {
     CircularProgress,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
-import { OpenInNew, CheckCircle, Cancel, TravelExplore } from "@mui/icons-material";
+import { OpenInNew, CheckCircle, Cancel, TravelExplore, Clear } from "@mui/icons-material";
 import SectionCard from "./SectionCard";
 import { apenasNumeros } from "../../utils";
 import api from "../../services/apiService";
@@ -38,6 +38,24 @@ const ContatoForm = ({ contato = {}, onChange }) => {
             [telefoneField]: digitos.slice(2),
         });
     };
+
+    const handleLimparCampo = (...campos) => () => {
+        const limpo = { ...contato };
+        campos.forEach((campo) => { limpo[campo] = ""; });
+        onChange(limpo);
+        if (campos.includes("website")) setResultadoVerificacao(null);
+    };
+
+    const botaoLimpar = (visivel, onClick) =>
+        visivel && (
+            <InputAdornment position="end">
+                <Tooltip title="Limpar campo">
+                    <IconButton onClick={onClick} edge="end" size="small">
+                        <Clear fontSize="small" />
+                    </IconButton>
+                </Tooltip>
+            </InputAdornment>
+        );
 
     const handleVerificarSite = async () => {
         if (!contato.website?.trim()) return;
@@ -88,6 +106,14 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                         value={contato.emailContato || ""}
                         onChange={(e) => handleChange("emailContato", e.target.value.replace(/\s/g, ""))}
                         fullWidth
+                        slotProps={{
+                            input: {
+                                endAdornment: botaoLimpar(
+                                    !!contato.emailContato,
+                                    handleLimparCampo("emailContato")
+                                ),
+                            },
+                        }}
                     />
                 </Grid>
 
@@ -97,6 +123,14 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                         value={`${contato.ddd || ""}${contato.telefone || ""}`}
                         onChange={handleTelefoneChange("ddd", "telefone")}
                         fullWidth
+                        slotProps={{
+                            input: {
+                                endAdornment: botaoLimpar(
+                                    !!(contato.ddd || contato.telefone),
+                                    handleLimparCampo("ddd", "telefone")
+                                ),
+                            },
+                        }}
                     />
                 </Grid>
 
@@ -106,6 +140,14 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                         value={`${contato.dddWhatsApp || ""}${contato.telefoneWhatsApp || ""}`}
                         onChange={handleTelefoneChange("dddWhatsApp", "telefoneWhatsApp")}
                         fullWidth
+                        slotProps={{
+                            input: {
+                                endAdornment: botaoLimpar(
+                                    !!(contato.dddWhatsApp || contato.telefoneWhatsApp),
+                                    handleLimparCampo("dddWhatsApp", "telefoneWhatsApp")
+                                ),
+                            },
+                        }}
                     />
                 </Grid>
 
@@ -144,6 +186,16 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                                                 size="small"
                                             >
                                                 <OpenInNew fontSize="small" />
+                                            </IconButton>
+                                        </Tooltip>
+
+                                        <Tooltip title="Limpar campo">
+                                            <IconButton
+                                                onClick={handleLimparCampo("website")}
+                                                edge="end"
+                                                size="small"
+                                            >
+                                                <Clear fontSize="small" />
                                             </IconButton>
                                         </Tooltip>
                                     </InputAdornment>
