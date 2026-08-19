@@ -18,6 +18,7 @@ import {
 import { ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
 import { apenasNumeros, formatarErroApi } from "../utils";
+import { normalizarNomeDoPerfil } from "../utils/redeSocialUrl";
 import ErrorSpan from "../ErrorSpan";
 import { useEndereco } from "../Context/EnderecoContext";
 import { useNavigate } from "react-router-dom";
@@ -385,7 +386,7 @@ const IgrejaCriar = () => {
       ...prev,
       {
         tipoRedeSocial: tipoRedeSocialSelecionado,
-        nomeDoPerfil: nomeDoPerfil.trim(),
+        nomeDoPerfil: normalizarNomeDoPerfil(nomeDoPerfil),
       },
     ]);
 
