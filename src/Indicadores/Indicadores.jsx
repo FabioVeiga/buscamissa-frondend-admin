@@ -503,29 +503,23 @@ const Indicadores = () => {
             </Grid>
 
             <Grid container spacing={1.5}>
-              <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
+              <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                 <MiniStatCard titulo="Cidades" valor={paginas.cidades} icon={LocationCityIcon} color="#0ea5e9" />
               </Grid>
-              <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
+              <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                 <MiniStatCard titulo="Missa Agora" valor={paginas.missaAgora} icon={AccessTimeIcon} color="#f59e0b" />
               </Grid>
-              <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
+              <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                 <MiniStatCard titulo="Como Funciona" valor={paginas.comoFunciona} icon={HelpOutlineIcon} color="#14b8a6" />
               </Grid>
-              <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
+              <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                 <MiniStatCard titulo="Minhas Igrejas" valor={paginas.minhasIgrejas} icon={ChecklistIcon} color="#ec4899" />
               </Grid>
-              <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
+              <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                 <MiniStatCard titulo="Guia Responsável" valor={paginas.guiaResponsavel} icon={VerifiedUserIcon} color="#8b5cf6" />
               </Grid>
-              <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
+              <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                 <MiniStatCard titulo="Entrar" valor={paginas.entrar} icon={LoginIcon} color="#64748b" />
-              </Grid>
-              <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
-                <MiniStatCard titulo="Favoritos" valor={totais.favoritos} icon={FavoriteIcon} color="#ec4899" />
-              </Grid>
-              <Grid size={{ xs: 6, sm: 4, md: 1.5 }}>
-                <MiniStatCard titulo="Compartilhamentos" valor={totais.compartilhamentos} icon={ShareIcon} color="#8b5cf6" />
               </Grid>
             </Grid>
 
