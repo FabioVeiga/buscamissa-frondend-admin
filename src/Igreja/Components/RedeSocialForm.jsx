@@ -24,7 +24,7 @@ import {
 import { Delete, OpenInNew } from "@mui/icons-material";
 import api from "../../services/apiService";
 import { useRedesSociais } from "../../hooks/useRedesSociais";
-import { construirUrlRedeSocial } from "../../utils/redeSocialUrl";
+import { construirUrlRedeSocial, normalizarNomeDoPerfil } from "../../utils/redeSocialUrl";
 
 const RedeSocialForm = ({
                           redesSociaisExistentes,
@@ -112,7 +112,7 @@ const RedeSocialForm = ({
 
     onAddRedeSocial({
       tipoRedeSocial: Number(redeSocial.tipoRedeSocial),
-      nomeDoPerfil: redeSocial.nomeDoPerfil.trim(),
+      nomeDoPerfil: normalizarNomeDoPerfil(redeSocial.nomeDoPerfil),
     });
 
     setRedeSocial({
