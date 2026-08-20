@@ -29,12 +29,15 @@ import EnderecoForm from "./Components/EnderecoForm";
 import SectionCard from "./Components/SectionCard";
 import RedesSociaisCriarSection from "./Components/RedesSociaisCriarSection";
 import IgrejasCepModal from "./Components/IgrejasCepModal";
+import AssistenteDivulgacao from "./Components/AssistenteDivulgacao";
 import { TIPOS_IGREJA } from "./constants/tiposIgreja";
 
 const IgrejaCriar = () => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [confirmarSemMissaAberto, setConfirmarSemMissaAberto] = useState(false);
+  const [divulgacaoModalOpen, setDivulgacaoModalOpen] = useState(false);
+  const [igrejaCriada, setIgrejaCriada] = useState(null);
 
   const [formData, setFormData] = useState({
     nome: "",
@@ -453,6 +456,19 @@ const IgrejaCriar = () => {
     navigate(path);
   };
 
+  const _redeSocialVal = (r) => r?.url || r?.nomeDoPerfil || "";
+  const urlInstagram = _redeSocialVal(
+    (igrejaCriada?.redesSociais || []).find((r) => Number(r.tipoRedeSocial) === 2)
+  );
+  const urlFacebook = _redeSocialVal(
+    (igrejaCriada?.redesSociais || []).find((r) => Number(r.tipoRedeSocial) === 1)
+  );
+
+  const handleFecharDivulgacao = () => {
+    setDivulgacaoModalOpen(false);
+    handleNavigate("/igreja");
+  };
+
   const handleSubmit = () => {
     //Validação
     var arrayAux = []
@@ -510,8 +526,19 @@ const IgrejaCriar = () => {
     api
      .post("/api/v1/Admin/igreja/criar", formData)
      .then((response) => {
-       //console.log(response);
        setMessage("Igreja criada com sucesso!");
+
+       const igreja = response.data?.data?.response;
+       const temInstagramOuFacebook = (igreja?.redesSociais || []).some(
+         (r) => Number(r.tipoRedeSocial) === 1 || Number(r.tipoRedeSocial) === 2
+       );
+
+       if (igreja && temInstagramOuFacebook) {
+         setIgrejaCriada(igreja);
+         setDivulgacaoModalOpen(true);
+         return;
+       }
+
        handleNavigate("/igreja");
      })
      .catch((error) => {
@@ -824,6 +851,22 @@ const IgrejaCriar = () => {
             onClose={() => setIgrejasCepModalOpen(false)}
             onEditar={handleEditarIgrejaCep}
             onUsarEndereco={handleUsarEnderecoCep}
+        />
+
+        <AssistenteDivulgacao
+            open={divulgacaoModalOpen}
+            onClose={handleFecharDivulgacao}
+            igreja={igrejaCriada}
+            emailCriacaoEnviado={true}
+            urlInstagram={urlInstagram}
+            urlFacebook={urlFacebook}
+            instagramContatado={false}
+            facebookContatado={false}
+            loading={false}
+            opcaoEmail=""
+            onOpcaoEmailChange={() => {}}
+            onConfirmar={handleFecharDivulgacao}
+            onContatoRegistrado={() => {}}
         />
 
         <Dialog open={confirmarSemMissaAberto} onClose={() => setConfirmarSemMissaAberto(false)}>
