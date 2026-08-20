@@ -18,6 +18,7 @@ import {
   DialogContent,
   DialogActions,
   Chip,
+  Paper,
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
@@ -693,6 +694,35 @@ const IgrejaAtualizar = () => {
   
   return (
     <>
+      <Paper variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
+        <Stack direction="row" alignItems="center" spacing={1.5} flexWrap="wrap" useFlexGap>
+          <Typography variant="h5" fontWeight={700}>
+            {formData.nome || "Editar Igreja"}
+          </Typography>
+          {formData.id && (
+            <Chip label={`#${formData.id}`} size="small" variant="outlined" />
+          )}
+        </Stack>
+
+        {formData.nomeUnico && (
+          <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              Página no site:
+            </Typography>
+            <Link
+              href={construirLinkIgreja({ ...formData, endereco })}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="body2"
+              sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+            >
+              {construirLinkIgreja({ ...formData, endereco })}
+              <OpenInNewIcon fontSize="inherit" />
+            </Link>
+          </Stack>
+        )}
+      </Paper>
+
       {state?.row?.reportarProblema && (
         <Alert
           severity="warning"
@@ -715,24 +745,6 @@ const IgrejaAtualizar = () => {
           </AlertTitle>
           {state.row.reportarProblema.descricao}
         </Alert>
-      )}
-
-      {formData.nomeUnico && (
-        <Box sx={{ mb: 2, display: "flex", alignItems: "center", gap: 0.5 }}>
-          <Typography variant="body2" color="text.secondary">
-            Página no site:
-          </Typography>
-          <Link
-            href={construirLinkIgreja({ ...formData, endereco })}
-            target="_blank"
-            rel="noopener noreferrer"
-            variant="body2"
-            sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-          >
-            {construirLinkIgreja({ ...formData, endereco })}
-            <OpenInNewIcon fontSize="inherit" />
-          </Link>
-        </Box>
       )}
 
       <Tabs
