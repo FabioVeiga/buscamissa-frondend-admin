@@ -20,6 +20,7 @@ const FILTROS_PADRAO = {
   cep: "",
   nome: "",
   slug: "",
+  instagramPerfil: "",
   ativo: true,
   reportarProblema: false,
   semCoordenadas: false,
@@ -112,7 +113,8 @@ const IgrejaSearchForm = ({
     if (
       filtrosCompletos.id ||
       filtrosCompletos.cep ||
-      filtrosCompletos.slug
+      filtrosCompletos.slug ||
+      filtrosCompletos.instagramPerfil
     ) {
       setMostrarMaisFiltros(true);
     }
@@ -170,6 +172,8 @@ const IgrejaSearchForm = ({
       endPoint += `&nome=${filtros.nome}`;
     if (filtros.slug !== "")
       endPoint += `&slug=${filtros.slug}`;
+    if (filtros.instagramPerfil !== "")
+      endPoint += `&instagramPerfil=${encodeURIComponent(filtros.instagramPerfil)}`;
     if (filtros.reportarProblema !== "") endPoint += `&reportarProblema=${filtros.reportarProblema}`;
     if (filtros.semCoordenadas) endPoint += `&semCoordenadas=true`;
     if (filtros.semInstagram) endPoint += `&semInstagram=true`;
@@ -356,6 +360,14 @@ const IgrejaSearchForm = ({
                 label="Slug"
                 value={formData.slug}
                 onChange={(e) => handleChange("slug", e.target.value)}
+                fullWidth
+              />
+            </Grid>
+            <Grid size={{ xs: 6, sm: 4 }}>
+              <TextField
+                label="Perfil do Instagram"
+                value={formData.instagramPerfil}
+                onChange={(e) => handleChange("instagramPerfil", e.target.value)}
                 fullWidth
               />
             </Grid>
