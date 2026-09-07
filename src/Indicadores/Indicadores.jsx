@@ -33,6 +33,8 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import LoginIcon from "@mui/icons-material/Login";
+import MapIcon from "@mui/icons-material/Map";
+import EventNoteIcon from "@mui/icons-material/EventNote";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
@@ -520,6 +522,18 @@ const Indicadores = () => {
               </Grid>
               <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                 <MiniStatCard titulo="Entrar" valor={paginas.entrar} icon={LoginIcon} color="#64748b" />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={1.5}>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <MiniStatCard titulo="Estado" valor={paginas.estado} icon={MapIcon} color="#0ea5e9" />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <MiniStatCard titulo="Cidade" valor={paginas.cidade} icon={LocationCityIcon} color="#0ea5e9" />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <MiniStatCard titulo="Intenção por dia" valor={paginas.intencaoDia} icon={EventNoteIcon} color="#f59e0b" />
               </Grid>
             </Grid>
 
