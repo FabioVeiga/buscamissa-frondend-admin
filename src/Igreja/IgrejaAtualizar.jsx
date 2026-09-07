@@ -1073,7 +1073,7 @@ const IgrejaAtualizar = () => {
         open={emailContatoModalOpen}
         onClose={() => setEmailContatoModalOpen(false)}
         igreja={{ ...formData, endereco }}
-        emailCriacaoEnviado={formData?.emailCriacaoEnviado}
+        emailCriacaoEnviado={emailContatado}
         urlInstagram={urlInstagram}
         urlFacebook={urlFacebook}
         instagramContatado={instagramContatado}
