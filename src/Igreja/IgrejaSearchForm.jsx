@@ -12,6 +12,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useNavigate } from "react-router-dom";
 import { ufs } from "../utils";
 import ErrorSpan from "../ErrorSpan";
+import { construirEndpointBuscaIgrejas } from "./buscarIgrejasUtils";
 
 const FILTROS_PADRAO = {
   id: "",
@@ -160,33 +161,7 @@ const IgrejaSearchForm = ({
 
     onLoadingChange && onLoadingChange(true);
 
-    let endPoint = `/api/v1/admin/igreja/buscar-por-filtro?`;
-
-    if (filtros.id !== "") endPoint += `id=${filtros.id}`;
-    if (filtros.ativo !== "")
-      endPoint += `&ativo=${filtros.ativo}`;
-    if (filtros.uf !== "")
-      endPoint += `&uf=${filtros.uf}`;
-    if (filtros.localidade !== "")
-      endPoint += `&localidade=${filtros.localidade}`;
-    if (filtros.cep !== "")
-      endPoint += `&cep=${filtros.cep}`;
-    if (filtros.nome !== "")
-      endPoint += `&nome=${filtros.nome}`;
-    if (filtros.slug !== "")
-      endPoint += `&slug=${filtros.slug}`;
-    if (filtros.instagramPerfil !== "")
-      endPoint += `&instagramPerfil=${encodeURIComponent(filtros.instagramPerfil)}`;
-    if (filtros.facebookPerfil !== "")
-      endPoint += `&facebookPerfil=${encodeURIComponent(filtros.facebookPerfil)}`;
-    if (filtros.reportarProblema !== "") endPoint += `&reportarProblema=${filtros.reportarProblema}`;
-    if (filtros.semCoordenadas) endPoint += `&semCoordenadas=true`;
-    if (filtros.semInstagram) endPoint += `&semInstagram=true`;
-    if (filtros.semFacebook) endPoint += `&semFacebook=true`;
-    if (filtros.mostrarDeletadas) endPoint += `&mostrarDeletadas=true`;
-
-    let paginacao = `&Paginacao.PageIndex=1&Paginacao.PageSize=10`;
-    endPoint += paginacao;
+    const endPoint = construirEndpointBuscaIgrejas(filtros, 1, 10);
 
     if (onFiltersChange) {
       onFiltersChange(filtros);
