@@ -21,11 +21,12 @@ const FILTROS_PADRAO = {
   nome: "",
   slug: "",
   instagramPerfil: "",
+  facebookPerfil: "",
   ativo: true,
   reportarProblema: false,
   semCoordenadas: false,
   semInstagram: false,
-  temFacebook: false,
+  semFacebook: false,
   mostrarDeletadas: false,
 };
 
@@ -115,7 +116,8 @@ const IgrejaSearchForm = ({
       filtrosCompletos.id ||
       filtrosCompletos.cep ||
       filtrosCompletos.slug ||
-      filtrosCompletos.instagramPerfil
+      filtrosCompletos.instagramPerfil ||
+      filtrosCompletos.facebookPerfil
     ) {
       setMostrarMaisFiltros(true);
     }
@@ -175,10 +177,12 @@ const IgrejaSearchForm = ({
       endPoint += `&slug=${filtros.slug}`;
     if (filtros.instagramPerfil !== "")
       endPoint += `&instagramPerfil=${encodeURIComponent(filtros.instagramPerfil)}`;
+    if (filtros.facebookPerfil !== "")
+      endPoint += `&facebookPerfil=${encodeURIComponent(filtros.facebookPerfil)}`;
     if (filtros.reportarProblema !== "") endPoint += `&reportarProblema=${filtros.reportarProblema}`;
     if (filtros.semCoordenadas) endPoint += `&semCoordenadas=true`;
     if (filtros.semInstagram) endPoint += `&semInstagram=true`;
-    if (filtros.temFacebook) endPoint += `&temFacebook=true`;
+    if (filtros.semFacebook) endPoint += `&semFacebook=true`;
     if (filtros.mostrarDeletadas) endPoint += `&mostrarDeletadas=true`;
 
     let paginacao = `&Paginacao.PageIndex=1&Paginacao.PageSize=10`;
@@ -373,6 +377,14 @@ const IgrejaSearchForm = ({
                 fullWidth
               />
             </Grid>
+            <Grid size={{ xs: 6, sm: 4 }}>
+              <TextField
+                label="Perfil do Facebook"
+                value={formData.facebookPerfil}
+                onChange={(e) => handleChange("facebookPerfil", e.target.value)}
+                fullWidth
+              />
+            </Grid>
           </Grid>
         </Collapse>
 
@@ -429,11 +441,11 @@ const IgrejaSearchForm = ({
             <FormControlLabel
               control={
                 <Switch
-                  checked={formData.temFacebook}
-                  onChange={(e) => handleChange("temFacebook", e.target.checked)}
+                  checked={formData.semFacebook}
+                  onChange={(e) => handleChange("semFacebook", e.target.checked)}
                 />
               }
-              label="Tem Facebook"
+              label="Sem Facebook"
             />
             <FormControlLabel
               control={
