@@ -368,6 +368,7 @@ const IgrejaPage = () => {
                             <Typography sx={{ fontWeight: 600 }}>{row.nome}</Typography>
                             <Typography variant="body2" color="text.secondary">
                               {row.endereco?.localidade} / {row.endereco?.uf}
+                              {row.endereco?.bairro && ` — ${row.endereco.bairro}`}
                             </Typography>
                           </Box>
                           <Stack direction="row" spacing={0.5}>
@@ -428,6 +429,7 @@ const IgrejaPage = () => {
                   <TableCell>ID</TableCell>
                   <TableCell>UF</TableCell>
                   <TableCell>Localidade</TableCell>
+                  <TableCell>Bairro</TableCell>
                   <TableCell>CEP</TableCell>
                   <TableCell>Nome</TableCell>
                   <TableCell>Link</TableCell>
@@ -448,6 +450,7 @@ const IgrejaPage = () => {
                       <TableCell>{row.id}</TableCell>
                       <TableCell>{row.endereco?.uf}</TableCell>
                       <TableCell>{row.endereco?.localidade}</TableCell>
+                      <TableCell>{row.endereco?.bairro}</TableCell>
                       <TableCell>
                         <Tooltip
                           title={
@@ -532,7 +535,7 @@ const IgrejaPage = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} align="center">
+                    <TableCell colSpan={9} align="center">
                       <Typography color="text.secondary">Não há dados disponíveis.</Typography>
                     </TableCell>
                   </TableRow>
@@ -540,7 +543,7 @@ const IgrejaPage = () => {
               </TableBody>
               <TableFooter>
                 <TableRow>
-                  <TableCell colSpan={8} align="right">
+                  <TableCell colSpan={9} align="right">
                     Total de registros: {paginacao.totalItems ?? 0}
                   </TableCell>
                 </TableRow>
