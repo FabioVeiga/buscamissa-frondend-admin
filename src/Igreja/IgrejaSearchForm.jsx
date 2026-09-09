@@ -12,6 +12,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useNavigate } from "react-router-dom";
 import { ufs } from "../utils";
 import ErrorSpan from "../ErrorSpan";
+import { construirEndpointBuscaIgrejas } from "./buscarIgrejasUtils";
 
 const FILTROS_PADRAO = {
   id: "",
@@ -21,11 +22,12 @@ const FILTROS_PADRAO = {
   nome: "",
   slug: "",
   instagramPerfil: "",
+  facebookPerfil: "",
   ativo: true,
   reportarProblema: false,
   semCoordenadas: false,
   semInstagram: false,
-  temFacebook: false,
+  semFacebook: false,
   mostrarDeletadas: false,
 };
 
@@ -115,7 +117,8 @@ const IgrejaSearchForm = ({
       filtrosCompletos.id ||
       filtrosCompletos.cep ||
       filtrosCompletos.slug ||
-      filtrosCompletos.instagramPerfil
+      filtrosCompletos.instagramPerfil ||
+      filtrosCompletos.facebookPerfil
     ) {
       setMostrarMaisFiltros(true);
     }
@@ -158,31 +161,7 @@ const IgrejaSearchForm = ({
 
     onLoadingChange && onLoadingChange(true);
 
-    let endPoint = `/api/v1/admin/igreja/buscar-por-filtro?`;
-
-    if (filtros.id !== "") endPoint += `id=${filtros.id}`;
-    if (filtros.ativo !== "")
-      endPoint += `&ativo=${filtros.ativo}`;
-    if (filtros.uf !== "")
-      endPoint += `&uf=${filtros.uf}`;
-    if (filtros.localidade !== "")
-      endPoint += `&localidade=${filtros.localidade}`;
-    if (filtros.cep !== "")
-      endPoint += `&cep=${filtros.cep}`;
-    if (filtros.nome !== "")
-      endPoint += `&nome=${filtros.nome}`;
-    if (filtros.slug !== "")
-      endPoint += `&slug=${filtros.slug}`;
-    if (filtros.instagramPerfil !== "")
-      endPoint += `&instagramPerfil=${encodeURIComponent(filtros.instagramPerfil)}`;
-    if (filtros.reportarProblema !== "") endPoint += `&reportarProblema=${filtros.reportarProblema}`;
-    if (filtros.semCoordenadas) endPoint += `&semCoordenadas=true`;
-    if (filtros.semInstagram) endPoint += `&semInstagram=true`;
-    if (filtros.temFacebook) endPoint += `&temFacebook=true`;
-    if (filtros.mostrarDeletadas) endPoint += `&mostrarDeletadas=true`;
-
-    let paginacao = `&Paginacao.PageIndex=1&Paginacao.PageSize=10`;
-    endPoint += paginacao;
+    const endPoint = construirEndpointBuscaIgrejas(filtros, 1, 10);
 
     if (onFiltersChange) {
       onFiltersChange(filtros);
@@ -373,6 +352,14 @@ const IgrejaSearchForm = ({
                 fullWidth
               />
             </Grid>
+            <Grid size={{ xs: 6, sm: 4 }}>
+              <TextField
+                label="Perfil do Facebook"
+                value={formData.facebookPerfil}
+                onChange={(e) => handleChange("facebookPerfil", e.target.value)}
+                fullWidth
+              />
+            </Grid>
           </Grid>
         </Collapse>
 
@@ -429,11 +416,11 @@ const IgrejaSearchForm = ({
             <FormControlLabel
               control={
                 <Switch
-                  checked={formData.temFacebook}
-                  onChange={(e) => handleChange("temFacebook", e.target.checked)}
+                  checked={formData.semFacebook}
+                  onChange={(e) => handleChange("semFacebook", e.target.checked)}
                 />
               }
-              label="Tem Facebook"
+              label="Sem Facebook"
             />
             <FormControlLabel
               control={

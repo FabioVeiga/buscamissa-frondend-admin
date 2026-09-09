@@ -38,6 +38,7 @@ import ConfirmModal from "../Components/ConfirmModal";
 import DeleteConfirmModal from "../Components/DeleteConfirmModal";
 import api from "../services/apiService";
 import { useEffect } from "react";
+import { construirEndpointBuscaIgrejas } from "./buscarIgrejasUtils";
 
 
 const IgrejaPage = () => {
@@ -219,31 +220,10 @@ const IgrejaPage = () => {
       });
   };
 
-  const buildIgrejasEndpoint = (pageIndex, pageSize, filters) => {
-    const params = new URLSearchParams();
-    if (filters?.ativo !== undefined && filters.ativo !== "") {
-      params.append("ativo", filters.ativo);
-    }
-    if (filters?.uf) params.append("uf", filters.uf);
-    if (filters?.localidade) params.append("localidade", filters.localidade);
-    if (filters?.nome) params.append("nome", filters.nome);
-    if (filters?.diaSemana !== undefined && filters?.diaSemana !== "") {
-      params.append("diadasemana", filters.diaSemana);
-    }
-    if (filters?.horario) params.append("horario", filters.horario);
-    if (filters?.reportarProblema !== undefined && filters.reportarProblema !== "") {
-      params.append("reportarProblema", filters.reportarProblema);
-    }
-    if (filters?.mostrarDeletadas) params.append("mostrarDeletadas", true);
-    params.append("Paginacao.PageIndex", pageIndex);
-    params.append("Paginacao.PageSize", pageSize);
-    return `/api/v1/admin/igreja/buscar-por-filtro?${params.toString()}`;
-  };
-
   const fetchIgrejas = (pageIndex = 1, pageSize = 10, filters = searchFilters) => {
     setIsLoading(true);
     api
-      .get(buildIgrejasEndpoint(pageIndex, pageSize, filters))
+      .get(construirEndpointBuscaIgrejas(filters, pageIndex, pageSize))
       .then((response) => {
         const resp = response.data.data;
         setIgrejas(resp);
