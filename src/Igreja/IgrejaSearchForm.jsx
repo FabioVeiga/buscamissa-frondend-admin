@@ -25,6 +25,7 @@ const FILTROS_PADRAO = {
   reportarProblema: false,
   semCoordenadas: false,
   semInstagram: false,
+  temFacebook: false,
   mostrarDeletadas: false,
 };
 
@@ -177,6 +178,7 @@ const IgrejaSearchForm = ({
     if (filtros.reportarProblema !== "") endPoint += `&reportarProblema=${filtros.reportarProblema}`;
     if (filtros.semCoordenadas) endPoint += `&semCoordenadas=true`;
     if (filtros.semInstagram) endPoint += `&semInstagram=true`;
+    if (filtros.temFacebook) endPoint += `&temFacebook=true`;
     if (filtros.mostrarDeletadas) endPoint += `&mostrarDeletadas=true`;
 
     let paginacao = `&Paginacao.PageIndex=1&Paginacao.PageSize=10`;
@@ -423,6 +425,15 @@ const IgrejaSearchForm = ({
                 />
               }
               label="Sem Instagram"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.temFacebook}
+                  onChange={(e) => handleChange("temFacebook", e.target.checked)}
+                />
+              }
+              label="Tem Facebook"
             />
             <FormControlLabel
               control={
