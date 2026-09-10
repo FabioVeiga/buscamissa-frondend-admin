@@ -26,6 +26,7 @@ export const construirEndpointBuscaIgrejas = (filtros, pageIndex = 1, pageSize =
   if (f.semCoordenadas) params.append("semCoordenadas", true);
   if (f.semInstagram) params.append("semInstagram", true);
   if (f.semFacebook) params.append("semFacebook", true);
+  if (f.semMissas) params.append("semMissas", true);
   if (f.mostrarDeletadas) params.append("mostrarDeletadas", true);
 
   params.append("Paginacao.PageIndex", pageIndex);

@@ -19,8 +19,10 @@ import {
   DialogActions,
   Chip,
   Paper,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
+import { ArrowBack, ContentCopy } from "@mui/icons-material";
 import api from "../services/apiService";
 import { apenasNumeros, formatarErroApi } from "../utils";
 import ErrorSpan from "../ErrorSpan";
@@ -691,7 +693,19 @@ const IgrejaAtualizar = () => {
 
     atualizarIgreja();
   };
-  
+
+  const handleCopiarLink = () => {
+    const link = construirLinkIgreja({ ...formData, endereco });
+    navigator.clipboard
+      .writeText(link)
+      .then(() => {
+        setMessage({ mensagem: "Link copiado!", severity: "success", show: true });
+      })
+      .catch(() => {
+        setMessage({ mensagem: "Não foi possível copiar o link.", severity: "error", show: true });
+      });
+  };
+
   return (
     <>
       <Paper variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
@@ -719,6 +733,11 @@ const IgrejaAtualizar = () => {
               {construirLinkIgreja({ ...formData, endereco })}
               <OpenInNewIcon fontSize="inherit" />
             </Link>
+            <Tooltip title="Copiar link">
+              <IconButton size="small" onClick={handleCopiarLink}>
+                <ContentCopy fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
           </Stack>
         )}
       </Paper>
