@@ -55,6 +55,12 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
         }));
     };
 
+    const DIAS_UTEIS = [1, 2, 3, 4, 5]; // Segunda a Sexta
+
+    const handleSelecionarDiasUteis = () => {
+        setNovaMissa((prev) => ({ ...prev, diaSemana: DIAS_UTEIS }));
+    };
+
     const handleToggleDiaSemana = (dia) => {
         setNovaMissa((prev) => {
             const { diaSemana } = prev;
@@ -248,9 +254,14 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                 </Collapse>
 
                 <Box>
-                    <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
-                        Dias da Semana
-                    </Typography>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+                        <Typography variant="subtitle2" fontWeight={600}>
+                            Dias da Semana
+                        </Typography>
+                        <Button size="small" onClick={handleSelecionarDiasUteis}>
+                            Dias úteis
+                        </Button>
+                    </Stack>
 
                     <FormGroup row sx={{ gap: 0.5 }}>
                         {diasDaSemana.map((dia) => (
