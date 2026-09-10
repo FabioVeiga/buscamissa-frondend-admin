@@ -28,6 +28,7 @@ const FILTROS_PADRAO = {
   semCoordenadas: false,
   semInstagram: false,
   semFacebook: false,
+  semMissas: false,
   mostrarDeletadas: false,
 };
 
@@ -421,6 +422,15 @@ const IgrejaSearchForm = ({
                 />
               }
               label="Sem Facebook"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.semMissas}
+                  onChange={(e) => handleChange("semMissas", e.target.checked)}
+                />
+              }
+              label="Sem Missas"
             />
             <FormControlLabel
               control={
