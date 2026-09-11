@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from "react";
-import { Box, TextField, Switch, FormControlLabel, Button, Autocomplete, CircularProgress, Collapse } from "@mui/material";
+import { Box, TextField, Switch, FormControlLabel, Button, Autocomplete, CircularProgress, Collapse, Backdrop, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import api from "../services/apiService";
 import { IconButton, Tooltip } from "@mui/material";
@@ -227,7 +227,9 @@ const IgrejaSearchForm = ({
   const handleGeocodificarPendentes = () => {
     setGeoLoading(true);
     api
-      .post(`/api/v2/Igreja/geocodificar-pendentes`)
+      // Geocodificação roda a 1 req/s no backend (limite do Nominatim), então o
+      // timeout padrão da api (10s) não é suficiente para lotes maiores.
+      .post(`/api/v2/Igreja/geocodificar-pendentes`, null, { timeout: 10 * 60 * 1000 })
       .then((response) => {
         setMessage({
           mensagem: response.data?.data?.mensagemAplicacao || "Geocodificação concluída com sucesso!",
@@ -252,6 +254,15 @@ const IgrejaSearchForm = ({
 
   return (
     <>
+      <Backdrop
+        open={geoLoading}
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1, flexDirection: "column", gap: 2 }}
+      >
+        <CircularProgress color="inherit" />
+        <Typography variant="body1">
+          Geocodificando igrejas pendentes... isso pode levar alguns minutos.
+        </Typography>
+      </Backdrop>
       <Box
         component="form"
         display="flex"
