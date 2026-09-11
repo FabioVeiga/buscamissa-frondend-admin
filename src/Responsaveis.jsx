@@ -22,6 +22,7 @@ import {
   Chip,
   Tooltip,
   Alert,
+  Snackbar,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -30,6 +31,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import api from "./services/apiService";
 import { useNavigate } from "react-router-dom";
+import { buscarIgrejaCompletaPorId, normalizarIgrejaParaEdicao } from "./services/igrejaHelpers";
 
 const STATUS_META = {
   PendenteVerificacao: { label: "Pendente", color: "warning" },
@@ -56,6 +58,22 @@ const ResponsaveisPage = () => {
   const [formEdicao, setFormEdicao] = useState({ cargoInformado: "", observacaoSolicitacao: "" });
   const [salvandoEdicao, setSalvandoEdicao] = useState(false);
   const [erroEdicao, setErroEdicao] = useState(null);
+
+  const [carregandoIgrejaId, setCarregandoIgrejaId] = useState(null);
+  const [erroIgreja, setErroIgreja] = useState("");
+
+  const handleIrParaIgreja = async (igrejaId) => {
+    setCarregandoIgrejaId(igrejaId);
+    try {
+      const igreja = await buscarIgrejaCompletaPorId(igrejaId);
+      navigate("/igrejaEditar", { state: { row: normalizarIgrejaParaEdicao(igreja) } });
+    } catch (error) {
+      console.error("Erro ao carregar igreja:", error);
+      setErroIgreja("Não foi possível carregar os dados da igreja.");
+    } finally {
+      setCarregandoIgrejaId(null);
+    }
+  };
 
   const carregar = useCallback(async () => {
     setIsLoading(true);
@@ -222,14 +240,21 @@ const ResponsaveisPage = () => {
                       </TableCell>
                       <TableCell align="center" sx={{ whiteSpace: "nowrap" }}>
                         <Tooltip title="Ir para edição da Igreja">
-                          <Button
-                            size="small"
-                            color="primary"
-                            startIcon={<OpenInNewIcon />}
-                            onClick={() => navigate("/igrejas/editar", { state: { row: { id: r.igrejaId } } })}
-                          >
-                            Igreja
-                          </Button>
+                          <span>
+                            <Button
+                              size="small"
+                              color="primary"
+                              startIcon={
+                                carregandoIgrejaId === r.igrejaId
+                                  ? <CircularProgress size={14} />
+                                  : <OpenInNewIcon />
+                              }
+                              disabled={carregandoIgrejaId === r.igrejaId}
+                              onClick={() => handleIrParaIgreja(r.igrejaId)}
+                            >
+                              Igreja
+                            </Button>
+                          </span>
                         </Tooltip>
                         {r.status === "PendenteVerificacao" && (
                           <>
@@ -411,6 +436,17 @@ const ResponsaveisPage = () => {
           </>
         )}
       </Dialog>
+
+      <Snackbar
+        open={!!erroIgreja}
+        autoHideDuration={5000}
+        onClose={() => setErroIgreja("")}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert onClose={() => setErroIgreja("")} severity="error" variant="filled" sx={{ width: "100%" }}>
+          {erroIgreja}
+        </Alert>
+      </Snackbar>
     </Menu>
   );
 };
