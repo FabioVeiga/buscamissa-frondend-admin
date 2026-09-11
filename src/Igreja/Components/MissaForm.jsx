@@ -75,6 +75,12 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
         return diasDaSemana.find((dia) => dia.value === diaValue || dia.value === Number(diaValue))?.label || "";
     };
 
+    // Ao invés de deixar duplicar (dia, horário) e só barrar no salvar com um
+    // erro do backend, já ignora aqui a combinação que já existe — silencioso,
+    // sem travar o fluxo do usuário.
+    const jaExisteMissa = (lista, diaSemana, horario) =>
+        lista.some((m) => Number(m.diaSemana) === Number(diaSemana) && m.horario === horario);
+
     const handleAddMissa = () => {
         const { horario, diaSemana, observacao } = novaMissa;
 
@@ -84,13 +90,17 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
         }
 
         const horarioDigits = apenasNumeros(horario);
-        const novasMissas = diaSemana.map((dia) => ({
-            horario: horarioDigits,
-            diaSemana: dia,
-            observacao,
-        }));
 
-        setMissas((prev) => [...prev, ...novasMissas]);
+        setMissas((prev) => {
+            const novasMissas = diaSemana
+                .filter((dia) => !jaExisteMissa(prev, dia, horarioDigits))
+                .map((dia) => ({
+                    horario: horarioDigits,
+                    diaSemana: dia,
+                    observacao,
+                }));
+            return [...prev, ...novasMissas];
+        });
         setNovaMissa({ horario: "", diaSemana: [], observacao: "" });
         horarioRef.current?.focus();
     };
@@ -133,12 +143,17 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
             onError?.("Adicione ao menos um horário.");
             return;
         }
-        const novasMissas = multiHorarios.map((h) => ({
-            horario: apenasNumeros(h),
-            diaSemana: multiDia,
-            observacao: "",
-        }));
-        setMissas((prev) => [...prev, ...novasMissas]);
+        setMissas((prev) => {
+            const novasMissas = multiHorarios
+                .map((h) => apenasNumeros(h))
+                .filter((horarioDigits) => !jaExisteMissa(prev, multiDia, horarioDigits))
+                .map((horarioDigits) => ({
+                    horario: horarioDigits,
+                    diaSemana: multiDia,
+                    observacao: "",
+                }));
+            return [...prev, ...novasMissas];
+        });
         setMultiHorarios([]);
         setMultiHorario("");
         setMultiOpen(false);

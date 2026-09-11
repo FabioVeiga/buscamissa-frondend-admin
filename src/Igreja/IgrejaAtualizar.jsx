@@ -24,7 +24,7 @@ import {
 } from "@mui/material";
 import { ArrowBack, ContentCopy } from "@mui/icons-material";
 import api from "../services/apiService";
-import { apenasNumeros, formatarErroApi } from "../utils";
+import { apenasNumeros, formatarErroApi, removerMissasDuplicadas } from "../utils";
 import ErrorSpan from "../ErrorSpan";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEndereco } from "../Context/EnderecoContext";
@@ -573,7 +573,7 @@ const IgrejaAtualizar = () => {
       id: formData.id,
       nome: formData.nome,
       paroco: formData.paroco,
-      missas: formDatamissas,
+      missas: removerMissasDuplicadas(formDatamissas),
       contato,
       redeSociais: formDataRedeSociais,
       endereco: enderecoSanitizado,
