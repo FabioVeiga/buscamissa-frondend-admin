@@ -27,7 +27,7 @@ import { Delete, Add, ExpandMore, ExpandLess, DeleteSweep } from "@mui/icons-mat
 import { diasDaSemana, formatarHorario, apenasNumeros } from "../../utils";
 import SectionCard from "./SectionCard";
 
-const OBSERVACOES_ATALHO = ["1º do mês", "Última do mês", "Pelos falecidos", "Novena"];
+const OBSERVACOES_ATALHO = ["1º do mês", "Última do mês", "Pelos falecidos", "Pelas almas", "Novena"];
 
 const MissaForm = ({ missas = [], setMissas, onError }) => {
     const [novaMissa, setNovaMissa] = useState({ horario: "", diaSemana: [], observacao: "" });
@@ -75,6 +75,12 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
         return diasDaSemana.find((dia) => dia.value === diaValue || dia.value === Number(diaValue))?.label || "";
     };
 
+    // Ao invés de deixar duplicar (dia, horário) e só barrar no salvar com um
+    // erro do backend, já ignora aqui a combinação que já existe — silencioso,
+    // sem travar o fluxo do usuário.
+    const jaExisteMissa = (lista, diaSemana, horario) =>
+        lista.some((m) => Number(m.diaSemana) === Number(diaSemana) && m.horario === horario);
+
     const handleAddMissa = () => {
         const { horario, diaSemana, observacao } = novaMissa;
 
@@ -84,13 +90,17 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
         }
 
         const horarioDigits = apenasNumeros(horario);
-        const novasMissas = diaSemana.map((dia) => ({
-            horario: horarioDigits,
-            diaSemana: dia,
-            observacao,
-        }));
 
-        setMissas((prev) => [...prev, ...novasMissas]);
+        setMissas((prev) => {
+            const novasMissas = diaSemana
+                .filter((dia) => !jaExisteMissa(prev, dia, horarioDigits))
+                .map((dia) => ({
+                    horario: horarioDigits,
+                    diaSemana: dia,
+                    observacao,
+                }));
+            return [...prev, ...novasMissas];
+        });
         setNovaMissa({ horario: "", diaSemana: [], observacao: "" });
         horarioRef.current?.focus();
     };
@@ -133,12 +143,17 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
             onError?.("Adicione ao menos um horário.");
             return;
         }
-        const novasMissas = multiHorarios.map((h) => ({
-            horario: apenasNumeros(h),
-            diaSemana: multiDia,
-            observacao: "",
-        }));
-        setMissas((prev) => [...prev, ...novasMissas]);
+        setMissas((prev) => {
+            const novasMissas = multiHorarios
+                .map((h) => apenasNumeros(h))
+                .filter((horarioDigits) => !jaExisteMissa(prev, multiDia, horarioDigits))
+                .map((horarioDigits) => ({
+                    horario: horarioDigits,
+                    diaSemana: multiDia,
+                    observacao: "",
+                }));
+            return [...prev, ...novasMissas];
+        });
         setMultiHorarios([]);
         setMultiHorario("");
         setMultiOpen(false);
@@ -155,9 +170,9 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
             title="Missas"
             subtitle="Cadastre os horários das missas. Você pode selecionar vários dias para o mesmo horário."
         >
-            <Box display="flex" flexDirection="column" gap={2}>
+            <Box display="flex" flexDirection="column" gap={1.5}>
                 {/* Formulário padrão */}
-                <Box display="flex" alignItems="center" gap={2}>
+                <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
                     <TextField
                         label="Horário"
                         type="time"
@@ -253,14 +268,18 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                     </Paper>
                 </Collapse>
 
-                <Box>
-                    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+                <Box display="flex" flexDirection="column" gap={0.75}>
+                    <Stack direction="row" alignItems="center" spacing={1.5}>
                         <Typography variant="subtitle2" fontWeight={600}>
                             Dias da Semana
                         </Typography>
-                        <Button size="small" onClick={handleSelecionarDiasUteis}>
-                            Dias úteis
-                        </Button>
+                        <Chip
+                            label="Dias úteis"
+                            size="small"
+                            variant="outlined"
+                            color="primary"
+                            onClick={handleSelecionarDiasUteis}
+                        />
                     </Stack>
 
                     <FormGroup row sx={{ gap: 0.5 }}>
@@ -277,42 +296,44 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                             />
                         ))}
                     </FormGroup>
+
+                    {novaMissa.diaSemana.length > 0 && (
+                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                            {novaMissa.diaSemana.map((dia) => (
+                                <Chip
+                                    key={dia}
+                                    label={getDiaLabel(dia)}
+                                    color="primary"
+                                    variant="outlined"
+                                    onDelete={() => handleToggleDiaSemana(dia)}
+                                />
+                            ))}
+                        </Stack>
+                    )}
                 </Box>
 
-                {novaMissa.diaSemana.length > 0 && (
+                <Box display="flex" flexDirection="column" gap={0.75}>
+                    <TextField
+                        label="Observação"
+                        value={novaMissa.observacao}
+                        onChange={(e) => handleChange("observacao", e.target.value)}
+                        fullWidth
+                        multiline
+                        minRows={2}
+                    />
+
                     <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                        {novaMissa.diaSemana.map((dia) => (
+                        {OBSERVACOES_ATALHO.map((tag) => (
                             <Chip
-                                key={dia}
-                                label={getDiaLabel(dia)}
-                                color="primary"
+                                key={tag}
+                                label={tag}
+                                size="small"
                                 variant="outlined"
-                                onDelete={() => handleToggleDiaSemana(dia)}
+                                onClick={() => handleAdicionarTagObservacao(tag)}
                             />
                         ))}
                     </Stack>
-                )}
-
-                <TextField
-                    label="Observação"
-                    value={novaMissa.observacao}
-                    onChange={(e) => handleChange("observacao", e.target.value)}
-                    fullWidth
-                    multiline
-                    minRows={2}
-                />
-
-                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                    {OBSERVACOES_ATALHO.map((tag) => (
-                        <Chip
-                            key={tag}
-                            label={tag}
-                            size="small"
-                            variant="outlined"
-                            onClick={() => handleAdicionarTagObservacao(tag)}
-                        />
-                    ))}
-                </Stack>
+                </Box>
 
                 <TextField
                     label="Apoio"
@@ -323,7 +344,6 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                     rows={3}
                     placeholder="Anotações temporárias de apoio (não salvo)..."
                     helperText="Este campo não é salvo."
-                    sx={{ mt: 1 }}
                 />
 
                 {missas.length > 0 && (

@@ -25,6 +25,8 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
+  FormControlLabel,
+  Switch,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -110,6 +112,7 @@ const Aprovacoes = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [statusFiltro, setStatusFiltro] = useState(null);
+  const [maisRecentePrimeiro, setMaisRecentePrimeiro] = useState(false);
   const [itens, setItens] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ mensagem: "", severity: "", show: false });
@@ -127,7 +130,11 @@ const Aprovacoes = () => {
 
   const buscar = useCallback((pageIndex = 1) => {
     setIsLoading(true);
-    const params = { "Paginacao.PageIndex": pageIndex, "Paginacao.PageSize": paginacao.pageSize };
+    const params = {
+      "Paginacao.PageIndex": pageIndex,
+      "Paginacao.PageSize": paginacao.pageSize,
+      MaisRecentePrimeiro: maisRecentePrimeiro,
+    };
     if (statusFiltro !== null) params.Status = statusFiltro;
 
     api.get("/api/v1/Aprovacao/pendentes", { params })
@@ -145,7 +152,7 @@ const Aprovacoes = () => {
       })
       .catch(() => setItens([]))
       .finally(() => setIsLoading(false));
-  }, [statusFiltro, paginacao.pageSize]);
+  }, [statusFiltro, maisRecentePrimeiro, paginacao.pageSize]);
 
   useEffect(() => { buscar(1); }, [buscar]);
 
@@ -282,16 +289,27 @@ const Aprovacoes = () => {
     <Menu>
       <Stack spacing={2}>
         <Paper sx={{ p: 2, borderRadius: 2 }}>
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            {FILTROS_STATUS.map((f) => (
-              <Chip
-                key={f.label}
-                label={f.label}
-                color={statusFiltro === f.valor ? "primary" : "default"}
-                variant={statusFiltro === f.valor ? "filled" : "outlined"}
-                onClick={() => setStatusFiltro(f.valor)}
-              />
-            ))}
+          <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
+            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              {FILTROS_STATUS.map((f) => (
+                <Chip
+                  key={f.label}
+                  label={f.label}
+                  color={statusFiltro === f.valor ? "primary" : "default"}
+                  variant={statusFiltro === f.valor ? "filled" : "outlined"}
+                  onClick={() => setStatusFiltro(f.valor)}
+                />
+              ))}
+            </Stack>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={maisRecentePrimeiro}
+                  onChange={(e) => setMaisRecentePrimeiro(e.target.checked)}
+                />
+              }
+              label="Mais recentes primeiro"
+            />
           </Stack>
         </Paper>
 

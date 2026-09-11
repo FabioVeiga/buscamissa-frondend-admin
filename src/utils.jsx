@@ -147,3 +147,19 @@ export const formatarErroApi = (erros) => {
 
   return `${formatarChaveErro(chave)}: ${valorLimpo}`;
 };
+
+/**
+ * Remove missas duplicadas (mesmo dia da semana + horário), mantendo a
+ * primeira ocorrência — rede de segurança pra dados já carregados com
+ * duplicidade (ex: importação antiga), evitando que o salvar seja rejeitado
+ * pela validação de duplicidade do backend.
+ */
+export const removerMissasDuplicadas = (missas) => {
+  const vistos = new Set();
+  return (missas || []).filter((m) => {
+    const chave = `${Number(m.diaSemana)}|${m.horario}`;
+    if (vistos.has(chave)) return false;
+    vistos.add(chave);
+    return true;
+  });
+};

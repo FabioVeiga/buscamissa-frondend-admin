@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import { ArrowBack } from "@mui/icons-material";
 import api from "../services/apiService";
-import { apenasNumeros, formatarErroApi } from "../utils";
+import { apenasNumeros, formatarErroApi, removerMissasDuplicadas } from "../utils";
 import { normalizarNomeDoPerfil } from "../utils/redeSocialUrl";
 import ErrorSpan from "../ErrorSpan";
 import { useEndereco } from "../Context/EnderecoContext";
@@ -499,7 +499,7 @@ const IgrejaCriar = () => {
     setConfirmarSemMissaAberto(false);
     setLoading(true);
 
-    formData.missas = missas;
+    formData.missas = removerMissasDuplicadas(missas);
     formData.imagem = base64;
     formData.endereco = endereco;
     formData.redeSociais = redeSociais;

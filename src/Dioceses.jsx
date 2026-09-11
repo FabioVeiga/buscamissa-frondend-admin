@@ -45,6 +45,7 @@ const DiocesesPage = () => {
   const [dioceses, setDioceses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [incluirInativas, setIncluirInativas] = useState(false);
+  const [filtroNome, setFiltroNome] = useState("");
 
   // Dialog de criação/edição
   const [dialogAberto, setDialogAberto] = useState(false);
@@ -140,7 +141,12 @@ const DiocesesPage = () => {
     }
   };
 
-  const registros = ehAbaArquidiocese ? arquidioceses : dioceses;
+  const registrosDaAba = ehAbaArquidiocese ? arquidioceses : dioceses;
+  const registros = filtroNome.trim()
+    ? registrosDaAba.filter((r) =>
+        r.nome?.toLowerCase().includes(filtroNome.trim().toLowerCase())
+      )
+    : registrosDaAba;
   const tituloRecurso = ehAbaArquidiocese ? "Arquidiocese" : "Diocese";
 
   return (
@@ -166,15 +172,23 @@ const DiocesesPage = () => {
             <Tab label={`Arquidioceses (${arquidioceses.length})`} />
             <Tab label={`Dioceses (${dioceses.length})`} />
           </Tabs>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={incluirInativas}
-                onChange={(e) => setIncluirInativas(e.target.checked)}
-              />
-            }
-            label="Mostrar inativas"
-          />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <TextField
+              label="Buscar por nome"
+              size="small"
+              value={filtroNome}
+              onChange={(e) => setFiltroNome(e.target.value)}
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={incluirInativas}
+                  onChange={(e) => setIncluirInativas(e.target.checked)}
+                />
+              }
+              label="Mostrar inativas"
+            />
+          </Box>
         </Box>
 
         {isLoading ? (
@@ -188,6 +202,7 @@ const DiocesesPage = () => {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell align="center">ID</TableCell>
                 <TableCell>Nome</TableCell>
                 <TableCell align="center">UF</TableCell>
                 <TableCell>Cidade</TableCell>
@@ -204,6 +219,7 @@ const DiocesesPage = () => {
               {registros.length > 0 ? (
                 registros.map((r) => (
                   <TableRow key={r.id} sx={{ opacity: r.ativo ? 1 : 0.55 }}>
+                    <TableCell align="center">{r.id}</TableCell>
                     <TableCell>
                       {r.nome}
                       {r.site && (
@@ -237,7 +253,7 @@ const DiocesesPage = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
+                  <TableCell colSpan={7} align="center">
                     Nenhuma {tituloRecurso.toLowerCase()} cadastrada.
                   </TableCell>
                 </TableRow>
