@@ -151,11 +151,31 @@ const calcularTendencia = (atual, anterior) => {
 // Categorias usadas para agrupar a aba "Páginas do site" — mesmo agrupamento
 // usado no protótipo de cobertura (conteúdo/SEO, cadastro, painel, institucional, erro).
 const CATEGORIAS_CONFIG = {
-  conteudo: { titulo: "Conteúdo & SEO", color: "#3b6fd6" },
-  cadastro: { titulo: "Cadastro & transacional", color: "#d97706" },
-  painel: { titulo: "Painel do responsável", color: "#db2777" },
-  institucional: { titulo: "Institucional & legal", color: "#7c3aed" },
-  erro: { titulo: "Erro / utilitário", color: "#64748b" },
+  conteudo: {
+    titulo: "Conteúdo & SEO",
+    color: "#3b6fd6",
+    descricao: "Páginas de navegação e conteúdo público: home, estado, cidade, cidades, dias, missa agora, intenção do dia, como funciona, minhas igrejas, guia do responsável e entrar.",
+  },
+  cadastro: {
+    titulo: "Cadastro & transacional",
+    color: "#d97706",
+    descricao: "Fluxo de cadastro/edição de igreja e validação: nova igreja, editar igreja, redirect por CEP, enviar código, validar código, anúncios, contribuir e solicitar.",
+  },
+  painel: {
+    titulo: "Painel do responsável",
+    color: "#db2777",
+    descricao: "Área logada de quem administra uma igreja: meu painel e a edição de igreja feita a partir dele.",
+  },
+  institucional: {
+    titulo: "Institucional & legal",
+    color: "#7c3aed",
+    descricao: "Páginas de política e termos: cookies, privacidade e termos de uso.",
+  },
+  erro: {
+    titulo: "Erro / utilitário",
+    color: "#64748b",
+    descricao: "Páginas de diagnóstico, sem valor comercial direto: página não encontrada (404).",
+  },
 };
 
 // Configuração das páginas exibidas na aba "Páginas do site" — chave bate com o
@@ -345,6 +365,50 @@ const RankingTable = ({ titulo, descricao, itens, onIgrejaClick }) => {
                     {item.cidade} • {item.uf}
                   </Typography>
                 </TableCell>
+                <TableCell align="right">{item.quantidade}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
+  );
+};
+
+// Ranking de estados/cidades — mesma estrutura visual do RankingTable, mas sem
+// clique (não abre modal) e com uma coluna de "local" configurável em vez de igreja.
+const RankingRegiaoTable = ({ titulo, descricao, itens, renderLocal }) => {
+  const linhas = (itens || []).slice(0, TOP_N);
+
+  return (
+    <Paper sx={{ p: 2, borderRadius: 2, height: "100%" }}>
+      <Stack direction="row" alignItems="center" spacing={0.5} mb={2}>
+        <Typography variant="h6">{titulo}</Typography>
+        <Tooltip title={descricao} arrow>
+          <InfoOutlinedIcon fontSize="small" color="action" sx={{ cursor: "help" }} />
+        </Tooltip>
+      </Stack>
+      <TableContainer sx={{ maxHeight: ALTURA_TABELA }}>
+        <Table size="small" stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ fontWeight: 700, width: 48 }}>#</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Local</TableCell>
+              <TableCell sx={{ fontWeight: 700 }} align="right">Quantidade</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {linhas.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={3} align="center">
+                  Sem dados no período selecionado.
+                </TableCell>
+              </TableRow>
+            )}
+            {linhas.map((item, index) => (
+              <TableRow key={index} hover>
+                <TableCell>{index + 1}</TableCell>
+                <TableCell>{renderLocal(item)}</TableCell>
                 <TableCell align="right">{item.quantidade}</TableCell>
               </TableRow>
             ))}
@@ -626,6 +690,7 @@ const Indicadores = () => {
           <Tab value="geral" label="Visão geral" />
           <Tab value="paginas" label="Páginas do site" />
           <Tab value="igrejas" label="Igrejas" />
+          <Tab value="regioes" label="Estados e Cidades" />
         </Tabs>
 
         <Box>
@@ -839,7 +904,12 @@ const Indicadores = () => {
                       <Stack key={c.chave} direction="row" alignItems="center" spacing={1.5}>
                         <Box sx={{ width: 9, height: 9, borderRadius: "50%", bgcolor: c.color, flexShrink: 0 }} />
                         <Box sx={{ width: 190, flexShrink: 0 }}>
-                          <Typography variant="body2" noWrap>{c.titulo}</Typography>
+                          <Stack direction="row" alignItems="center" spacing={0.5}>
+                            <Typography variant="body2" noWrap>{c.titulo}</Typography>
+                            <Tooltip title={c.descricao} arrow>
+                              <InfoOutlinedIcon sx={{ fontSize: 15, color: "action.active", cursor: "help" }} />
+                            </Tooltip>
+                          </Stack>
                           <Typography variant="caption" color="text.secondary">{c.totalPaginas} páginas</Typography>
                         </Box>
                         <Box sx={{ flex: 1, bgcolor: "action.hover", borderRadius: 1, height: 14, overflow: "hidden" }}>
@@ -934,6 +1004,34 @@ const Indicadores = () => {
                     descricao="Quantas vezes usuários clicaram em 'Como chegar' para abrir a rota da igreja no mapa."
                     itens={rankings.maisRotasAbertas}
                     onIgrejaClick={handleIgrejaClick}
+                  />
+                </Grid>
+              </Grid>
+            )}
+
+            {abaAtiva === "regioes" && (
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <RankingRegiaoTable
+                    titulo="Estados mais visitados"
+                    descricao="Quantas vezes a página de um estado (/missas/uf) foi acessada no site público, por UF."
+                    itens={rankings.maisEstadosVisitados}
+                    renderLocal={(item) => <Typography variant="body2">{item.uf}</Typography>}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <RankingRegiaoTable
+                    titulo="Cidades mais visitadas"
+                    descricao="Quantas vezes a página de uma cidade (/missas/uf/cidade) foi acessada no site público."
+                    itens={rankings.maisCidadesVisitadas}
+                    renderLocal={(item) => (
+                      <>
+                        <Typography variant="body2">{item.cidadeNome}</Typography>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          {item.uf}
+                        </Typography>
+                      </>
+                    )}
                   />
                 </Grid>
               </Grid>
