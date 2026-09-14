@@ -38,6 +38,23 @@ import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import LoginIcon from "@mui/icons-material/Login";
 import MapIcon from "@mui/icons-material/Map";
 import EventNoteIcon from "@mui/icons-material/EventNote";
+import PublicIcon from "@mui/icons-material/Public";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import TodayIcon from "@mui/icons-material/Today";
+import AddBusinessIcon from "@mui/icons-material/AddBusiness";
+import EditIcon from "@mui/icons-material/Edit";
+import PinDropIcon from "@mui/icons-material/PinDrop";
+import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
+import PasswordIcon from "@mui/icons-material/Password";
+import CampaignIcon from "@mui/icons-material/Campaign";
+import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
+import ContactSupportIcon from "@mui/icons-material/ContactSupport";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import EditNoteIcon from "@mui/icons-material/EditNote";
+import CookieIcon from "@mui/icons-material/Cookie";
+import PrivacyTipIcon from "@mui/icons-material/PrivacyTip";
+import GavelIcon from "@mui/icons-material/Gavel";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
@@ -131,19 +148,51 @@ const calcularTendencia = (atual, anterior) => {
   return { percentual: Math.round(percentual * 10) / 10, novo: false };
 };
 
+// Categorias usadas para agrupar a aba "Páginas do site" — mesmo agrupamento
+// usado no protótipo de cobertura (conteúdo/SEO, cadastro, painel, institucional, erro).
+const CATEGORIAS_CONFIG = {
+  conteudo: { titulo: "Conteúdo & SEO", color: "#3b6fd6" },
+  cadastro: { titulo: "Cadastro & transacional", color: "#d97706" },
+  painel: { titulo: "Painel do responsável", color: "#db2777" },
+  institucional: { titulo: "Institucional & legal", color: "#7c3aed" },
+  erro: { titulo: "Erro / utilitário", color: "#64748b" },
+};
+
 // Configuração das páginas exibidas na aba "Páginas do site" — chave bate com o
 // campo (camelCase) devolvido por PaginasVisualizacoesResponse.
 const PAGINAS_CONFIG = [
-  { chave: "estado", titulo: "Estado", icon: MapIcon, color: "#0ea5e9", novo: true },
-  { chave: "cidade", titulo: "Cidade", icon: LocationCityIcon, color: "#0ea5e9", novo: true },
-  { chave: "comoFunciona", titulo: "Como Funciona", icon: HelpOutlineIcon, color: "#14b8a6" },
-  { chave: "missaAgora", titulo: "Missa Agora", icon: AccessTimeIcon, color: "#f59e0b" },
-  { chave: "intencaoDia", titulo: "Intenção por dia", icon: EventNoteIcon, color: "#f59e0b", novo: true },
-  { chave: "cidades", titulo: "Cidades", icon: LocationCityIcon, color: "#0ea5e9" },
-  { chave: "minhasIgrejas", titulo: "Minhas Igrejas", icon: ChecklistIcon, color: "#ec4899" },
-  { chave: "guiaResponsavel", titulo: "Guia Responsável", icon: VerifiedUserIcon, color: "#8b5cf6" },
-  { chave: "entrar", titulo: "Entrar", icon: LoginIcon, color: "#64748b" },
-];
+  { chave: "estado", titulo: "Estado", icon: MapIcon, categoria: "conteudo", novo: true },
+  { chave: "cidade", titulo: "Cidade", icon: LocationCityIcon, categoria: "conteudo", novo: true },
+  { chave: "comoFunciona", titulo: "Como Funciona", icon: HelpOutlineIcon, categoria: "conteudo" },
+  { chave: "missaAgora", titulo: "Missa Agora", icon: AccessTimeIcon, categoria: "conteudo" },
+  { chave: "intencaoDia", titulo: "Intenção por dia", icon: EventNoteIcon, categoria: "conteudo", novo: true },
+  { chave: "cidades", titulo: "Cidades", icon: LocationCityIcon, categoria: "conteudo" },
+  { chave: "minhasIgrejas", titulo: "Minhas Igrejas", icon: ChecklistIcon, categoria: "conteudo" },
+  { chave: "guiaResponsavel", titulo: "Guia Responsável", icon: VerifiedUserIcon, categoria: "conteudo" },
+  { chave: "entrar", titulo: "Entrar", icon: LoginIcon, categoria: "conteudo" },
+  // Conteúdo & SEO
+  { chave: "estados", titulo: "Estados (índice)", icon: PublicIcon, categoria: "conteudo", novo: true },
+  { chave: "dias", titulo: "Dias (índice)", icon: CalendarMonthIcon, categoria: "conteudo", novo: true },
+  { chave: "missaHoje", titulo: "Missa Hoje", icon: TodayIcon, categoria: "conteudo", novo: true },
+  // Cadastro & transacional
+  { chave: "novaIgreja", titulo: "Cadastrar Igreja", icon: AddBusinessIcon, categoria: "cadastro", novo: true },
+  { chave: "editarIgreja", titulo: "Editar Igreja", icon: EditIcon, categoria: "cadastro", novo: true },
+  { chave: "cepRedirect", titulo: "Redirect por CEP", icon: PinDropIcon, categoria: "cadastro", novo: true },
+  { chave: "enviarCodigo", titulo: "Enviar Código", icon: MarkEmailReadIcon, categoria: "cadastro", novo: true },
+  { chave: "validarCodigo", titulo: "Validar Código", icon: PasswordIcon, categoria: "cadastro", novo: true },
+  { chave: "anuncios", titulo: "Anúncios", icon: CampaignIcon, categoria: "cadastro", novo: true },
+  { chave: "contribuir", titulo: "Contribuir", icon: VolunteerActivismIcon, categoria: "cadastro", novo: true },
+  { chave: "solicitar", titulo: "Solicitar", icon: ContactSupportIcon, categoria: "cadastro", novo: true },
+  // Painel do responsável
+  { chave: "meuPainel", titulo: "Meu Painel", icon: DashboardIcon, categoria: "painel", novo: true },
+  { chave: "editarIgrejaPainel", titulo: "Editar Igreja (Painel)", icon: EditNoteIcon, categoria: "painel", novo: true },
+  // Institucional & legal
+  { chave: "cookies", titulo: "Cookies", icon: CookieIcon, categoria: "institucional", novo: true },
+  { chave: "privacidade", titulo: "Privacidade", icon: PrivacyTipIcon, categoria: "institucional", novo: true },
+  { chave: "termos", titulo: "Termos de Uso", icon: GavelIcon, categoria: "institucional", novo: true },
+  // Erro / utilitário
+  { chave: "naoEncontrado", titulo: "Página não encontrada (404)", icon: ErrorOutlineIcon, categoria: "erro", novo: true },
+].map((p) => ({ ...p, color: CATEGORIAS_CONFIG[p.categoria].color }));
 
 // Converte uma série diária num polyline SVG normalizado (100x28), para o
 // sparkline dos StatCard. Sem dados suficientes, não desenha nada.
@@ -360,6 +409,7 @@ const Indicadores = () => {
   const handleIgrejaClick = (igrejaId) => setDetalheIgrejaId(igrejaId);
 
   const [abaAtiva, setAbaAtiva] = useState("geral");
+  const [buscaPagina, setBuscaPagina] = useState("");
 
   if (loading) {
     return (
@@ -409,6 +459,28 @@ const Indicadores = () => {
 
   const maiorValorPagina = Math.max(1, ...PAGINAS_CONFIG.map((p) => paginas[p.chave] ?? 0));
 
+  // Cobertura por categoria: soma de visualizações de cada categoria e sua
+  // participação relativa à categoria líder — todas as páginas listadas aqui já
+  // têm indicador (a lacuna que existia foi fechada), então a "cobertura" que
+  // interessa agora é a distribuição de tráfego entre categorias, não rastreada x não rastreada.
+  const totalVisualizacoesPaginas = PAGINAS_CONFIG.reduce((soma, p) => soma + (paginas[p.chave] ?? 0), 0);
+  const categoriasResumo = Object.entries(CATEGORIAS_CONFIG).map(([chave, cfg]) => {
+    const paginasDaCategoria = PAGINAS_CONFIG.filter((p) => p.categoria === chave);
+    const total = paginasDaCategoria.reduce((soma, p) => soma + (paginas[p.chave] ?? 0), 0);
+    return { chave, ...cfg, totalPaginas: paginasDaCategoria.length, totalVisualizacoes: total };
+  });
+  const maiorTotalCategoria = Math.max(1, ...categoriasResumo.map((c) => c.totalVisualizacoes));
+  const categoriaLider = [...categoriasResumo].sort((a, b) => b.totalVisualizacoes - a.totalVisualizacoes)[0];
+
+  const termoBusca = buscaPagina.trim().toLowerCase();
+  const paginasFiltradas = [...PAGINAS_CONFIG]
+    .sort((a, b) => (paginas[b.chave] ?? 0) - (paginas[a.chave] ?? 0))
+    .filter((p) =>
+      !termoBusca ||
+      p.titulo.toLowerCase().includes(termoBusca) ||
+      CATEGORIAS_CONFIG[p.categoria].titulo.toLowerCase().includes(termoBusca)
+    );
+
   // Etapa 10: empty state quando não há nenhum registro no período informado.
   const semDados =
     !totais.totalGeral &&
@@ -421,54 +493,132 @@ const Indicadores = () => {
     !(rankings.maisCompartilhadas || []).length &&
     !(rankings.maisRotasAbertas || []).length;
 
+  // Realça o atalho de período que corresponde ao filtro atual (comparando as
+  // datas geradas, não instâncias) — dá feedback visual de qual preset está ativo.
+  const atalhoAtivo = [
+    { chave: "hoje", gerar: periodoHoje },
+    { chave: "ontem", gerar: periodoOntem },
+    { chave: "mes", gerar: periodoMesCorrente },
+    { chave: "ano", gerar: periodoAnoCorrente },
+  ].find((a) => {
+    const p = a.gerar();
+    return p.dataInicial === filtros.dataInicial && p.dataFinal === filtros.dataFinal;
+  })?.chave;
+
   return (
     <Menu>
       <Stack spacing={2}>
-        <Paper sx={{ p: 2, borderRadius: 2, position: "sticky", top: 8, zIndex: 1 }}>
-          <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" useFlexGap>
-            <Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: "text.secondary" }}>
+        <Paper
+          sx={{
+            p: 2,
+            borderRadius: 2,
+            position: "sticky",
+            top: 8,
+            zIndex: 1,
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems={{ xs: "stretch", md: "center" }}>
+            <Stack direction="row" alignItems="center" spacing={0.75} sx={{ color: "primary.main", flexShrink: 0 }}>
               <AccessTimeIcon fontSize="small" />
-              <Typography variant="subtitle2">Período</Typography>
+              <Typography variant="subtitle2" fontWeight={700}>Período</Typography>
             </Stack>
-            <TextField
-              label="Data Inicial"
-              type="date"
-              size="small"
-              value={filtros.dataInicial}
-              onChange={(e) => setFiltros((f) => ({ ...f, dataInicial: e.target.value }))}
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
-            <TextField
-              label="Data Final"
-              type="date"
-              size="small"
-              value={filtros.dataFinal}
-              onChange={(e) => setFiltros((f) => ({ ...f, dataFinal: e.target.value }))}
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
-            <Button variant="contained" size="small" startIcon={<SearchIcon />} onClick={handlePesquisar}>
-              Pesquisar
-            </Button>
-            <Button variant="outlined" size="small" startIcon={<ClearIcon />} onClick={handleLimpar}>
-              Limpar
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={loading ? <CircularProgress size={14} /> : <RefreshIcon />}
-              onClick={() => carregar(filtros)}
-              disabled={loading}
-              sx={{ ml: "auto" }}
-            >
-              Atualizar
-            </Button>
-          </Stack>
 
-          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap mt={1.5}>
-            <Chip label="Hoje" size="small" variant="outlined" onClick={handleAtalhoPeriodo(periodoHoje)} />
-            <Chip label="Ontem" size="small" variant="outlined" onClick={handleAtalhoPeriodo(periodoOntem)} />
-            <Chip label="Mês corrente" size="small" variant="outlined" onClick={handleAtalhoPeriodo(periodoMesCorrente)} />
-            <Chip label="Ano corrente" size="small" variant="outlined" onClick={handleAtalhoPeriodo(periodoAnoCorrente)} />
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={1}
+              sx={{
+                bgcolor: "action.hover",
+                borderRadius: 2,
+                px: 1.25,
+                py: 0.5,
+                flexWrap: "wrap",
+                rowGap: 0.5,
+              }}
+            >
+              <TextField
+                variant="standard"
+                label="De"
+                type="date"
+                size="small"
+                value={filtros.dataInicial}
+                onChange={(e) => setFiltros((f) => ({ ...f, dataInicial: e.target.value }))}
+                slotProps={{ inputLabel: { shrink: true } }}
+                sx={{ width: 150 }}
+              />
+              <Box sx={{ width: 14, height: 1.5, bgcolor: "text.disabled", flexShrink: 0, mt: 1.5 }} />
+              <TextField
+                variant="standard"
+                label="Até"
+                type="date"
+                size="small"
+                value={filtros.dataFinal}
+                onChange={(e) => setFiltros((f) => ({ ...f, dataFinal: e.target.value }))}
+                slotProps={{ inputLabel: { shrink: true } }}
+                sx={{ width: 150 }}
+              />
+            </Stack>
+
+            <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
+              <Chip
+                label="Hoje"
+                size="small"
+                clickable
+                color={atalhoAtivo === "hoje" ? "primary" : "default"}
+                variant={atalhoAtivo === "hoje" ? "filled" : "outlined"}
+                onClick={handleAtalhoPeriodo(periodoHoje)}
+              />
+              <Chip
+                label="Ontem"
+                size="small"
+                clickable
+                color={atalhoAtivo === "ontem" ? "primary" : "default"}
+                variant={atalhoAtivo === "ontem" ? "filled" : "outlined"}
+                onClick={handleAtalhoPeriodo(periodoOntem)}
+              />
+              <Chip
+                label="Mês corrente"
+                size="small"
+                clickable
+                color={atalhoAtivo === "mes" ? "primary" : "default"}
+                variant={atalhoAtivo === "mes" ? "filled" : "outlined"}
+                onClick={handleAtalhoPeriodo(periodoMesCorrente)}
+              />
+              <Chip
+                label="Ano corrente"
+                size="small"
+                clickable
+                color={atalhoAtivo === "ano" ? "primary" : "default"}
+                variant={atalhoAtivo === "ano" ? "filled" : "outlined"}
+                onClick={handleAtalhoPeriodo(periodoAnoCorrente)}
+              />
+            </Stack>
+
+            <Stack direction="row" spacing={1} sx={{ ml: { md: "auto" }, flexShrink: 0 }}>
+              <Button variant="contained" size="small" startIcon={<SearchIcon />} onClick={handlePesquisar}>
+                Pesquisar
+              </Button>
+              <Tooltip title="Limpar período (ver todo o histórico)">
+                <Button variant="outlined" size="small" onClick={handleLimpar} sx={{ minWidth: 0, px: 1.25 }}>
+                  <ClearIcon fontSize="small" />
+                </Button>
+              </Tooltip>
+              <Tooltip title="Atualizar dados do período atual">
+                <span>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => carregar(filtros)}
+                    disabled={loading}
+                    sx={{ minWidth: 0, px: 1.25 }}
+                  >
+                    {loading ? <CircularProgress size={16} /> : <RefreshIcon fontSize="small" />}
+                  </Button>
+                </span>
+              </Tooltip>
+            </Stack>
           </Stack>
         </Paper>
 
@@ -623,17 +773,119 @@ const Indicadores = () => {
             )}
 
             {abaAtiva === "paginas" && (
-              <Paper sx={{ p: 2.5, borderRadius: 2 }}>
-                <Typography variant="h6" mb={0.5}>Visualizações por página</Typography>
-                <Typography variant="body2" color="text.secondary" mb={2.5}>
-                  Ordenado da mais para a menos acessada.{" "}
-                  <Chip label="nova" size="small" color="warning" variant="outlined" sx={{ height: 18, fontSize: 10 }} />{" "}
-                  marca páginas que só passaram a ser contabilizadas recentemente.
-                </Typography>
-                <Stack spacing={1.75}>
-                  {[...PAGINAS_CONFIG]
-                    .sort((a, b) => (paginas[b.chave] ?? 0) - (paginas[a.chave] ?? 0))
-                    .map((p) => (
+              <Stack spacing={2}>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Card variant="outlined" sx={{ p: 2, height: "100%" }}>
+                      <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                        Páginas rastreadas
+                      </Typography>
+                      <Typography variant="h4" fontWeight={700} sx={{ color: "success.main", mt: 0.25 }}>
+                        {PAGINAS_CONFIG.length} / {PAGINAS_CONFIG.length}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        todas as páginas mapeadas do site têm indicador
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Card variant="outlined" sx={{ p: 2, height: "100%" }}>
+                      <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                        Visualizações no período
+                      </Typography>
+                      <Typography variant="h4" fontWeight={700} sx={{ mt: 0.25 }}>
+                        {totalVisualizacoesPaginas}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        soma de todas as páginas listadas abaixo
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Card variant="outlined" sx={{ p: 2, height: "100%" }}>
+                      <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                        Categoria líder
+                      </Typography>
+                      <Typography variant="h6" fontWeight={700} sx={{ color: categoriaLider.color, mt: 0.5 }}>
+                        {categoriaLider.titulo}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {categoriaLider.totalVisualizacoes} visualizações
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <Card variant="outlined" sx={{ p: 2, height: "100%" }}>
+                      <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                        Categorias mapeadas
+                      </Typography>
+                      <Typography variant="h4" fontWeight={700} sx={{ mt: 0.25 }}>
+                        {Object.keys(CATEGORIAS_CONFIG).length}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        conteúdo, cadastro, painel, institucional, erro
+                      </Typography>
+                    </Card>
+                  </Grid>
+                </Grid>
+
+                <Paper sx={{ p: 2.5, borderRadius: 2 }}>
+                  <Typography variant="h6" mb={0.5}>Tráfego por categoria</Typography>
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    Participação de cada categoria de página no total de visualizações do período.
+                  </Typography>
+                  <Stack spacing={1.5}>
+                    {categoriasResumo.map((c) => (
+                      <Stack key={c.chave} direction="row" alignItems="center" spacing={1.5}>
+                        <Box sx={{ width: 9, height: 9, borderRadius: "50%", bgcolor: c.color, flexShrink: 0 }} />
+                        <Box sx={{ width: 190, flexShrink: 0 }}>
+                          <Typography variant="body2" noWrap>{c.titulo}</Typography>
+                          <Typography variant="caption" color="text.secondary">{c.totalPaginas} páginas</Typography>
+                        </Box>
+                        <Box sx={{ flex: 1, bgcolor: "action.hover", borderRadius: 1, height: 14, overflow: "hidden" }}>
+                          <Box
+                            sx={{
+                              width: `${Math.max(2, (c.totalVisualizacoes / maiorTotalCategoria) * 100)}%`,
+                              bgcolor: c.color,
+                              height: "100%",
+                              borderRadius: 1,
+                            }}
+                          />
+                        </Box>
+                        <Typography variant="body2" fontWeight={600} sx={{ width: 40, textAlign: "right", flexShrink: 0 }}>
+                          {c.totalVisualizacoes}
+                        </Typography>
+                      </Stack>
+                    ))}
+                  </Stack>
+                </Paper>
+
+                <Paper sx={{ p: 2.5, borderRadius: 2 }}>
+                  <Stack direction="row" alignItems="flex-start" justifyContent="space-between" flexWrap="wrap" gap={1.5} mb={0.5}>
+                    <Box>
+                      <Typography variant="h6">Visualizações por página</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Ordenado da mais para a menos acessada.{" "}
+                        <Chip label="nova" size="small" color="warning" variant="outlined" sx={{ height: 18, fontSize: 10 }} />{" "}
+                        marca páginas que só passaram a ser contabilizadas recentemente.
+                      </Typography>
+                    </Box>
+                    <TextField
+                      size="small"
+                      placeholder="Buscar página ou categoria…"
+                      value={buscaPagina}
+                      onChange={(e) => setBuscaPagina(e.target.value)}
+                      InputProps={{ startAdornment: <SearchIcon fontSize="small" sx={{ color: "text.disabled", mr: 1 }} /> }}
+                      sx={{ minWidth: 240 }}
+                    />
+                  </Stack>
+                  <Stack spacing={1.75} mt={2}>
+                    {paginasFiltradas.length === 0 && (
+                      <Typography variant="body2" color="text.secondary" textAlign="center" py={2}>
+                        Nenhuma página encontrada para "{buscaPagina}".
+                      </Typography>
+                    )}
+                    {paginasFiltradas.map((p) => (
                       <PaginaBarRow
                         key={p.chave}
                         titulo={p.titulo}
@@ -645,8 +897,9 @@ const Indicadores = () => {
                         tendencia={calcularTendencia(paginas[p.chave], paginasAnteriores[p.chave])}
                       />
                     ))}
-                </Stack>
-              </Paper>
+                  </Stack>
+                </Paper>
+              </Stack>
             )}
 
             {abaAtiva === "igrejas" && (
