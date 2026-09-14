@@ -151,11 +151,31 @@ const calcularTendencia = (atual, anterior) => {
 // Categorias usadas para agrupar a aba "Páginas do site" — mesmo agrupamento
 // usado no protótipo de cobertura (conteúdo/SEO, cadastro, painel, institucional, erro).
 const CATEGORIAS_CONFIG = {
-  conteudo: { titulo: "Conteúdo & SEO", color: "#3b6fd6" },
-  cadastro: { titulo: "Cadastro & transacional", color: "#d97706" },
-  painel: { titulo: "Painel do responsável", color: "#db2777" },
-  institucional: { titulo: "Institucional & legal", color: "#7c3aed" },
-  erro: { titulo: "Erro / utilitário", color: "#64748b" },
+  conteudo: {
+    titulo: "Conteúdo & SEO",
+    color: "#3b6fd6",
+    descricao: "Páginas de navegação e conteúdo público: home, estado, cidade, cidades, dias, missa agora, intenção do dia, como funciona, minhas igrejas, guia do responsável e entrar.",
+  },
+  cadastro: {
+    titulo: "Cadastro & transacional",
+    color: "#d97706",
+    descricao: "Fluxo de cadastro/edição de igreja e validação: nova igreja, editar igreja, redirect por CEP, enviar código, validar código, anúncios, contribuir e solicitar.",
+  },
+  painel: {
+    titulo: "Painel do responsável",
+    color: "#db2777",
+    descricao: "Área logada de quem administra uma igreja: meu painel e a edição de igreja feita a partir dele.",
+  },
+  institucional: {
+    titulo: "Institucional & legal",
+    color: "#7c3aed",
+    descricao: "Páginas de política e termos: cookies, privacidade e termos de uso.",
+  },
+  erro: {
+    titulo: "Erro / utilitário",
+    color: "#64748b",
+    descricao: "Páginas de diagnóstico, sem valor comercial direto: página não encontrada (404).",
+  },
 };
 
 // Configuração das páginas exibidas na aba "Páginas do site" — chave bate com o
@@ -884,7 +904,12 @@ const Indicadores = () => {
                       <Stack key={c.chave} direction="row" alignItems="center" spacing={1.5}>
                         <Box sx={{ width: 9, height: 9, borderRadius: "50%", bgcolor: c.color, flexShrink: 0 }} />
                         <Box sx={{ width: 190, flexShrink: 0 }}>
-                          <Typography variant="body2" noWrap>{c.titulo}</Typography>
+                          <Stack direction="row" alignItems="center" spacing={0.5}>
+                            <Typography variant="body2" noWrap>{c.titulo}</Typography>
+                            <Tooltip title={c.descricao} arrow>
+                              <InfoOutlinedIcon sx={{ fontSize: 15, color: "action.active", cursor: "help" }} />
+                            </Tooltip>
+                          </Stack>
                           <Typography variant="caption" color="text.secondary">{c.totalPaginas} páginas</Typography>
                         </Box>
                         <Box sx={{ flex: 1, bgcolor: "action.hover", borderRadius: 1, height: 14, overflow: "hidden" }}>
