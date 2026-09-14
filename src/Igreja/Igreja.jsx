@@ -53,6 +53,7 @@ const IgrejaPage = () => {
     hasPreviousPage: false,
     hasNextPage: false,
     totalItems: 0,
+    totalMissas: 0,
   });
   const [searchFilters, setSearchFilters] = useState({
     ativo: false,
@@ -234,6 +235,7 @@ const IgrejaPage = () => {
           hasPreviousPage: resp.hasPreviousPage,
           hasNextPage: resp.hasNextPage,
           totalItems: resp.totalItems,
+          totalMissas: resp.totalMissas,
         });
       })
       .catch((error) => {
@@ -544,7 +546,7 @@ const IgrejaPage = () => {
               <TableFooter>
                 <TableRow>
                   <TableCell colSpan={9} align="right">
-                    Total de registros: {paginacao.totalItems ?? 0}
+                    Total de registros: {paginacao.totalItems ?? 0} · Total de missas: {paginacao.totalMissas ?? 0}
                   </TableCell>
                 </TableRow>
               </TableFooter>
