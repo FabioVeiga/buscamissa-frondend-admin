@@ -21,10 +21,12 @@ export const normalizarIgrejaParaEdicao = (response) => {
     slug: igreja?.slug || "",
     paroco: igreja?.paroco || "",
     missas: igreja?.missas || [],
+    sessoes: igreja?.sessoes || [],
     contato: igreja?.contato || {},
     redesSociais: igreja?.redesSociais || [],
     endereco,
     ativo: igreja?.ativo ?? true,
     imagemUrl: igreja?.imagemUrl || igreja?.imagem || "",
+    temResponsavelAprovado: igreja?.temResponsavelAprovado ?? false,
   };
 };
