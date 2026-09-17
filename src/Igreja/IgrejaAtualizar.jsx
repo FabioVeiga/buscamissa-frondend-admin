@@ -30,6 +30,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useEndereco } from "../Context/EnderecoContext";
 import { useGeocode } from "../hooks/useGeocode";
 import MissaForm from "./Components/MissaForm";
+import SessaoForm from "./Components/SessaoForm";
 import ContatoForm from "./Components/ContatoForm";
 import EnderecoForm from "./Components/EnderecoForm";
 import RedesSociaisSection from "./Components/RedesSociaisSection";
@@ -67,12 +68,14 @@ const IgrejaAtualizar = () => {
     slug: row?.slug || "",
     paroco: row?.paroco || "",
     missas: row?.missas || [],
+    sessoes: row?.sessoes || [],
     contato: row?.contato || criarContatoVazio(),
     redesSociais: row?.redesSociais || [],
     endereco: row?.endereco || row?.dadosEndereco || {},
     ativo: row?.ativo ?? true,
     imagemUrl: row?.imagemUrl || row?.imagem || "",
     emailCriacaoEnviado: row?.emailCriacaoEnviado ?? false,
+    temResponsavelAprovado: row?.temResponsavelAprovado ?? false,
   });
 
   const [formData, setFormData] = useState(() =>
@@ -91,6 +94,7 @@ const IgrejaAtualizar = () => {
   const [message, setMessage] = useState(errorMensage);
   const [confirmarSemMissaAberto, setConfirmarSemMissaAberto] = useState(false);
   const [formDatamissas, setformDataMissas] = useState(state?.row?.missas || []);
+  const [formDataSessoes, setFormDataSessoes] = useState(state?.row?.sessoes || []);
   const [missas, setMissas] = useState([]);
   const [base64, setBase64] = useState("");
   const [fileName, setFileName] = useState("");
@@ -125,6 +129,7 @@ const IgrejaAtualizar = () => {
     setFormData(igrejaNormalizada);
     setFormDataRedeSociais(igrejaNormalizada.redesSociais || []);
     setformDataMissas(igrejaNormalizada.missas || []);
+    setFormDataSessoes(igrejaNormalizada.sessoes || []);
     setEndereco(igrejaNormalizada.endereco || {});
     setBase64("");
     setFileName("");
@@ -317,11 +322,13 @@ const IgrejaAtualizar = () => {
       slug: igreja?.slug || "",
       paroco: igreja?.paroco || "",
       missas: igreja?.missas || [],
+      sessoes: igreja?.sessoes || [],
       contato: igreja?.contato || criarContatoVazio(),
       redesSociais: igreja?.redesSociais || [],
       endereco,
       ativo: igreja?.ativo ?? true,
       imagemUrl: igreja?.imagemUrl || igreja?.imagem || "",
+      temResponsavelAprovado: igreja?.temResponsavelAprovado ?? false,
     };
   };
   
@@ -579,6 +586,13 @@ const IgrejaAtualizar = () => {
       endereco: enderecoSanitizado,
       ativo: formData?.ativo ?? false,
     };
+
+    // Só envia sessões quando a seção está habilitada (igreja com responsável
+    // aprovado) — o backend também valida isso, mas evitamos mandar um campo
+    // que nem apareceu na tela.
+    if (formData?.temResponsavelAprovado) {
+      req.sessoes = formDataSessoes;
+    }
 
     // Apenas incluir imagem se foi alterada
     if (imagemAlterada) {
@@ -1014,6 +1028,15 @@ const IgrejaAtualizar = () => {
             setMissas={setformDataMissas}
             onError={handleShowError}
         />
+
+        {/* Secretaria/confissão — só quando a igreja já tem responsável aprovado */}
+        {formData?.temResponsavelAprovado && (
+          <SessaoForm
+              sessoes={formDataSessoes}
+              setSessoes={setFormDataSessoes}
+              onError={handleShowError}
+          />
+        )}
 
         <ContatoForm
             contato={formData.contato}
