@@ -27,6 +27,8 @@ import { Delete, Add, ExpandMore, ExpandLess, DeleteSweep } from "@mui/icons-mat
 import { diasDaSemana, formatarHorario, apenasNumeros } from "../../utils";
 import SectionCard from "./SectionCard";
 
+const OBSERVACAO_MAX = 50;
+
 const OBSERVACOES_ATALHO = ["1º do mês", "Última do mês", "Pelos falecidos", "Pelas almas", "Novena"];
 
 const MissaForm = ({ missas = [], setMissas, onError }) => {
@@ -86,6 +88,11 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
 
         if (!horario || diaSemana.length === 0) {
             onError?.("Os campos Horário e pelo menos um Dia da Semana são obrigatórios!");
+            return;
+        }
+
+        if ((observacao ?? "").length > OBSERVACAO_MAX) {
+            onError?.(`A observação da missa excede o limite de ${OBSERVACAO_MAX} caracteres.`);
             return;
         }
 
@@ -317,6 +324,8 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                         label="Observação"
                         value={novaMissa.observacao}
                         onChange={(e) => handleChange("observacao", e.target.value)}
+                        error={novaMissa.observacao.length > OBSERVACAO_MAX}
+                        helperText={`${novaMissa.observacao.length}/${OBSERVACAO_MAX}`}
                         fullWidth
                         multiline
                         minRows={2}
