@@ -87,6 +87,17 @@ const BlocoDados = ({ titulo, dados }) => (
       <Stack spacing={1}>
         {dados.nome && <Typography variant="body2"><strong>Nome:</strong> {dados.nome}</Typography>}
         <Typography variant="body2"><strong>Pároco:</strong> {dados.paroco || "-"}</Typography>
+        <Typography variant="body2" fontWeight={600}>Foto:</Typography>
+        {dados.imagemUrl ? (
+          <Box
+            component="img"
+            src={dados.imagemUrl}
+            alt={`Foto ${titulo.toLowerCase()}`}
+            sx={{ maxWidth: "100%", maxHeight: 220, objectFit: "contain", borderRadius: 1, border: 1, borderColor: "divider" }}
+          />
+        ) : (
+          <Typography variant="body2" color="text.secondary">{titulo === "Proposto" ? "Sem alteração de foto" : "Sem foto"}</Typography>
+        )}
         {dados.endereco && (
           <Typography variant="body2">
             <strong>Endereço:</strong> {[dados.endereco.logradouro, dados.endereco.bairro, dados.endereco.localidade, dados.endereco.uf].filter(Boolean).join(", ")}

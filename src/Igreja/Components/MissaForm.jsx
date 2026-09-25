@@ -27,7 +27,7 @@ import { Delete, Add, ExpandMore, ExpandLess, DeleteSweep } from "@mui/icons-mat
 import { diasDaSemana, formatarHorario, apenasNumeros } from "../../utils";
 import SectionCard from "./SectionCard";
 
-const OBSERVACAO_MAX = 50;
+const OBSERVACAO_MAX = 20;
 
 const OBSERVACOES_ATALHO = ["1º do mês", "Última do mês", "Pelos falecidos", "Pelas almas", "Novena"];
 
