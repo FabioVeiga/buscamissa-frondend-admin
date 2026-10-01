@@ -150,7 +150,7 @@ const IgrejaDetalheModal = ({ open, handleClose, igrejaId }) => {
                   )}
                   {(igreja?.missas || []).filter((missa) => !ehSemanal(missa)).map((missa, i) => (
                     <TableRow key={`fixo-${i}`}>
-                      <TableCell>Dia fixo do mês</TableCell>
+                      <TableCell>Mensal</TableCell>
                       <TableCell>
                         {descrever(missa)}
                         {missa.observacao ? ` (${missa.observacao})` : ""}

@@ -244,7 +244,7 @@ const Aprovacoes = () => {
         imagem: null,
         missas: (dados.dadosPropostos?.missas || []).map((m) => ({
           diaSemana: m.diaSemana, horario: m.horario, observacao: m.observacao,
-          tipoRecorrencia: m.tipoRecorrencia, diaDoMes: m.diaDoMes, diasSemanaExcecao: m.diasSemanaExcecao,
+          tipoRecorrencia: m.tipoRecorrencia, diaDoMes: m.diaDoMes, diasSemanaExcecao: m.diasSemanaExcecao, semanasDoMes: m.semanasDoMes,
         })),
       });
       setAjustarAberto(true);
