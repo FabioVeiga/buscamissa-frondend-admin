@@ -1,4 +1,5 @@
 /* eslint-disable react/prop-types */
+import { descrever, ehSemanal } from "../recorrenciaMissa";
 import { useCallback, useEffect, useState } from "react";
 import {
   Box,
@@ -107,7 +108,10 @@ const BlocoDados = ({ titulo, dados }) => (
         {dados.missas?.length > 0 ? (
           dados.missas.map((m, i) => (
             <Typography key={i} variant="body2" color="text.secondary">
-              {diasDaSemana.find((d) => d.value === m.diaSemana)?.label || m.diaSemana} às {m.horario}{m.observacao ? ` — ${m.observacao}` : ""}
+              {ehSemanal(m)
+                ? `${diasDaSemana.find((d) => d.value === m.diaSemana)?.label || m.diaSemana} às ${m.horario}`
+                : m.descricaoRecorrencia || descrever(m)}
+              {m.observacao ? ` — ${m.observacao}` : ""}
             </Typography>
           ))
         ) : (
@@ -240,6 +244,7 @@ const Aprovacoes = () => {
         imagem: null,
         missas: (dados.dadosPropostos?.missas || []).map((m) => ({
           diaSemana: m.diaSemana, horario: m.horario, observacao: m.observacao,
+          tipoRecorrencia: m.tipoRecorrencia, diaDoMes: m.diaDoMes, diasSemanaExcecao: m.diasSemanaExcecao, semanasDoMes: m.semanasDoMes,
         })),
       });
       setAjustarAberto(true);
