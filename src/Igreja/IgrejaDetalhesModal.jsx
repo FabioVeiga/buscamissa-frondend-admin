@@ -1,4 +1,5 @@
 /* eslint-disable react/prop-types */
+import { descrever, ehSemanal } from "../recorrenciaMissa";
 import { useEffect, useState } from "react";
 import {
   Modal,
@@ -59,7 +60,7 @@ const IgrejaDetalheModal = ({ open, handleClose, igrejaId }) => {
   // Agrupa as missas por dia da semana
   const missasPorDia = {};
   if (igreja?.missas?.length > 0) {
-    igreja.missas.forEach((missa) => {
+    igreja.missas.filter((missa) => ehSemanal(missa)).forEach((missa) => {
       if (!missasPorDia[missa.diaSemana]) {
         missasPorDia[missa.diaSemana] = [];
       }
@@ -147,6 +148,15 @@ const IgrejaDetalheModal = ({ open, handleClose, igrejaId }) => {
                       </TableRow>
                     ) : null
                   )}
+                  {(igreja?.missas || []).filter((missa) => !ehSemanal(missa)).map((missa, i) => (
+                    <TableRow key={`fixo-${i}`}>
+                      <TableCell>Dia fixo do mês</TableCell>
+                      <TableCell>
+                        {descrever(missa)}
+                        {missa.observacao ? ` (${missa.observacao})` : ""}
+                      </TableCell>
+                    </TableRow>
+                  ))}
                   {(!igreja?.missas || igreja.missas.length === 0) && (
                     <TableRow>
                       <TableCell colSpan={2}>

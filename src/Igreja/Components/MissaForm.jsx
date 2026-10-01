@@ -24,6 +24,16 @@ import {
     Tooltip,
 } from "@mui/material";
 import { Delete, Add, ExpandMore, ExpandLess, DeleteSweep } from "@mui/icons-material";
+import { ToggleButton, ToggleButtonGroup } from "@mui/material";
+import {
+    TIPO_RECORRENCIA,
+    EXCECAO_DOMINGO,
+    EXCECAO_SABADO,
+    chaveMissa,
+    descrever,
+    ehSemanal,
+    validarDiaFixo,
+} from "../../recorrenciaMissa";
 import { diasDaSemana, formatarHorario, apenasNumeros } from "../../utils";
 import SectionCard from "./SectionCard";
 
@@ -32,7 +42,18 @@ const OBSERVACAO_MAX = 20;
 const OBSERVACOES_ATALHO = ["1º do mês", "Última do mês", "Pelos falecidos", "Pelas almas", "Novena"];
 
 const MissaForm = ({ missas = [], setMissas, onError }) => {
-    const [novaMissa, setNovaMissa] = useState({ horario: "", diaSemana: [], observacao: "" });
+    const NOVA_MISSA_VAZIA = {
+        horario: "",
+        diaSemana: [],
+        observacao: "",
+        tipoRecorrencia: TIPO_RECORRENCIA.Semanal,
+        diaDoMes: "",
+        excecaoSabado: false,
+        excecaoDomingo: false,
+    };
+    const [novaMissa, setNovaMissa] = useState(NOVA_MISSA_VAZIA);
+    const ehDiaFixo = novaMissa.tipoRecorrencia === TIPO_RECORRENCIA.DiaDoMes;
+    const excecaoNova = (novaMissa.excecaoSabado ? EXCECAO_SABADO : 0) | (novaMissa.excecaoDomingo ? EXCECAO_DOMINGO : 0);
     const [apoio, setApoio] = useState("");
     const horarioRef = useRef(null);
 
@@ -81,10 +102,15 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
     // erro do backend, já ignora aqui a combinação que já existe — silencioso,
     // sem travar o fluxo do usuário.
     const jaExisteMissa = (lista, diaSemana, horario) =>
-        lista.some((m) => Number(m.diaSemana) === Number(diaSemana) && m.horario === horario);
+        lista.some((m) => ehSemanal(m) && Number(m.diaSemana) === Number(diaSemana) && m.horario === horario);
 
     const handleAddMissa = () => {
         const { horario, diaSemana, observacao } = novaMissa;
+
+        if (ehDiaFixo) {
+            handleAddMissaDiaFixo();
+            return;
+        }
 
         if (!horario || diaSemana.length === 0) {
             onError?.("Os campos Horário e pelo menos um Dia da Semana são obrigatórios!");
@@ -108,7 +134,38 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                 }));
             return [...prev, ...novasMissas];
         });
-        setNovaMissa({ horario: "", diaSemana: [], observacao: "" });
+        setNovaMissa(NOVA_MISSA_VAZIA);
+        horarioRef.current?.focus();
+    };
+
+    // Dia fixo do mês ("todo dia 13"): uma missa só, sem dia da semana.
+    const handleAddMissaDiaFixo = () => {
+        const { horario, observacao, diaDoMes } = novaMissa;
+
+        if (!horario) {
+            onError?.("O campo Horário é obrigatório!");
+            return;
+        }
+        const erro = validarDiaFixo(diaDoMes, excecaoNova);
+        if (erro) {
+            onError?.(erro);
+            return;
+        }
+        if ((observacao ?? "").length > OBSERVACAO_MAX) {
+            onError?.(`A observação da missa excede o limite de ${OBSERVACAO_MAX} caracteres.`);
+            return;
+        }
+
+        const nova = {
+            horario: apenasNumeros(horario),
+            diaSemana: 0, // ignorado no dia fixo
+            observacao,
+            tipoRecorrencia: TIPO_RECORRENCIA.DiaDoMes,
+            diaDoMes: Number(diaDoMes),
+            diasSemanaExcecao: excecaoNova || null,
+        };
+        setMissas((prev) => (prev.some((m) => chaveMissa(m) === chaveMissa(nova)) ? prev : [...prev, nova]));
+        setNovaMissa({ ...NOVA_MISSA_VAZIA, tipoRecorrencia: TIPO_RECORRENCIA.DiaDoMes });
         horarioRef.current?.focus();
     };
 
@@ -276,6 +333,62 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                 </Collapse>
 
                 <Box display="flex" flexDirection="column" gap={0.75}>
+                    <Typography variant="subtitle2" fontWeight={600}>
+                        Frequência
+                    </Typography>
+                    <ToggleButtonGroup
+                        exclusive
+                        size="small"
+                        color="primary"
+                        value={novaMissa.tipoRecorrencia}
+                        onChange={(_, valor) => valor !== null && handleChange("tipoRecorrencia", valor)}
+                    >
+                        <ToggleButton value={TIPO_RECORRENCIA.Semanal}>Toda semana</ToggleButton>
+                        <ToggleButton value={TIPO_RECORRENCIA.DiaDoMes}>Dia fixo do mês</ToggleButton>
+                    </ToggleButtonGroup>
+                </Box>
+
+                {ehDiaFixo && (
+                    <Box display="flex" flexDirection="column" gap={0.75}>
+                        <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
+                            <TextField
+                                label="Dia do mês"
+                                type="number"
+                                value={novaMissa.diaDoMes}
+                                onChange={(e) => handleChange("diaDoMes", e.target.value)}
+                                inputProps={{ min: 1, max: 31 }}
+                                sx={{ width: 130 }}
+                            />
+                            <Typography variant="body2" color="text.secondary">
+                                Não ocorre se cair em:
+                            </Typography>
+                            <FormControlLabel
+                                control={<Checkbox checked={novaMissa.excecaoSabado} onChange={(e) => handleChange("excecaoSabado", e.target.checked)} />}
+                                label="Sábado"
+                            />
+                            <FormControlLabel
+                                control={<Checkbox checked={novaMissa.excecaoDomingo} onChange={(e) => handleChange("excecaoDomingo", e.target.checked)} />}
+                                label="Domingo"
+                            />
+                        </Box>
+                        {novaMissa.horario && novaMissa.diaDoMes && (
+                            <Typography variant="body2" color="primary">
+                                Prévia: {descrever({
+                                    horario: novaMissa.horario,
+                                    tipoRecorrencia: TIPO_RECORRENCIA.DiaDoMes,
+                                    diaDoMes: novaMissa.diaDoMes,
+                                    diasSemanaExcecao: excecaoNova,
+                                })}
+                            </Typography>
+                        )}
+                        <Typography variant="caption" color="text.secondary">
+                            Em meses sem esse dia (ex.: dia 31 em abril) a missa não acontece.
+                        </Typography>
+                    </Box>
+                )}
+
+                {!ehDiaFixo && (
+                <Box display="flex" flexDirection="column" gap={0.75}>
                     <Stack direction="row" alignItems="center" spacing={1.5}>
                         <Typography variant="subtitle2" fontWeight={600}>
                             Dias da Semana
@@ -318,6 +431,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                         </Stack>
                     )}
                 </Box>
+                )}
 
                 <Box display="flex" flexDirection="column" gap={0.75}>
                     <TextField
@@ -407,7 +521,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                                     {diasDaSemana.map((dia) => {
                                         const missasDoDia = missas
                                             .map((missa, index) => ({ missa, index }))
-                                            .filter(({ missa }) => Number(missa.diaSemana) === dia.value);
+                                            .filter(({ missa }) => ehSemanal(missa) && Number(missa.diaSemana) === dia.value);
 
                                         if (missasDoDia.length === 0) return null;
 
@@ -441,6 +555,39 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                                             </React.Fragment>
                                         );
                                     })}
+                                    {missas.some((m) => !ehSemanal(m)) && (
+                                        <React.Fragment key="grupo-dia-fixo">
+                                            <TableRow>
+                                                <TableCell colSpan={4} sx={{ backgroundColor: "grey.50", py: 0.5 }}>
+                                                    <Typography variant="caption" fontWeight={700}>
+                                                        Dia fixo do mês
+                                                    </Typography>
+                                                </TableCell>
+                                            </TableRow>
+                                            {missas
+                                                .map((missa, index) => ({ missa, index }))
+                                                .filter(({ missa }) => !ehSemanal(missa))
+                                                .sort((a, b) => Number(a.missa.diaDoMes) - Number(b.missa.diaDoMes))
+                                                .map(({ missa, index }) => (
+                                                    <TableRow key={`fixo-${missa.diaDoMes}-${missa.horario}-${index}`} hover selected={selecionadas.includes(index)}>
+                                                        <TableCell padding="checkbox">
+                                                            <Checkbox
+                                                                size="small"
+                                                                checked={selecionadas.includes(index)}
+                                                                onChange={() => handleToggleSelecionada(index)}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>{descrever(missa)}</TableCell>
+                                                        <TableCell>{missa.observacao || "Sem observação"}</TableCell>
+                                                        <TableCell align="center">
+                                                            <IconButton color="error" onClick={() => handleDeleteMissa(index)}>
+                                                                <Delete />
+                                                            </IconButton>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                        </React.Fragment>
+                                    )}
                                 </TableBody>
                             </Table>
                         </TableContainer>

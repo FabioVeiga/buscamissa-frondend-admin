@@ -1,3 +1,4 @@
+import { chaveMissa } from "./recorrenciaMissa";
 // utils.js
 
 /**
@@ -157,7 +158,7 @@ export const formatarErroApi = (erros) => {
 export const removerMissasDuplicadas = (missas) => {
   const vistos = new Set();
   return (missas || []).filter((m) => {
-    const chave = `${Number(m.diaSemana)}|${m.horario}`;
+    const chave = chaveMissa(m);
     if (vistos.has(chave)) return false;
     vistos.add(chave);
     return true;
