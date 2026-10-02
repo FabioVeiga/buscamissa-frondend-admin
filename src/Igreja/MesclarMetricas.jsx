@@ -166,10 +166,11 @@ const MesclarMetricas = () => {
 
     setDeleteLoading(true);
     api
-      .delete(`/api/v1/Admin/igreja/deletar/${mesclagemConcluida.id}`)
+      // desativar=true: a perdedora também fica inativa (não volta ativa se for restaurada).
+      .delete(`/api/v1/Admin/igreja/deletar/${mesclagemConcluida.id}`, { params: { desativar: true } })
       .then(() => {
         setMessage({
-          mensagem: `Igreja perdedora (#${mesclagemConcluida.id}) excluída com sucesso!`,
+          mensagem: `Igreja perdedora (#${mesclagemConcluida.id}) excluída e desativada com sucesso!`,
           severity: "success",
           show: true,
         });
@@ -277,9 +278,9 @@ const MesclarMetricas = () => {
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     As métricas de <strong>{mesclagemConcluida.nome}</strong> (#{mesclagemConcluida.id}) já foram
-                    movidas para a vencedora. Você pode excluí-la agora (soft delete — fica oculta do site
-                    público, mas os dados são mantidos e a exclusão pode ser desfeita depois pela tela de
-                    Igrejas).
+                    movidas para a vencedora. Você pode excluí-la agora: ela também é <strong>desativada</strong>
+                    (soft delete — fica oculta do site público, mas os dados são mantidos; a exclusão pode ser
+                    desfeita pela tela de Igrejas, e aí ela volta inativa).
                   </Typography>
                   <Stack direction="row" spacing={1.5}>
                     <Button
@@ -288,7 +289,7 @@ const MesclarMetricas = () => {
                       onClick={() => setDeleteModalOpen(true)}
                       disabled={deleteLoading}
                     >
-                      Excluir igreja perdedora
+                      Excluir e desativar igreja perdedora
                     </Button>
                     <Button variant="outlined" onClick={handleNovaMesclagem} disabled={deleteLoading}>
                       Não, fazer nova mesclagem
