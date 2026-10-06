@@ -154,7 +154,7 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                     />
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={12}>
                     <TextField
                         label="Website"
                         value={contato.website || ""}
