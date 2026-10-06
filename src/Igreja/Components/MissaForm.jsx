@@ -12,18 +12,16 @@ import {
     Paper,
     Typography,
     IconButton,
-    FormGroup,
     FormControlLabel,
     Checkbox,
     Chip,
     Stack,
-    Collapse,
     Select,
     MenuItem,
     Divider,
     Tooltip,
 } from "@mui/material";
-import { Delete, Add, ExpandMore, ExpandLess, DeleteSweep } from "@mui/icons-material";
+import { Delete, Add, DeleteSweep } from "@mui/icons-material";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import {
     TIPO_RECORRENCIA,
@@ -47,6 +45,7 @@ const OBSERVACOES_ATALHO = ["1º do mês", "Última do mês", "Pelos falecidos",
 const MissaForm = ({ missas = [], setMissas, onError }) => {
     const NOVA_MISSA_VAZIA = {
         horario: "",
+        horarios: [],
         diaSemana: [],
         observacao: "",
         tipoRecorrencia: TIPO_RECORRENCIA.Semanal,
@@ -61,31 +60,34 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
     const ehOcorrencia = novaMissa.tipoRecorrencia === TIPO_RECORRENCIA.OcorrenciaNoMes;
     const ehSemanalNova = novaMissa.tipoRecorrencia === TIPO_RECORRENCIA.Semanal;
 
+    // Horários já incluídos como chip + o que está digitado no campo (se houver):
+    // um horário só continua sendo um clique em "Adicionar".
+    const horariosEfetivos =
+        novaMissa.horario && !novaMissa.horarios.includes(novaMissa.horario)
+            ? [...novaMissa.horarios, novaMissa.horario]
+            : novaMissa.horarios;
+
     // Aviso (não bloqueia): mesma missa cadastrada como semanal e como "1ª sexta".
     const alertaConflito = (() => {
-        if (!novaMissa.horario) return null;
         if (ehOcorrencia)
-            return alertaConflitoSemanal(missas, {
-                tipoRecorrencia: TIPO_RECORRENCIA.OcorrenciaNoMes,
-                diaSemana: novaMissa.diaOcorrencia,
-                horario: novaMissa.horario,
-            });
+            return horariosEfetivos
+                .map((horario) =>
+                    alertaConflitoSemanal(missas, {
+                        tipoRecorrencia: TIPO_RECORRENCIA.OcorrenciaNoMes,
+                        diaSemana: novaMissa.diaOcorrencia,
+                        horario,
+                    })
+                )
+                .find(Boolean) ?? null;
         if (ehSemanalNova)
             return novaMissa.diaSemana
-                .map((dia) => alertaConflitoSemanal(missas, { diaSemana: dia, horario: novaMissa.horario }))
+                .flatMap((dia) => horariosEfetivos.map((horario) => alertaConflitoSemanal(missas, { diaSemana: dia, horario })))
                 .find(Boolean) ?? null;
         return null;
     })();
     const excecaoNova = (novaMissa.excecaoSabado ? EXCECAO_SABADO : 0) | (novaMissa.excecaoDomingo ? EXCECAO_DOMINGO : 0);
     const [apoio, setApoio] = useState("");
     const horarioRef = useRef(null);
-
-    // Múltiplos horários
-    const [multiOpen, setMultiOpen] = useState(false);
-    const [multiDia, setMultiDia] = useState(0); // Domingo
-    const [multiHorario, setMultiHorario] = useState("");
-    const [multiHorarios, setMultiHorarios] = useState([]);
-    const multiHorarioRef = useRef(null);
 
     // Seleção múltipla para deletar em lote
     const [selecionadas, setSelecionadas] = useState([]);
@@ -112,12 +114,6 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
         setNovaMissa((prev) => ({ ...prev, diaSemana: dias }));
     };
 
-    const handleEnterAdiciona = (e) => {
-        if (e.key !== "Enter") return;
-        e.preventDefault();
-        handleAddMissa();
-    };
-
     const handleToggleDiaSemana = (dia) => {
         setNovaMissa((prev) => {
             const { diaSemana } = prev;
@@ -128,8 +124,32 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
         });
     };
 
-    const getDiaLabel = (diaValue) => {
-        return diasDaSemana.find((dia) => dia.value === diaValue || dia.value === Number(diaValue))?.label || "";
+    // Passa o horário digitado para a lista de chips (sem duplicar) e mantém o foco no campo.
+    const handleIncluirHorario = () => {
+        setNovaMissa((prev) => {
+            if (!prev.horario) return prev;
+            const horarios = prev.horarios.includes(prev.horario) ? prev.horarios : [...prev.horarios, prev.horario];
+            return { ...prev, horarios: [...horarios].sort(), horario: "" };
+        });
+        horarioRef.current?.focus();
+    };
+
+    const handleRemoverHorario = (horario) => {
+        setNovaMissa((prev) => ({ ...prev, horarios: prev.horarios.filter((h) => h !== horario) }));
+    };
+
+    // Enter no campo de horário inclui o chip; Enter com o campo vazio adiciona as missas.
+    const handleEnterHorario = (e) => {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        if (novaMissa.horario) handleIncluirHorario();
+        else if (novaMissa.horarios.length > 0) handleAddMissa();
+    };
+
+    const handleEnterAdiciona = (e) => {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        handleAddMissa();
     };
 
     // Ao invés de deixar duplicar (dia, horário) e só barrar no salvar com um
@@ -138,9 +158,28 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
     const jaExisteMissa = (lista, diaSemana, horario) =>
         lista.some((m) => ehSemanal(m) && Number(m.diaSemana) === Number(diaSemana) && m.horario === horario);
 
-    const handleAddMissa = () => {
-        const { horario, diaSemana, observacao } = novaMissa;
+    const totalMissasNovas = ehSemanalNova
+        ? novaMissa.diaSemana.length * horariosEfetivos.length
+        : horariosEfetivos.length;
 
+    const validarComum = () => {
+        if (horariosEfetivos.length === 0) {
+            onError?.("Informe pelo menos um Horário!");
+            return false;
+        }
+        if ((novaMissa.observacao ?? "").length > OBSERVACAO_MAX) {
+            onError?.(`A observação da missa excede o limite de ${OBSERVACAO_MAX} caracteres.`);
+            return false;
+        }
+        return true;
+    };
+
+    const limparAposAdicionar = () => {
+        setNovaMissa({ ...NOVA_MISSA_VAZIA, tipoRecorrencia: novaMissa.tipoRecorrencia });
+        horarioRef.current?.focus();
+    };
+
+    const handleAddMissa = () => {
         if (ehDiaFixo) {
             handleAddMissaDiaFixo();
             return;
@@ -150,93 +189,71 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
             return;
         }
 
-        if (!horario || diaSemana.length === 0) {
-            onError?.("Os campos Horário e pelo menos um Dia da Semana são obrigatórios!");
+        if (horariosEfetivos.length === 0 || novaMissa.diaSemana.length === 0) {
+            onError?.("Informe pelo menos um Horário e um Dia da Semana!");
             return;
         }
+        if (!validarComum()) return;
 
-        if ((observacao ?? "").length > OBSERVACAO_MAX) {
-            onError?.(`A observação da missa excede o limite de ${OBSERVACAO_MAX} caracteres.`);
-            return;
-        }
-
-        const horarioDigits = apenasNumeros(horario);
+        const horariosDigits = horariosEfetivos.map((h) => apenasNumeros(h));
+        const { observacao } = novaMissa;
 
         setMissas((prev) => {
-            const novasMissas = diaSemana
-                .filter((dia) => !jaExisteMissa(prev, dia, horarioDigits))
-                .map((dia) => ({
-                    horario: horarioDigits,
-                    diaSemana: dia,
-                    observacao,
-                }));
+            const novasMissas = novaMissa.diaSemana.flatMap((dia) =>
+                horariosDigits
+                    .filter((horario) => !jaExisteMissa(prev, dia, horario))
+                    .map((horario) => ({ horario, diaSemana: dia, observacao }))
+            );
             return [...prev, ...novasMissas];
         });
-        setNovaMissa(NOVA_MISSA_VAZIA);
-        horarioRef.current?.focus();
+        limparAposAdicionar();
     };
 
-    // Ocorrência no mês ("1ª e 3ª sexta"): uma missa só, com dia da semana + semanas.
+    // Ocorrência no mês ("1ª e 3ª sexta"): uma missa por horário, com dia da semana + semanas.
     const handleAddMissaOcorrencia = () => {
-        const { horario, observacao, diaOcorrencia, semanasDoMes } = novaMissa;
+        const { observacao, diaOcorrencia, semanasDoMes } = novaMissa;
 
-        if (!horario) {
-            onError?.("O campo Horário é obrigatório!");
-            return;
-        }
+        if (!validarComum()) return;
         const erro = validarOcorrencia(diaOcorrencia, semanasDoMes);
         if (erro) {
             onError?.(erro);
             return;
         }
-        if ((observacao ?? "").length > OBSERVACAO_MAX) {
-            onError?.(`A observação da missa excede o limite de ${OBSERVACAO_MAX} caracteres.`);
-            return;
-        }
 
-        const nova = {
+        const novas = horariosEfetivos.map((horario) => ({
             horario: apenasNumeros(horario),
             diaSemana: Number(diaOcorrencia),
             observacao,
             tipoRecorrencia: TIPO_RECORRENCIA.OcorrenciaNoMes,
             semanasDoMes: Number(semanasDoMes),
-        };
-        setMissas((prev) => (prev.some((m) => chaveMissa(m) === chaveMissa(nova)) ? prev : [...prev, nova]));
-        setNovaMissa({ ...NOVA_MISSA_VAZIA, tipoRecorrencia: TIPO_RECORRENCIA.OcorrenciaNoMes });
-        horarioRef.current?.focus();
+        }));
+        setMissas((prev) => [...prev, ...novas.filter((nova) => !prev.some((m) => chaveMissa(m) === chaveMissa(nova)))]);
+        limparAposAdicionar();
     };
 
     const toggleSemana = (bit) => handleChange("semanasDoMes", (Number(novaMissa.semanasDoMes) || 0) ^ bit);
 
-    // Dia fixo do mês ("todo dia 13"): uma missa só, sem dia da semana.
+    // Dia fixo do mês ("todo dia 13"): uma missa por horário, sem dia da semana.
     const handleAddMissaDiaFixo = () => {
-        const { horario, observacao, diaDoMes } = novaMissa;
+        const { observacao, diaDoMes } = novaMissa;
 
-        if (!horario) {
-            onError?.("O campo Horário é obrigatório!");
-            return;
-        }
+        if (!validarComum()) return;
         const erro = validarDiaFixo(diaDoMes, excecaoNova);
         if (erro) {
             onError?.(erro);
             return;
         }
-        if ((observacao ?? "").length > OBSERVACAO_MAX) {
-            onError?.(`A observação da missa excede o limite de ${OBSERVACAO_MAX} caracteres.`);
-            return;
-        }
 
-        const nova = {
+        const novas = horariosEfetivos.map((horario) => ({
             horario: apenasNumeros(horario),
             diaSemana: 0, // ignorado no dia fixo
             observacao,
             tipoRecorrencia: TIPO_RECORRENCIA.DiaDoMes,
             diaDoMes: Number(diaDoMes),
             diasSemanaExcecao: excecaoNova || null,
-        };
-        setMissas((prev) => (prev.some((m) => chaveMissa(m) === chaveMissa(nova)) ? prev : [...prev, nova]));
-        setNovaMissa({ ...NOVA_MISSA_VAZIA, tipoRecorrencia: TIPO_RECORRENCIA.DiaDoMes });
-        horarioRef.current?.focus();
+        }));
+        setMissas((prev) => [...prev, ...novas.filter((nova) => !prev.some((m) => chaveMissa(m) === chaveMissa(nova)))]);
+        limparAposAdicionar();
     };
 
     const handleDeleteMissa = (indexToDelete) => {
@@ -264,148 +281,23 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
         setSelecionadas([]);
     };
 
-    const handleAdicionarMultiHorario = () => {
-        if (!multiHorario) return;
-        if (multiHorarios.includes(multiHorario)) return;
-        setMultiHorarios((prev) => [...prev, multiHorario]);
-        setMultiHorario("");
-        multiHorarioRef.current?.focus();
-    };
-
-    const handleConfirmarMultiHorarios = () => {
-        if (multiHorarios.length === 0) {
-            onError?.("Adicione ao menos um horário.");
-            return;
-        }
-        setMissas((prev) => {
-            const novasMissas = multiHorarios
-                .map((h) => apenasNumeros(h))
-                .filter((horarioDigits) => !jaExisteMissa(prev, multiDia, horarioDigits))
-                .map((horarioDigits) => ({
-                    horario: horarioDigits,
-                    diaSemana: multiDia,
-                    observacao: "",
-                }));
-            return [...prev, ...novasMissas];
-        });
-        setMultiHorarios([]);
-        setMultiHorario("");
-        setMultiOpen(false);
-    };
-
-    const handleCancelarMulti = () => {
-        setMultiHorarios([]);
-        setMultiHorario("");
-        setMultiOpen(false);
-    };
+    const resumoMissas =
+        totalMissasNovas > 0
+            ? ehSemanalNova
+                ? `Vai criar ${totalMissasNovas} missa(s): ${novaMissa.diaSemana.length} dia(s) × ${horariosEfetivos.length} horário(s)`
+                : `Vai criar ${totalMissasNovas} missa(s)`
+            : "Escolha os dias e informe os horários";
 
     return (
         <SectionCard
             title="Missas"
-            subtitle="Cadastre os horários das missas. Você pode selecionar vários dias para o mesmo horário."
+            subtitle="Escolha a frequência, os dias e os horários. Você pode incluir vários horários de uma vez."
         >
-            <Box display="flex" flexDirection="column" gap={1.5}>
-                {/* Formulário padrão */}
-                <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
-                    <TextField
-                        label="Horário"
-                        type="time"
-                        inputRef={horarioRef}
-                        value={novaMissa.horario}
-                        onChange={(e) => handleChange("horario", e.target.value)}
-                        onKeyDown={handleEnterAdiciona}
-                        sx={{ width: 150 }}
-                        InputLabelProps={{ shrink: true }}
-                        inputProps={{ step: 900 }}
-                    />
-                    <Button variant="contained" color="primary" onClick={handleAddMissa} sx={{ whiteSpace: "nowrap" }}>
-                        Adicionar Missa
-                    </Button>
-                    <Tooltip title="Adicionar múltiplos horários para um dia">
-                        <Button
-                            variant="outlined"
-                            color="secondary"
-                            onClick={() => setMultiOpen((prev) => !prev)}
-                            endIcon={multiOpen ? <ExpandLess /> : <ExpandMore />}
-                            sx={{ whiteSpace: "nowrap" }}
-                        >
-                            Múltiplos horários
-                        </Button>
-                    </Tooltip>
-                </Box>
-
-                {/* Painel de múltiplos horários */}
-                <Collapse in={multiOpen}>
-                    <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
-                        <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5 }}>
-                            Adicionar vários horários para um dia
-                        </Typography>
-
-                        <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
-                            <Select
-                                value={multiDia}
-                                onChange={(e) => setMultiDia(e.target.value)}
-                                size="small"
-                                sx={{ minWidth: 160 }}
-                            >
-                                {diasDaSemana.map((dia) => (
-                                    <MenuItem key={dia.value} value={dia.value}>
-                                        {dia.label}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-
-                            <TextField
-                                label="Horário"
-                                type="time"
-                                inputRef={multiHorarioRef}
-                                value={multiHorario}
-                                onChange={(e) => setMultiHorario(e.target.value)}
-                                sx={{ width: 150 }}
-                                InputLabelProps={{ shrink: true }}
-                                inputProps={{ step: 900 }}
-                                onKeyDown={(e) => e.key === "Enter" && handleAdicionarMultiHorario()}
-                            />
-
-                            <IconButton color="primary" onClick={handleAdicionarMultiHorario} disabled={!multiHorario}>
-                                <Add />
-                            </IconButton>
-                        </Box>
-
-                        {multiHorarios.length > 0 && (
-                            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 1.5 }}>
-                                {multiHorarios.map((h) => (
-                                    <Chip
-                                        key={h}
-                                        label={h}
-                                        color="secondary"
-                                        variant="outlined"
-                                        onDelete={() => setMultiHorarios((prev) => prev.filter((x) => x !== h))}
-                                    />
-                                ))}
-                            </Stack>
-                        )}
-
-                        <Box display="flex" gap={1} sx={{ mt: 2 }}>
-                            <Button variant="outlined" color="inherit" size="small" onClick={handleCancelarMulti}>
-                                Cancelar
-                            </Button>
-                            <Button
-                                variant="contained"
-                                color="secondary"
-                                size="small"
-                                onClick={handleConfirmarMultiHorarios}
-                                disabled={multiHorarios.length === 0}
-                            >
-                                Adicionar {multiHorarios.length > 0 ? `${multiHorarios.length} horário(s)` : ""}
-                            </Button>
-                        </Box>
-                    </Paper>
-                </Collapse>
-
+            <Box display="flex" flexDirection="column" gap={2}>
+                {/* 1. Frequência */}
                 <Box display="flex" flexDirection="column" gap={0.75}>
                     <Typography variant="subtitle2" fontWeight={600}>
-                        Frequência
+                        1. Frequência
                     </Typography>
                     <ToggleButtonGroup
                         exclusive
@@ -420,8 +312,46 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                     </ToggleButtonGroup>
                 </Box>
 
+                {/* 2. Dias */}
+                {ehSemanalNova && (
+                    <Box display="flex" flexDirection="column" gap={0.75}>
+                        <Typography variant="subtitle2" fontWeight={600}>
+                            2. Dias da semana
+                        </Typography>
+                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                            {diasDaSemana.map((dia) => {
+                                const marcado = novaMissa.diaSemana.includes(dia.value);
+                                return (
+                                    <Chip
+                                        key={dia.value}
+                                        label={dia.label.slice(0, 3)}
+                                        color={marcado ? "primary" : "default"}
+                                        variant={marcado ? "filled" : "outlined"}
+                                        onClick={() => handleToggleDiaSemana(dia.value)}
+                                    />
+                                );
+                            })}
+                        </Stack>
+                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                            {ATALHOS_DIAS.map((atalho) => (
+                                <Chip
+                                    key={atalho.label}
+                                    label={atalho.label}
+                                    size="small"
+                                    variant="outlined"
+                                    color="primary"
+                                    onClick={() => handleSelecionarDias(atalho.dias)}
+                                />
+                            ))}
+                        </Stack>
+                    </Box>
+                )}
+
                 {ehOcorrencia && (
                     <Box display="flex" flexDirection="column" gap={0.75}>
+                        <Typography variant="subtitle2" fontWeight={600}>
+                            2. Dia da semana e semanas do mês
+                        </Typography>
                         <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
                             <Select
                                 size="small"
@@ -455,14 +385,18 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                                 />
                             ))}
                         </Box>
-                        {novaMissa.horario && novaMissa.diaOcorrencia !== "" && Number(novaMissa.semanasDoMes) > 0 && (
+                        {horariosEfetivos.length > 0 && novaMissa.diaOcorrencia !== "" && Number(novaMissa.semanasDoMes) > 0 && (
                             <Typography variant="body2" color="primary">
-                                Prévia: {descrever({
-                                    horario: novaMissa.horario,
-                                    tipoRecorrencia: TIPO_RECORRENCIA.OcorrenciaNoMes,
-                                    diaSemana: novaMissa.diaOcorrencia,
-                                    semanasDoMes: novaMissa.semanasDoMes,
-                                })}
+                                Prévia: {horariosEfetivos
+                                    .map((horario) =>
+                                        descrever({
+                                            horario,
+                                            tipoRecorrencia: TIPO_RECORRENCIA.OcorrenciaNoMes,
+                                            diaSemana: novaMissa.diaOcorrencia,
+                                            semanasDoMes: novaMissa.semanasDoMes,
+                                        })
+                                    )
+                                    .join(" · ")}
                             </Typography>
                         )}
                         <Typography variant="caption" color="text.secondary">
@@ -473,6 +407,9 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
 
                 {ehDiaFixo && (
                     <Box display="flex" flexDirection="column" gap={0.75}>
+                        <Typography variant="subtitle2" fontWeight={600}>
+                            2. Dia do mês
+                        </Typography>
                         <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
                             <TextField
                                 label="Dia do mês"
@@ -495,14 +432,18 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                                 label="Domingo"
                             />
                         </Box>
-                        {novaMissa.horario && novaMissa.diaDoMes && (
+                        {horariosEfetivos.length > 0 && novaMissa.diaDoMes && (
                             <Typography variant="body2" color="primary">
-                                Prévia: {descrever({
-                                    horario: novaMissa.horario,
-                                    tipoRecorrencia: TIPO_RECORRENCIA.DiaDoMes,
-                                    diaDoMes: novaMissa.diaDoMes,
-                                    diasSemanaExcecao: excecaoNova,
-                                })}
+                                Prévia: {horariosEfetivos
+                                    .map((horario) =>
+                                        descrever({
+                                            horario,
+                                            tipoRecorrencia: TIPO_RECORRENCIA.DiaDoMes,
+                                            diaDoMes: novaMissa.diaDoMes,
+                                            diasSemanaExcecao: excecaoNova,
+                                        })
+                                    )
+                                    .join(" · ")}
                             </Typography>
                         )}
                         <Typography variant="caption" color="text.secondary">
@@ -511,62 +452,57 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                     </Box>
                 )}
 
+                {/* 3. Horários */}
+                <Box display="flex" flexDirection="column" gap={0.75}>
+                    <Typography variant="subtitle2" fontWeight={600}>
+                        3. Horários
+                    </Typography>
+                    <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                        {novaMissa.horarios.map((horario) => (
+                            <Chip
+                                key={horario}
+                                label={horario}
+                                color="secondary"
+                                variant="outlined"
+                                onDelete={() => handleRemoverHorario(horario)}
+                            />
+                        ))}
+                        <TextField
+                            label="Horário"
+                            type="time"
+                            size="small"
+                            inputRef={horarioRef}
+                            value={novaMissa.horario}
+                            onChange={(e) => handleChange("horario", e.target.value)}
+                            onKeyDown={handleEnterHorario}
+                            sx={{ width: 150 }}
+                            InputLabelProps={{ shrink: true }}
+                            inputProps={{ step: 900 }}
+                        />
+                        <Tooltip title="Incluir outro horário (Enter)">
+                            <span>
+                                <IconButton color="primary" onClick={handleIncluirHorario} disabled={!novaMissa.horario}>
+                                    <Add />
+                                </IconButton>
+                            </span>
+                        </Tooltip>
+                    </Box>
+                    <Typography variant="caption" color="text.secondary">
+                        Digite o horário e tecle Enter para incluir outro. Com o campo vazio, Enter adiciona as missas.
+                    </Typography>
+                </Box>
+
                 {alertaConflito && (
                     <Typography variant="body2" color="warning.main">
                         ⚠ {alertaConflito}
                     </Typography>
                 )}
 
-                {ehSemanalNova && (
+                {/* 4. Observação */}
                 <Box display="flex" flexDirection="column" gap={0.75}>
-                    <Stack direction="row" alignItems="center" spacing={1.5}>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                            Dias da Semana
-                        </Typography>
-                        {ATALHOS_DIAS.map((atalho) => (
-                            <Chip
-                                key={atalho.label}
-                                label={atalho.label}
-                                size="small"
-                                variant="outlined"
-                                color="primary"
-                                onClick={() => handleSelecionarDias(atalho.dias)}
-                            />
-                        ))}
-                    </Stack>
-
-                    <FormGroup row sx={{ gap: 0.5 }}>
-                        {diasDaSemana.map((dia) => (
-                            <FormControlLabel
-                                key={dia.value}
-                                control={
-                                    <Checkbox
-                                        checked={novaMissa.diaSemana.includes(dia.value)}
-                                        onChange={() => handleToggleDiaSemana(dia.value)}
-                                    />
-                                }
-                                label={dia.label}
-                            />
-                        ))}
-                    </FormGroup>
-
-                    {novaMissa.diaSemana.length > 0 && (
-                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                            {novaMissa.diaSemana.map((dia) => (
-                                <Chip
-                                    key={dia}
-                                    label={getDiaLabel(dia)}
-                                    color="primary"
-                                    variant="outlined"
-                                    onDelete={() => handleToggleDiaSemana(dia)}
-                                />
-                            ))}
-                        </Stack>
-                    )}
-                </Box>
-                )}
-
-                <Box display="flex" flexDirection="column" gap={0.75}>
+                    <Typography variant="subtitle2" fontWeight={600}>
+                        4. Observação <Typography component="span" variant="caption" color="text.secondary">(opcional)</Typography>
+                    </Typography>
                     <TextField
                         label="Observação"
                         value={novaMissa.observacao}
@@ -589,6 +525,16 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                             />
                         ))}
                     </Stack>
+                </Box>
+
+                <Divider />
+                <Box display="flex" alignItems="center" justifyContent="space-between" gap={2} flexWrap="wrap">
+                    <Typography variant="body2" color="text.secondary">
+                        {resumoMissas}
+                    </Typography>
+                    <Button variant="contained" color="primary" onClick={handleAddMissa} sx={{ whiteSpace: "nowrap" }}>
+                        {totalMissasNovas > 0 ? `Adicionar ${totalMissasNovas} missa(s)` : "Adicionar missa"}
+                    </Button>
                 </Box>
 
                 <TextField
