@@ -99,13 +99,14 @@ const ContatoForm = ({ contato = {}, onChange }) => {
             title="Contato"
             subtitle="Informe os dados de contato da igreja."
         >
-            <Grid container spacing={2}>
-                <Grid size={12}>
+            <Grid container spacing={1.5}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                         label="Email de Contato"
                         value={contato.emailContato || ""}
                         onChange={(e) => handleChange("emailContato", e.target.value.replace(/\s/g, ""))}
                         fullWidth
+                        size="small"
                         slotProps={{
                             input: {
                                 endAdornment: botaoLimpar(
@@ -117,12 +118,13 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                     />
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextField
                         label="Telefone"
                         value={`${contato.ddd || ""}${contato.telefone || ""}`}
                         onChange={handleTelefoneChange("ddd", "telefone")}
                         fullWidth
+                        size="small"
                         slotProps={{
                             input: {
                                 endAdornment: botaoLimpar(
@@ -134,12 +136,13 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                     />
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextField
                         label="Telefone WhatsApp"
                         value={`${contato.dddWhatsApp || ""}${contato.telefoneWhatsApp || ""}`}
                         onChange={handleTelefoneChange("dddWhatsApp", "telefoneWhatsApp")}
                         fullWidth
+                        size="small"
                         slotProps={{
                             input: {
                                 endAdornment: botaoLimpar(
@@ -151,12 +154,13 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                     />
                 </Grid>
 
-                <Grid size={12}>
+                <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                         label="Website"
                         value={contato.website || ""}
                         onChange={(e) => handleChange("website", e.target.value.trim())}
                         fullWidth
+                        size="small"
                         slotProps={{
                             input: {
                                 endAdornment: contato.website?.trim() && (
