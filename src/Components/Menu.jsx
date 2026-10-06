@@ -437,7 +437,7 @@ const Menu = ({ children }) => {
           flexGrow: 1,
           minWidth: 0,
           width: { xs: "100%", md: `calc(100% - ${drawerWidth}px)` },
-          minHeight: "100vh",
+          height: "100vh",
           display: "flex",
           flexDirection: "column",
           pt: { xs: `${TOP_BAR_HEIGHT}px`, sm: `${TOP_BAR_HEIGHT_SM}px`, md: 0 },
