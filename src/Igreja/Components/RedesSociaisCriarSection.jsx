@@ -1,4 +1,5 @@
 import {
+    Box,
     Button,
     FormControl,
     IconButton,
@@ -28,39 +29,47 @@ const RedesSociaisCriarSection = ({
             title="Redes Sociais"
             subtitle="Adicione os perfis sociais vinculados à igreja."
         >
-            <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel id="tipoRedeSocial-label">
-                    Tipo de Rede Social
-                </InputLabel>
+            <Box display="flex" gap={1.5} flexWrap="wrap" alignItems="flex-start">
+                <FormControl size="small" sx={{ minWidth: 200 }}>
+                    <InputLabel id="tipoRedeSocial-label">
+                        Tipo de Rede Social
+                    </InputLabel>
 
-                <Select
-                    labelId="tipoRedeSocial-label"
-                    label="Tipo de Rede Social"
-                    value={formDataRedeSociais.tipoRedeSocial}
-                    onChange={(e) => onChange("tipoRedeSocial", e.target.value)}
-                >
-                    {redesSociaisDisponiveis.map((redeSocial) => (
-                        <MenuItem key={redeSocial.id} value={redeSocial.id}>
-                            {redeSocial.nome}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
+                    <Select
+                        labelId="tipoRedeSocial-label"
+                        label="Tipo de Rede Social"
+                        value={formDataRedeSociais.tipoRedeSocial}
+                        onChange={(e) => onChange("tipoRedeSocial", e.target.value)}
+                    >
+                        {redesSociaisDisponiveis.map((redeSocial) => (
+                            <MenuItem key={redeSocial.id} value={redeSocial.id}>
+                                {redeSocial.nome}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
 
-            <TextField
-                label="Nome do Perfil"
-                value={formDataRedeSociais.nomeDoPerfil}
-                onChange={(e) => onChange("nomeDoPerfil", e.target.value)}
-                fullWidth
-                sx={{ mb: 2 }}
-            />
+                <TextField
+                    label="Nome do Perfil"
+                    size="small"
+                    value={formDataRedeSociais.nomeDoPerfil}
+                    onChange={(e) => onChange("nomeDoPerfil", e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            e.preventDefault();
+                            onAdd();
+                        }
+                    }}
+                    sx={{ flex: 1, minWidth: 220 }}
+                />
 
-            <Button variant="contained" color="primary" onClick={onAdd}>
-                Adicionar Rede Social
-            </Button>
+                <Button variant="contained" color="primary" onClick={onAdd} sx={{ whiteSpace: "nowrap" }}>
+                    Adicionar
+                </Button>
+            </Box>
 
             {redesSociais.length > 0 && (
-                <List sx={{ mt: 2 }}>
+                <List dense disablePadding sx={{ mt: 1.5 }}>
                     {redesSociais.map((rede, index) => (
                         <ListItem
                             key={`${rede.tipoRedeSocial}-${index}`}
@@ -71,7 +80,8 @@ const RedesSociaisCriarSection = ({
                                 border: "1px solid",
                                 borderColor: "divider",
                                 borderRadius: 2,
-                                mb: 1,
+                                mb: 0.75,
+                                py: 0,
                                 px: 2,
                                 backgroundColor: "background.default",
                             }}
@@ -83,7 +93,7 @@ const RedesSociaisCriarSection = ({
                                 {rede.nomeDoPerfil}
                             </Typography>
 
-                            <IconButton color="error" onClick={() => onDelete(index)}>
+                            <IconButton color="error" size="small" onClick={() => onDelete(index)}>
                                 <Delete />
                             </IconButton>
                         </ListItem>

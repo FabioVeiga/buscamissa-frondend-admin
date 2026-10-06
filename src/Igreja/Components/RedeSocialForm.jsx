@@ -184,42 +184,51 @@ const RedeSocialForm = ({
   };
 
   return (
-      <Box display="flex" flexDirection="column" gap={2}>
-        <FormControl fullWidth error={Boolean(errors.tipoRedeSocial)}>
-          <InputLabel id="tipoRedeSocial-label">Tipo de Rede Social</InputLabel>
-          <Select
-              labelId="tipoRedeSocial-label"
-              label="Tipo de Rede Social"
-              value={redeSocial.tipoRedeSocial}
-              onChange={(e) => handleChange("tipoRedeSocial", e.target.value)}
-          >
-            {redesSociaisDisponiveis.map((item) => (
-                <MenuItem key={item.id} value={item.id}>
-                  {item.nome}
-                </MenuItem>
-            ))}
-          </Select>
+      <Box display="flex" flexDirection="column" gap={1.5}>
+        <Box display="flex" gap={1.5} flexWrap="wrap" alignItems="flex-start">
+          <FormControl size="small" error={Boolean(errors.tipoRedeSocial)} sx={{ minWidth: 200 }}>
+            <InputLabel id="tipoRedeSocial-label">Tipo de Rede Social</InputLabel>
+            <Select
+                labelId="tipoRedeSocial-label"
+                label="Tipo de Rede Social"
+                value={redeSocial.tipoRedeSocial}
+                onChange={(e) => handleChange("tipoRedeSocial", e.target.value)}
+            >
+              {redesSociaisDisponiveis.map((item) => (
+                  <MenuItem key={item.id} value={item.id}>
+                    {item.nome}
+                  </MenuItem>
+              ))}
+            </Select>
 
-          {errors.tipoRedeSocial && (
-              <FormHelperText>{errors.tipoRedeSocial}</FormHelperText>
-          )}
-        </FormControl>
+            {errors.tipoRedeSocial && (
+                <FormHelperText>{errors.tipoRedeSocial}</FormHelperText>
+            )}
+          </FormControl>
 
-        <TextField
-            label="Nome do Perfil"
-            value={redeSocial.nomeDoPerfil}
-            onChange={(e) => handleChange("nomeDoPerfil", e.target.value)}
-            error={Boolean(errors.nomeDoPerfil)}
-            helperText={errors.nomeDoPerfil}
-            fullWidth
-        />
+          <TextField
+              label="Nome do Perfil"
+              size="small"
+              value={redeSocial.nomeDoPerfil}
+              onChange={(e) => handleChange("nomeDoPerfil", e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleAddRedeSocial();
+                }
+              }}
+              error={Boolean(errors.nomeDoPerfil)}
+              helperText={errors.nomeDoPerfil}
+              sx={{ flex: 1, minWidth: 220 }}
+          />
 
-        <Button variant="contained" color="primary" onClick={handleAddRedeSocial}>
-          Adicionar Rede Social
-        </Button>
+          <Button variant="contained" color="primary" onClick={handleAddRedeSocial} sx={{ whiteSpace: "nowrap" }}>
+            Adicionar
+          </Button>
+        </Box>
 
         {redesSociaisExistentes.length > 0 && (
-            <List>
+            <List dense disablePadding>
               {redesSociaisExistentes.map((rede) => (
                   <ListItem
                       key={rede.tipoRedeSocial}
@@ -230,7 +239,8 @@ const RedeSocialForm = ({
                         border: "1px solid",
                         borderColor: "divider",
                         borderRadius: 1,
-                        mb: 1,
+                        mb: 0.75,
+                        py: 0,
                       }}
                   >
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -250,7 +260,7 @@ const RedeSocialForm = ({
                       </Link>
                     </Box>
 
-                    <IconButton color="error" onClick={() => handleOpenModal(rede)}>
+                    <IconButton color="error" size="small" onClick={() => handleOpenModal(rede)}>
                       <Delete />
                     </IconButton>
                   </ListItem>

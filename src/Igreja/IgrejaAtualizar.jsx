@@ -722,7 +722,10 @@ const IgrejaAtualizar = () => {
 
   return (
     <>
-      <Paper variant="outlined" sx={{ p: 2, mb: 2, borderRadius: 2 }}>
+      <Paper
+        variant="outlined"
+        sx={{ p: 2, mb: 2, borderRadius: 2, position: "sticky", top: 0, zIndex: 10 }}
+      >
         <Stack direction="row" alignItems="center" spacing={1.5} flexWrap="wrap" useFlexGap>
           <Typography variant="h5" fontWeight={700}>
             {formData.nome || "Editar Igreja"}
