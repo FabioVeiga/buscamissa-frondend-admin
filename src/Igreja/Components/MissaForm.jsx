@@ -101,10 +101,21 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
         }));
     };
 
-    const DIAS_UTEIS = [1, 2, 3, 4, 5]; // Segunda a Sexta
+    const ATALHOS_DIAS = [
+        { label: "Dias úteis", dias: [1, 2, 3, 4, 5] },
+        { label: "Todos os dias", dias: [0, 1, 2, 3, 4, 5, 6] },
+        { label: "Fim de semana", dias: [6, 0] },
+        { label: "Só domingo", dias: [0] },
+    ];
 
-    const handleSelecionarDiasUteis = () => {
-        setNovaMissa((prev) => ({ ...prev, diaSemana: DIAS_UTEIS }));
+    const handleSelecionarDias = (dias) => {
+        setNovaMissa((prev) => ({ ...prev, diaSemana: dias }));
+    };
+
+    const handleEnterAdiciona = (e) => {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        handleAddMissa();
     };
 
     const handleToggleDiaSemana = (dia) => {
@@ -302,6 +313,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                         inputRef={horarioRef}
                         value={novaMissa.horario}
                         onChange={(e) => handleChange("horario", e.target.value)}
+                        onKeyDown={handleEnterAdiciona}
                         sx={{ width: 150 }}
                         InputLabelProps={{ shrink: true }}
                         inputProps={{ step: 900 }}
@@ -467,6 +479,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                                 type="number"
                                 value={novaMissa.diaDoMes}
                                 onChange={(e) => handleChange("diaDoMes", e.target.value)}
+                                onKeyDown={handleEnterAdiciona}
                                 inputProps={{ min: 1, max: 31 }}
                                 sx={{ width: 130 }}
                             />
@@ -510,13 +523,16 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                         <Typography variant="subtitle2" fontWeight={600}>
                             Dias da Semana
                         </Typography>
-                        <Chip
-                            label="Dias úteis"
-                            size="small"
-                            variant="outlined"
-                            color="primary"
-                            onClick={handleSelecionarDiasUteis}
-                        />
+                        {ATALHOS_DIAS.map((atalho) => (
+                            <Chip
+                                key={atalho.label}
+                                label={atalho.label}
+                                size="small"
+                                variant="outlined"
+                                color="primary"
+                                onClick={() => handleSelecionarDias(atalho.dias)}
+                            />
+                        ))}
                     </Stack>
 
                     <FormGroup row sx={{ gap: 0.5 }}>
