@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
-import { Box, Card, CircularProgress, Grid, Typography } from "@mui/material";
+import { Box, Card, Grid, Typography } from "@mui/material";
+import LoadingState from "../Components/LoadingState";
 
 const CARDS = [
   { key: "semContatoEmail",           label: "Sem contato via e-mail",       modo: "SemContatoEmail",           cor: "warning.main" },
@@ -11,9 +12,7 @@ const CARDS = [
 const DashboardDivulgacao = ({ dados, loading, modoAtivo, onCardClick }) => {
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" py={3}>
-        <CircularProgress size={24} />
-      </Box>
+      <LoadingState sx={{ py: 3 }} />
     );
   }
 

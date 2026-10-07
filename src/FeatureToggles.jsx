@@ -1,21 +1,15 @@
 import { useState, useEffect } from "react";
 import Menu from "./Components/Menu";
+import { useNotificar } from "./Context/NotificationContext";
+import PageHeader from "./Components/PageHeader";
+import PageContainer from "./Components/PageContainer";
+import DataTable from "./Components/DataTable";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  CircularProgress,
-  Box,
-  Typography,
-  Switch,
-} from "@mui/material";
+  Switch } from "@mui/material";
 import api from "./services/apiService";
 
 const FeatureTogglesPage = () => {
+  const notificar = useNotificar();
   const [toggles, setToggles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [savingChave, setSavingChave] = useState(null);
@@ -48,7 +42,7 @@ const FeatureTogglesPage = () => {
       await api.put(`/api/v1/admin/feature-toggles/${chave}`, { habilitado: novoValor });
     } catch (error) {
       console.error("Erro ao atualizar feature toggle:", error);
-      alert("Erro ao atualizar. Tente novamente.");
+      notificar.erro("Erro ao atualizar. Tente novamente.");
       setToggles((prev) =>
         prev.map((t) => (t.chave === chave ? { ...t, habilitado: habilitadoAtual } : t))
       );
@@ -59,65 +53,39 @@ const FeatureTogglesPage = () => {
 
   return (
     <Menu>
-      <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="h5" fontWeight={600}>
-            Feature Toggles
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Liga/desliga features do site público sem precisar de deploy. Alterações
-            entram em vigor em até 1 minuto (cache do site).
-          </Typography>
-        </Box>
-        {isLoading ? (
-          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" py={4}>
-            <CircularProgress size={60} />
-            <Typography variant="h6" mt={2}>
-              Carregando...
-            </Typography>
-          </Box>
-        ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Feature</TableCell>
-                <TableCell>Descrição</TableCell>
-                <TableCell align="center">Habilitado</TableCell>
-                <TableCell>Última alteração</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {toggles.length > 0 ? (
-                toggles.map((t) => (
-                  <TableRow key={t.chave}>
-                    <TableCell>
-                      <code>{t.chave}</code>
-                    </TableCell>
-                    <TableCell>{t.descricao}</TableCell>
-                    <TableCell align="center">
-                      <Switch
-                        checked={t.habilitado}
-                        disabled={savingChave === t.chave}
-                        onChange={() => handleToggle(t.chave, t.habilitado)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {new Date(t.atualizadoEm).toLocaleString("pt-BR")}
-                      {t.atualizadoPor ? ` — ${t.atualizadoPor}` : ""}
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} align="center">
-                    Nenhum feature toggle cadastrado.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </TableContainer>
+      <PageContainer>
+      <PageHeader
+        title="Feature Toggles"
+        subtitle={`Liga/desliga features do site público sem precisar de deploy. Alterações entram em vigor em até 1 minuto (cache do site).`}
+      />
+      <DataTable
+        loading={isLoading}
+        rows={toggles}
+        getRowKey={(t) => t.chave}
+        emptyTitle="Nenhum feature toggle cadastrado"
+        columns={[
+          { key: "chave", header: "Feature", render: (t) => <code>{t.chave}</code> },
+          { key: "descricao", header: "Descrição" },
+          {
+            key: "habilitado",
+            header: "Habilitado",
+            align: "center",
+            render: (t) => (
+              <Switch
+                checked={t.habilitado}
+                disabled={savingChave === t.chave}
+                onChange={() => handleToggle(t.chave, t.habilitado)}
+              />
+            ),
+          },
+          {
+            key: "atualizadoEm",
+            header: "Última alteração",
+            render: (t) => `${new Date(t.atualizadoEm).toLocaleString("pt-BR")}${t.atualizadoPor ? ` — ${t.atualizadoPor}` : ""}`,
+          },
+        ]}
+      />
+      </PageContainer>
     </Menu>
   );
 };

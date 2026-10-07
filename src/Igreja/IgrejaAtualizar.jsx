@@ -35,6 +35,10 @@ import ContatoForm from "./Components/ContatoForm";
 import EnderecoForm from "./Components/EnderecoForm";
 import RedesSociaisSection from "./Components/RedesSociaisSection";
 import SectionCard from "./Components/SectionCard";
+import Grid from "@mui/material/Grid2";
+import ImagemSection from "./Components/ImagemSection";
+import { useAlteracoesNaoSalvas, useNavegacaoProtegida } from "../Context/UnsavedChangesContext";
+import StatusChip from "../Components/StatusChip";
 import IgrejasCepModal from "./Components/IgrejasCepModal";
 import ReportarProblemaModal from "./Components/ReportarProblemaModal";
 import IgrejaMetricasTab from "./Components/IgrejaMetricasTab";
@@ -137,6 +141,12 @@ const IgrejaAtualizar = () => {
     setImagemAlterada(false);
     setMessage(errorMensage());
   }, [state?.row]);
+
+  const navegarProtegido = useNavegacaoProtegida();
+  const { sujo, marcarSalvo } = useAlteracoesNaoSalvas(
+    JSON.stringify({ formData, endereco, formDatamissas, formDataSessoes, formDataRedeSociais, base64 }),
+    state?.row
+  );
 
   const handleShowError = (mensagem) => {
     setMessage({
@@ -621,6 +631,7 @@ const IgrejaAtualizar = () => {
     api
         .put("/api/v1/Admin/igreja/atualizar", req)
         .then((response) => {
+          marcarSalvo();
           // O backend recalcula o cidadeSlug (e, na primeira vez, slug/nomeUnico)
           // a cada edição — sem sincronizar aqui, o link exibido para compartilhar
           // ficava com o cidadeSlug antigo até a tela ser recarregada.
@@ -795,20 +806,7 @@ const IgrejaAtualizar = () => {
       {abaAtiva === 1 ? (
         <IgrejaMetricasTab igrejaId={formData.id} />
       ) : (
-      <SectionCard
-        component="form"
-        display="flex"
-        flexDirection="column"
-        gap={2}
-        sx={{
-          margin: "0 auto",
-          padding: 2,
-          border: "1px solid #ccc",
-          borderRadius: 2,
-          width: "100%",
-          boxSizing: "border-box", // Garantir que padding e border sejam incluídos nas dimensões
-        }}
-      >
+      <Box component="form" display="flex" flexDirection="column" gap={2} sx={{ width: "100%" }}>
         {/* Seção de Endereço */}
         <EnderecoForm
             endereco={endereco}
@@ -854,20 +852,25 @@ const IgrejaAtualizar = () => {
               )}
             </Stack>
 
-            <TextField
-                label="Nome da Igreja"
-                value={formData.nome}
-                onChange={(e) => handleChange("nome", e.target.value)}
-                fullWidth
-                required
-            />
-
-            <TextField
-                label="Pároco"
-                value={formData.paroco}
-                onChange={(e) => handleChange("paroco", e.target.value)}
-                fullWidth
-            />
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, md: 8 }}>
+                <TextField
+                    label="Nome da Igreja"
+                    value={formData.nome}
+                    onChange={(e) => handleChange("nome", e.target.value)}
+                    fullWidth
+                    required
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 4 }}>
+                <TextField
+                    label="Pároco"
+                    value={formData.paroco}
+                    onChange={(e) => handleChange("paroco", e.target.value)}
+                    fullWidth
+                />
+              </Grid>
+            </Grid>
           </Box>
         </SectionCard>
         <SectionCard
@@ -882,148 +885,18 @@ const IgrejaAtualizar = () => {
         >
           <IgrejaCircunscricaoTab igrejaId={formData.id} />
         </SectionCard>
-        <SectionCard
-            title="Imagem"
-            subtitle="Faça upload, cole uma imagem ou converta por URL."
-            sx={{
-              maxWidth: 620,
-              margin: "0 auto",
-            }}
-        >
-          <Typography variant="h6">
-            Upload de Imagem e Conversão para Base64
-          </Typography>
-
-          {/* Input oculto para upload */}
-          <Button variant="outlined" component="label">
-            Selecionar Imagem
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              onChange={handleFileChange}
-            />
-          </Button>
-
-            {/* Colar imagem do clipboard */}
-            <TextField
-              label="Cole uma imagem (Ctrl/Cmd+V)"
-              placeholder="Cole aqui uma imagem"
-              onPaste={async (e) => {
-                const items = e.clipboardData && e.clipboardData.items;
-                if (!items) return;
-                for (let i = 0; i < items.length; i++) {
-                  const item = items[i];
-                  if (item.kind === "file" && item.type.startsWith("image/")) {
-                    const blob = item.getAsFile();
-                    if (blob) {
-                      try {
-                        await blobToBase64(blob, blob.name || "pasted-image.png");
-                      } catch (err) {
-                        setMessage({ mensagem: ["Erro ao processar imagem colada."], severity: "error", show: true });
-                      }
-                      e.preventDefault();
-                      return;
-                    }
-                  }
-                  // Alguns navegadores podem fornecer imagens como string via clipboard
-                  if (item.kind === "string" && item.type === "text/html") {
-                    item.getAsString(async (html) => {
-                      const srcMatch = html.match(/src=\"([^\"]+)\"/i);
-                      if (srcMatch && srcMatch[1]) {
-                        try {
-                          const resp = await fetch(srcMatch[1]);
-                          const blob = await resp.blob();
-                          await blobToBase64(blob, "pasted-from-html.png");
-                        } catch (err) {
-                          setMessage({ mensagem: ["Erro ao processar imagem colada do HTML."], severity: "error", show: true });
-                        }
-                      }
-                    });
-                  }
-                }
-              }}
-              fullWidth
-            />
-
-            {/* Converter a partir de URL */}
-            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-              <TextField
-                label="Converter a partir de URL"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                placeholder="Cole URL da imagem aqui"
-                fullWidth
-              />
-              <Button
-                variant="outlined"
-                onClick={async () => {
-                  if (!urlInput) return;
-                  try {
-                    const resp = await fetch(urlInput);
-                    if (!resp.ok) throw new Error("Falha ao buscar a imagem");
-                    const blob = await resp.blob();
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                      const base64String = ev.target.result.split(",")[1];
-                      setBase64(base64String);
-                      setFileName(urlInput);
-                      setImagemMimeType(blob.type || "image/png");
-                      setImagemAlterada(true);
-                      console.log("URL convertida:", { urlInput, mimeType: blob.type, base64Length: base64String.length });
-                    };
-                    reader.readAsDataURL(blob);
-                  } catch (err) {
-                    console.error("Erro ao converter URL:", err);
-                    setMessage({ mensagem: ["Não foi possível converter a URL."], severity: "error", show: true });
-                  }
-                }}
-              >
-                Converter
-              </Button>
-            </Box>
-
-          {/* Mostra o nome do arquivo */}
-          {fileName && <Typography>Arquivo selecionado: {fileName}</Typography>}
-
-          {/* Campo Base64 (somente leitura) */}
-          <TextField
-            label="Base64 da Imagem"
-            value={base64}
-            multiline
-            rows={4}
-            InputProps={{ readOnly: true }}
-            fullWidth
-            disabled
-          />
-
-          {/* Imagem preview (opcional) */}
-          {(base64 || formData.imagemUrl) && (
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1, alignItems: "center" }}>
-              <Box
-                component="img"
-                src={
-                  base64 ? `data:${imagemMimeType};base64,${base64}` : formData.imagemUrl
-                }
-                alt="Preview"
-                sx={{
-                  maxWidth: "100%",
-                  maxHeight: "200px",
-                  objectFit: "contain",
-                  border: "1px solid #ccc",
-                  borderRadius: 1,
-                }}
-              />
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={handleRemoverImagem}
-              >
-                Remover Imagem
-              </Button>
-            </Box>
-          )}
-        </SectionCard>
+        <ImagemSection
+            base64={base64}
+            fileName={fileName}
+            imagemMimeType={imagemMimeType}
+            imagemUrl={formData.imagemUrl}
+            urlInput={urlInput}
+            setUrlInput={setUrlInput}
+            onFileChange={handleFileChange}
+            blobToBase64={blobToBase64}
+            onError={(msg) => setMessage({ mensagem: [msg], severity: "error", show: true })}
+            onRemove={handleRemoverImagem}
+        />
 
         {/* Sessão de Missas */}
         <MissaForm
@@ -1061,12 +934,22 @@ const IgrejaAtualizar = () => {
         />
 
         {/* Botões de Ação */}
-        <Box display="flex" gap={2}>
+        <Box display="flex" gap={2} sx={{
+            position: "sticky",
+            bottom: 0,
+            zIndex: 5,
+            py: 1.5,
+            px: 2,
+            bgcolor: "background.paper",
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 2,
+          }}>
           <Button
             variant="outlined"
             color="inherit"
             startIcon={<ArrowBack />}
-            onClick={() => navigate(-1)}
+            onClick={() => navegarProtegido(-1)}
             disabled={loading}
           >
             Voltar
@@ -1086,6 +969,7 @@ const IgrejaAtualizar = () => {
               "Editar Igreja"
             )}
           </Button>
+          {sujo && <StatusChip label="Alterações não salvas" color="warning" sx={{ alignSelf: "center" }} />}
         </Box>
         <Box display="flex">
           {message.show && (
@@ -1095,7 +979,7 @@ const IgrejaAtualizar = () => {
             />
           )}
         </Box>
-      </SectionCard>
+      </Box>
       )}
 
       {abaAtiva === 0 && formData.id && (

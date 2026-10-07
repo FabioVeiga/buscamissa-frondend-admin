@@ -23,10 +23,11 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import Menu from "./Components/Menu";
+import { useNotificar } from "./Context/NotificationContext";
 import api from "./services/apiService";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { CircularProgress, Box, Typography, useTheme, useMediaQuery } from "@mui/material";
+import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
@@ -38,6 +39,11 @@ import ChurchIcon from "@mui/icons-material/Church";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
 import Pagination from "./Components/Paginacao";
+import PageHeader from "./Components/PageHeader";
+import PageContainer from "./Components/PageContainer";
+import StatusChip from "./Components/StatusChip";
+import EmptyState from "./Components/EmptyState";
+import LoadingState from "./Components/LoadingState";
 import { buscarIgrejaCompletaPorId, normalizarIgrejaParaEdicao } from "./services/igrejaHelpers";
 
 const PERFIS = [
@@ -65,6 +71,7 @@ const OPCOES_ORDENACAO = [
 ];
 
 const UsuarioPage = () => {
+  const notificar = useNotificar();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -148,7 +155,7 @@ const UsuarioPage = () => {
           motivoBloqueio: !selectedUser.bloqueado ? motivo : null,
         }
       );
-      alert(
+      notificar.sucesso(
         `Usuário ${
           !selectedUser.bloqueado ? "bloqueado" : "desbloqueado"
         } com sucesso!`
@@ -163,7 +170,7 @@ const UsuarioPage = () => {
       }));
     } catch (error) {
       console.error("Erro ao bloquear/desbloquear:", error);
-      alert("Erro ao realizar a ação. Tente novamente.");
+      notificar.erro("Erro ao realizar a ação. Tente novamente.");
     } finally {
       handleCloseModal();
     }
@@ -269,11 +276,11 @@ const UsuarioPage = () => {
       await api.put(`/api/v1/Admin/usuario/resetar-senha/${selectedUser.id}`, {
         novaSenha,
       });
-      alert("Senha resetada com sucesso!");
+      notificar.sucesso("Senha resetada com sucesso!");
       handleCloseSenhaModal();
     } catch (error) {
       console.error("Erro ao resetar senha:", error);
-      alert("Erro ao resetar a senha. Tente novamente.");
+      notificar.erro("Erro ao resetar a senha. Tente novamente.");
     }
   };
 
@@ -340,6 +347,8 @@ const UsuarioPage = () => {
 
   return (
     <Menu>
+      <PageContainer>
+      <PageHeader title="Usuários" subtitle="Consulte, bloqueie e gerencie os usuários cadastrados" />
       <Paper sx={{ p: 2, borderRadius: 2, mb: 2 }}>
         <Grid container spacing={2} alignItems="center">
           <Grid size={{ xs: 12, sm: 6, md: 2 }}>
@@ -356,6 +365,7 @@ const UsuarioPage = () => {
               fullWidth
               size="small"
               label="Email"
+              slotProps={{ htmlInput: { inputMode: "email" } }}
               value={filtros.email}
               onChange={handleFiltroChange("email")}
             />
@@ -461,18 +471,9 @@ const UsuarioPage = () => {
         sx={{ p: 2, borderRadius: 2, overflow: "auto" }}
       >
         {isLoading ? (
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
-            bgcolor="#f5f5f5"
-          >
-            <CircularProgress size={60} />
-            <Typography variant="h6" mt={2}>
-              Carregando...
-            </Typography>
-          </Box>
+          <LoadingState />
+        ) : !data?.items?.length ? (
+          <EmptyState title="Nenhum usuário encontrado" />
         ) : isMobile ? (
           <Stack spacing={1.5}>
             {data.items.map((row) => (
@@ -485,9 +486,10 @@ const UsuarioPage = () => {
                         {perfil(row.perfil)}
                       </Typography>
                     </Box>
-                    <Typography variant="caption" color={row.bloqueado ? "error.main" : "text.secondary"}>
-                      {row.bloqueado ? "Bloqueado" : "Ativo"}
-                    </Typography>
+                    <StatusChip
+                      label={row.bloqueado ? "Bloqueado" : "Ativo"}
+                      color={row.bloqueado ? "error" : "success"}
+                    />
                   </Stack>
                   <Tooltip title="Ver igrejas cadastradas por este usuário">
                     <Button
@@ -523,7 +525,12 @@ const UsuarioPage = () => {
                   <TableCell>{row.id}</TableCell>
                   <TableCell>{row.nome}</TableCell>
                   <TableCell>{perfil(row.perfil)}</TableCell>
-                  <TableCell>{row.bloqueado ? "Sim" : "Não"}</TableCell>
+                  <TableCell>
+                    <StatusChip
+                      label={row.bloqueado ? "Bloqueado" : "Ativo"}
+                      color={row.bloqueado ? "error" : "success"}
+                    />
+                  </TableCell>
                   <TableCell>
                     <Tooltip title="Ver igrejas cadastradas por este usuário">
                       <Button
@@ -691,13 +698,9 @@ const UsuarioPage = () => {
         </DialogTitle>
         <DialogContent>
           {igrejasLoading ? (
-            <Box display="flex" justifyContent="center" py={3}>
-              <CircularProgress size={32} />
-            </Box>
+            <LoadingState />
           ) : igrejasUsuario.length === 0 ? (
-            <Typography variant="body2" color="text.secondary" py={2}>
-              Este usuário ainda não cadastrou nenhuma igreja.
-            </Typography>
+            <EmptyState title="Este usuário ainda não cadastrou nenhuma igreja." />
           ) : (
             <Table>
               <TableHead>
@@ -733,6 +736,7 @@ const UsuarioPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      </PageContainer>
     </Menu>
   );
 };

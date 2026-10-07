@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Checkbox,
-  Chip,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -24,16 +23,19 @@ import {
   TableRow,
   TextField,
   Typography,
-  IconButton,
-  Tooltip,
-  Link,
-} from "@mui/material";
+  Link } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PhoneCallbackIcon from "@mui/icons-material/PhoneCallback";
 import SendIcon from "@mui/icons-material/Send";
 import Menu from "../Components/Menu";
+import PageHeader from "../Components/PageHeader";
+import PageContainer from "../Components/PageContainer";
+import StatusChip from "../Components/StatusChip";
+import EmptyState from "../Components/EmptyState";
+import LoadingState from "../Components/LoadingState";
+import RowActions from "../Components/RowActions";
 import Pagination from "../Components/Paginacao";
 import api from "../services/apiService";
 import ErrorSpan from "../ErrorSpan";
@@ -259,6 +261,8 @@ const EmailEventoPage = () => {
 
   return (
     <Menu>
+      <PageContainer>
+      <PageHeader title="Divulgação" subtitle="Acompanhe e registre o contato com as igrejas" />
       <Stack spacing={2}>
         <DashboardDivulgacao
           dados={dashboard}
@@ -331,9 +335,7 @@ const EmailEventoPage = () => {
           )}
 
           {isLoading ? (
-            <Box display="flex" justifyContent="center" alignItems="center" py={6}>
-              <CircularProgress />
-            </Box>
+<LoadingState />
           ) : (
             <>
               <Table size="small">
@@ -382,8 +384,8 @@ const EmailEventoPage = () => {
                 <TableBody>
                   {igrejas.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} align="center">
-                        Nenhuma igreja encontrada.
+                      <TableCell colSpan={6}>
+                        <EmptyState title="Nenhuma igreja encontrada." />
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -444,21 +446,25 @@ const EmailEventoPage = () => {
                             <TableCell>
                               <Box display="flex" alignItems="center" gap={0.5}>
                                 {jaContatado ? (
-                                  <Chip icon={<CheckCircleIcon />} label="Contatado" color="success" size="small" />
+                                  <StatusChip icon={<CheckCircleIcon />} label="Contatado" color="success" />
                                 ) : (
                                   <>
-                                    <Tooltip title="Copiar mensagem">
-                                      <IconButton size="small" onClick={() => copiar(mensagem)}>
-                                        <ContentCopyIcon fontSize="small" />
-                                      </IconButton>
-                                    </Tooltip>
-                                    {perfil && (
-                                      <Tooltip title="Abrir perfil">
-                                        <IconButton size="small" onClick={() => abrirUrl(construirUrlPerfil(perfil, modo))}>
-                                          <OpenInNewIcon fontSize="small" />
-                                        </IconButton>
-                                      </Tooltip>
-                                    )}
+                                    <RowActions
+                                      justify="flex-start"
+                                      actions={[
+                                        {
+                                          label: "Copiar mensagem",
+                                          icon: <ContentCopyIcon fontSize="small" />,
+                                          onClick: () => copiar(mensagem),
+                                        },
+                                        {
+                                          label: "Abrir perfil",
+                                          icon: <OpenInNewIcon fontSize="small" />,
+                                          onClick: () => abrirUrl(construirUrlPerfil(perfil, modo)),
+                                          hidden: !perfil,
+                                        },
+                                      ]}
+                                    />
                                     <Button
                                       size="small"
                                       variant="outlined"
@@ -500,6 +506,7 @@ const EmailEventoPage = () => {
           )}
         </TableContainer>
       </Stack>
+      </PageContainer>
 
       {/* Dialog: Envio de e-mail em lote */}
       <Dialog open={loteDialogAberto} onClose={() => !loteLoading && setLoteDialogAberto(false)} fullWidth maxWidth="xs">

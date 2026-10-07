@@ -11,16 +11,19 @@ import {
   TableFooter,
   Tooltip,
   IconButton,
-  CircularProgress,
   Box,
   Chip,
   Typography,
   Card,
   CardContent,
   useMediaQuery,
-  useTheme,
-} from "@mui/material";
+  useTheme } from "@mui/material";
 import Menu from "../Components/Menu";
+import PageHeader from "../Components/PageHeader";
+import StatusChip from "../Components/StatusChip";
+import EmptyState from "../Components/EmptyState";
+import LoadingState from "../Components/LoadingState";
+import RowActions from "../Components/RowActions";
 import Pagination from "../Components/Paginacao";
 import IgrejaSearchForm from "./IgrejaSearchForm";
 import IgrejaDetalheModal from "./IgrejaDetalhesModal";
@@ -259,56 +262,30 @@ const IgrejaPage = () => {
 
   // Compartilhado entre a linha da tabela (desktop) e o card (mobile).
   const renderAcoes = (row) => (
-    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-      <Tooltip title="Detalhes">
-        <IconButton color="primary" onClick={() => handleOpen(row)}>
-          <OpenInNewIcon />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Editar">
-        <IconButton color="primary" onClick={() => navigate("/IgrejaEditar", { state: { row } })}>
-          <EditIcon />
-        </IconButton>
-      </Tooltip>
+    <>
+      <RowActions
+        justify="flex-start"
+        actions={[
+          { label: "Detalhes", icon: <OpenInNewIcon />, color: "primary", onClick: () => handleOpen(row) },
+          { label: "Editar", icon: <EditIcon />, color: "primary", onClick: () => navigate("/IgrejaEditar", { state: { row } }) },
+          { label: "Problema reportado", icon: <AnnouncementIcon />, color: "warning", onClick: handleOpenModal, hidden: !row.reportarProblema },
+          { label: "Ativar", icon: <HideSourceIcon />, color: "primary", onClick: () => handleOpenConfirmModal(row.id), hidden: !!row.ativo },
+          { label: "Restaurar", icon: <RestoreFromTrashIcon />, color: "success", onClick: () => handleRestaurar(row.id), hidden: !row.deletadoEm },
+          { label: "Deletar", icon: <DeleteIcon />, color: "error", onClick: () => handleOpenDeleteModal(row.id), hidden: !!row.deletadoEm },
+        ]}
+      />
       {row.reportarProblema && (
-        <>
-          <Tooltip title="Problema reportado">
-            <IconButton color="warning" onClick={handleOpenModal}>
-              <AnnouncementIcon />
-            </IconButton>
-          </Tooltip>
-          <ReportarProblemaModal
-            open={problemaModalOpen}
-            onClose={handleCloseModal}
-            problemaId={row.reportarProblema.id}
-            nome={row.reportarProblema.nome}
-            email={row.reportarProblema.email}
-            descricao={row.reportarProblema.descricao}
-            onSuccess={handleSuccess}
-          />
-        </>
+        <ReportarProblemaModal
+          open={problemaModalOpen}
+          onClose={handleCloseModal}
+          problemaId={row.reportarProblema.id}
+          nome={row.reportarProblema.nome}
+          email={row.reportarProblema.email}
+          descricao={row.reportarProblema.descricao}
+          onSuccess={handleSuccess}
+        />
       )}
-      {!row.ativo && (
-        <Tooltip title="Ativar">
-          <IconButton color="primary" onClick={() => handleOpenConfirmModal(row.id)}>
-            <HideSourceIcon />
-          </IconButton>
-        </Tooltip>
-      )}
-      {row.deletadoEm ? (
-        <Tooltip title="Restaurar">
-          <IconButton color="success" onClick={() => handleRestaurar(row.id)}>
-            <RestoreFromTrashIcon />
-          </IconButton>
-        </Tooltip>
-      ) : (
-        <Tooltip title="Deletar">
-          <IconButton color="error" onClick={() => handleOpenDeleteModal(row.id)}>
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      )}
-    </Stack>
+    </>
   );
 
   return (
@@ -336,9 +313,7 @@ const IgrejaPage = () => {
             height: isMobile ? "auto" : "100%",
           }}
         >
-          <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
-            Igrejas
-          </Typography>
+          <PageHeader title="Igrejas" sx={{ mb: 2 }} />
           <IgrejaSearchForm
             onDataChange={handleDataChange}
             onLoadingChange={handleLoadingChange}
@@ -346,18 +321,7 @@ const IgrejaPage = () => {
             onFiltersChange={handleFiltersChange}
           />
           {isLoading ? (
-            <Box
-              display="flex"
-              flexDirection="column"
-              alignItems="center"
-              justifyContent="center"
-              py={4}
-            >
-              <CircularProgress size={60} />
-              <Typography variant="h6" mt={2}>
-                Carregando...
-              </Typography>
-            </Box>
+            <LoadingState />
           ) : isMobile ? (
             <Box sx={{ flex: 1, overflow: "auto", mt: 2 }}>
               <Stack spacing={1.5}>
@@ -375,12 +339,12 @@ const IgrejaPage = () => {
                           </Box>
                           <Stack direction="row" spacing={0.5}>
                             {row.deletadoEm && (
-                              <Chip label="Excluída" size="small" color="error" />
+                              <StatusChip label="Excluída" color="error" />
                             )}
-                            <Chip
+                            <StatusChip
                               label={row.ativo ? "Ativo" : "Inativo"}
-                              size="small"
                               color={row.ativo ? "success" : "default"}
+                              icon={row.ativo ? undefined : <HideSourceIcon />}
                             />
                           </Stack>
                         </Stack>
@@ -417,9 +381,7 @@ const IgrejaPage = () => {
                     </Card>
                   ))
                 ) : (
-                  <Typography color="text.secondary" textAlign="center" py={4}>
-                    Não há dados disponíveis.
-                  </Typography>
+                  <EmptyState title="Não há dados disponíveis." />
                 )}
               </Stack>
             </Box>
@@ -489,7 +451,7 @@ const IgrejaPage = () => {
                             />
                           )}
                           {row.deletadoEm && (
-                            <Chip label="Excluída" size="small" color="error" />
+                            <StatusChip label="Excluída" color="error" />
                           )}
                         </Stack>
                       </TableCell>
@@ -524,10 +486,10 @@ const IgrejaPage = () => {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Chip
+                        <StatusChip
                           label={row.ativo ? 'Sim' : 'Não'}
-                          size="small"
                           color={row.ativo ? 'success' : 'default'}
+                          icon={row.ativo ? undefined : <HideSourceIcon />}
                         />
                       </TableCell>
                       <TableCell>
@@ -538,7 +500,7 @@ const IgrejaPage = () => {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={9} align="center">
-                      <Typography color="text.secondary">Não há dados disponíveis.</Typography>
+                      <EmptyState title="Não há dados disponíveis." />
                     </TableCell>
                   </TableRow>
                 )}

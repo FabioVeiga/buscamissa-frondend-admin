@@ -13,7 +13,11 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import HideSourceIcon from "@mui/icons-material/HideSource";
 import Menu from "../Components/Menu";
+import PageHeader from "../Components/PageHeader";
+import StatusChip from "../Components/StatusChip";
+import LoadingState from "../Components/LoadingState";
 import DeleteConfirmModal from "../Components/DeleteConfirmModal";
 import IgrejaMetricasTab from "./Components/IgrejaMetricasTab";
 import api from "../services/apiService";
@@ -63,12 +67,7 @@ const IgrejaPreviewCard = ({ titulo, id, igreja, loading, erro }) => (
     </Typography>
 
     {loading && (
-      <Box display="flex" alignItems="center" gap={1} sx={{ mt: 0.5 }}>
-        <CircularProgress size={16} />
-        <Typography variant="body2" color="text.secondary">
-          Buscando igreja #{id}...
-        </Typography>
-      </Box>
+      <LoadingState label={`Buscando igreja #${id}...`} sx={{ py: 1, flexDirection: "row", justifyContent: "flex-start" }} />
     )}
 
     {!loading && erro && (
@@ -84,9 +83,13 @@ const IgrejaPreviewCard = ({ titulo, id, igreja, loading, erro }) => (
         </Typography>
         <Typography variant="body2" color="text.secondary">
           {[igreja.endereco?.localidade, igreja.endereco?.uf].filter(Boolean).join(" - ") || "Endereço não informado"}
-          {" • "}
-          {igreja.ativo ? "Ativa" : "Inativa"}
         </Typography>
+        <StatusChip
+          label={igreja.ativo ? "Ativa" : "Inativa"}
+          color={igreja.ativo ? "success" : "default"}
+          icon={igreja.ativo ? undefined : <HideSourceIcon />}
+          sx={{ mt: 0.5 }}
+        />
       </Box>
     )}
 
@@ -192,14 +195,11 @@ const MesclarMetricas = () => {
   return (
     <Menu>
       <Paper sx={{ p: 3, borderRadius: 2, maxWidth: 720 }}>
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          Mesclar Métricas de Igrejas
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Move as métricas (visualizações, cliques, favoritos etc.) da igreja perdedora
-          para a vencedora. Não altera nome, endereço, status ativo ou qualquer outro
-          dado das igrejas — só as métricas.
-        </Typography>
+        <PageHeader
+          title="Mesclar Métricas de Igrejas"
+          subtitle="Move as métricas (visualizações, cliques, favoritos etc.) da igreja perdedora para a vencedora. Não altera nome, endereço, status ativo ou qualquer outro dado das igrejas — só as métricas."
+          sx={{ mb: 3 }}
+        />
 
         <Stack spacing={2}>
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>

@@ -1,6 +1,8 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
-import { Box, Card, CircularProgress, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
+import KpiCard from "../../Components/dashboard/KpiCard";
+import LoadingState from "../../Components/LoadingState";
 import Grid from "@mui/material/Grid2";
 import api from "../../services/apiService";
 import ErrorSpan from "../../ErrorSpan";
@@ -50,9 +52,7 @@ const IgrejaMetricasTab = ({ igrejaId }) => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" sx={{ py: 6 }}>
-        <CircularProgress />
-      </Box>
+      <LoadingState />
     );
   }
 
@@ -82,14 +82,7 @@ const IgrejaMetricasTab = ({ igrejaId }) => {
       <Grid container spacing={2}>
         {ORDEM_METRICAS.map((tipo) => (
           <Grid size={3} key={tipo}>
-            <Card variant="outlined" sx={{ p: 2, textAlign: "center" }}>
-              <Typography variant="h4" fontWeight={700}>
-                {valores[tipo] ?? 0}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {ROTULOS_METRICA[tipo]}
-              </Typography>
-            </Card>
+            <KpiCard label={ROTULOS_METRICA[tipo]} value={valores[tipo] ?? 0} />
           </Grid>
         ))}
       </Grid>

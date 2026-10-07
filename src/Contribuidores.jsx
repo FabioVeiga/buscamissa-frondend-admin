@@ -1,9 +1,14 @@
 import { useState, useEffect } from "react";
 import Menu from "./Components/Menu";
-import {  Table,  TableBody,  TableCell,  TableContainer,  TableHead,  TableRow,  Paper,  CircularProgress,  Box,  Typography,  Button,  Dialog,  DialogActions,  DialogContent,  DialogTitle,  TextField,  TableFooter} from "@mui/material";
+import { useNotificar } from "./Context/NotificationContext";
+import PageHeader from "./Components/PageHeader";
+import PageContainer from "./Components/PageContainer";
+import LoadingState from "./Components/LoadingState";
+import {  Table,  TableBody,  TableCell,  TableContainer,  TableHead,  TableRow,  Paper,  Typography,  Button,  Dialog,  DialogActions,  DialogContent,  DialogTitle,  TextField,  TableFooter} from "@mui/material";
 import api from "./services/apiService";
 
 const ContribuidoresPage = () => {
+  const notificar = useNotificar();
   const [contribuidores, setContribuidores] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [openModal, setOpenModal] = useState(false);
@@ -57,12 +62,12 @@ const ContribuidoresPage = () => {
       });
 
       if (response.status === 200) {
-        alert("Contribuidores inseridos com sucesso!");
+        notificar.sucesso("Contribuidores inseridos com sucesso!");
         await getContribuidores();
       }
     } catch (error) {
       console.error("Erro ao inserir contribuidores:", error);
-      alert("Erro ao inserir contribuidores. Tente novamente.");
+      notificar.erro("Erro ao inserir contribuidores. Tente novamente.");
     } finally {
       handleCloseModal();
     }
@@ -70,36 +75,21 @@ const ContribuidoresPage = () => {
 
   return (
     <Menu>
+      <PageContainer>
+      <PageHeader
+        title="Contribuidores"
+        actions={
+          <Button variant="contained" color="primary" onClick={handleOpenModal}>
+            Inserir Contribuidores
+          </Button>
+        }
+      />
       <TableContainer
         component={Paper}
         sx={{ p: 2, borderRadius: 2, overflow: "auto" }}
       >
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          flexWrap="wrap"
-          gap={2}
-          sx={{ mb: 2 }}
-        >
-          <Typography variant="h5" fontWeight={600}>Contribuidores</Typography>
-          <Button variant="contained" color="primary" onClick={handleOpenModal}>
-            Inserir Contribuidores
-          </Button>
-        </Box>
         {isLoading ? (
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
-            bgcolor="#f5f5f5"
-          >
-            <CircularProgress size={60} />
-            <Typography variant="h6" mt={2}>
-              Carregando...
-            </Typography>
-          </Box>
+          <LoadingState />
         ) : (
           <Table>
             <TableHead>
@@ -166,6 +156,7 @@ const ContribuidoresPage = () => {
           </Button>
         </DialogActions>
         </Dialog>
+      </PageContainer>
     </Menu>
   );
 };

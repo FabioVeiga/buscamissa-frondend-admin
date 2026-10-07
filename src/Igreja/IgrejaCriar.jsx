@@ -27,6 +27,9 @@ import MissaForm from "./Components/MissaForm";
 import ContatoForm from "./Components/ContatoForm";
 import EnderecoForm from "./Components/EnderecoForm";
 import SectionCard from "./Components/SectionCard";
+import ImagemSection from "./Components/ImagemSection";
+import { useAlteracoesNaoSalvas, useNavegacaoProtegida } from "../Context/UnsavedChangesContext";
+import StatusChip from "../Components/StatusChip";
 import RedesSociaisCriarSection from "./Components/RedesSociaisCriarSection";
 import IgrejasCepModal from "./Components/IgrejasCepModal";
 import AssistenteDivulgacao from "./Components/AssistenteDivulgacao";
@@ -452,6 +455,12 @@ const IgrejaCriar = () => {
     });
   };
 
+  const navegarProtegido = useNavegacaoProtegida();
+  const { sujo, marcarSalvo } = useAlteracoesNaoSalvas(
+    JSON.stringify({ formData, endereco, missas, redeSociais, base64 }),
+    "criar"
+  );
+
   const handleNavigate = (path) => {
     navigate(path);
   };
@@ -526,6 +535,7 @@ const IgrejaCriar = () => {
     api
      .post("/api/v1/Admin/igreja/criar", formData)
      .then((response) => {
+       marcarSalvo();
        setMessage("Igreja criada com sucesso!");
 
        const igreja = response.data?.data?.response;
@@ -565,16 +575,7 @@ const IgrejaCriar = () => {
             display="flex"
             flexDirection="column"
             gap={2}
-            sx={{
-              margin: "0 auto",
-              padding: 2,
-              border: "1px solid",
-              borderColor: "divider",
-              borderRadius: 3,
-              width: "100%",
-              boxSizing: "border-box",
-              backgroundColor: "background.default",
-            }}
+            sx={{ width: "100%" }}
         >
           <EnderecoForm
               endereco={enderecoAtual}
@@ -642,131 +643,16 @@ const IgrejaCriar = () => {
             </Box>
           </SectionCard>
 
-          <SectionCard
-              title="Imagem"
-              subtitle="Faça upload, cole uma imagem ou converta por URL."
-              sx={{
-                maxWidth: 620,
-                margin: "0 auto",
-              }}
-          >
-            <Box display="flex" flexDirection="column" gap={2}>
-              <Button variant="outlined" component="label">
-                Selecionar Imagem
-                <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={handleFileChange}
-                />
-              </Button>
-
-              <TextField
-                  label="Cole uma imagem (Ctrl/Cmd+V)"
-                  placeholder="Cole aqui uma imagem"
-                  onPaste={async (e) => {
-                    const items = e.clipboardData && e.clipboardData.items;
-                    if (!items) return;
-
-                    for (let i = 0; i < items.length; i++) {
-                      const item = items[i];
-
-                      if (item.kind === "file" && item.type.startsWith("image/")) {
-                        const blob = item.getAsFile();
-
-                        if (blob) {
-                          try {
-                            await blobToBase64(blob, blob.name || "pasted-image.png");
-                          } catch (err) {
-                            setMessage(["Erro ao processar imagem colada."]);
-                          }
-
-                          e.preventDefault();
-                          return;
-                        }
-                      }
-
-                      if (item.kind === "string" && item.type === "text/html") {
-                        item.getAsString(async (html) => {
-                          const srcMatch = html.match(/src=\"([^\"]+)\"/i);
-
-                          if (srcMatch && srcMatch[1]) {
-                            try {
-                              const resp = await fetch(srcMatch[1]);
-                              const blob = await resp.blob();
-                              await blobToBase64(blob, "pasted-from-html.png");
-                            } catch (err) {
-                              setMessage(["Erro ao processar imagem colada do HTML."]);
-                            }
-                          }
-                        });
-                      }
-                    }
-                  }}
-                  fullWidth
-              />
-
-              <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                <TextField
-                    label="Converter a partir de URL"
-                    value={urlInput}
-                    onChange={(e) => setUrlInput(e.target.value)}
-                    placeholder="Cole URL da imagem aqui"
-                    fullWidth
-                />
-
-                <Button
-                    variant="outlined"
-                    onClick={async () => {
-                      if (!urlInput) return;
-
-                      try {
-                        const resp = await fetch(urlInput);
-                        if (!resp.ok) throw new Error("Falha ao buscar a imagem");
-
-                        const blob = await resp.blob();
-                        await blobToBase64(blob, urlInput);
-                      } catch (err) {
-                        setMessage(["Não foi possível converter a URL."]);
-                      }
-                    }}
-                >
-                  Converter
-                </Button>
-              </Box>
-
-              {fileName && (
-                  <Typography variant="body2">
-                    Arquivo selecionado: {fileName}
-                  </Typography>
-              )}
-
-              <TextField
-                  label="Base64 da Imagem"
-                  value={base64}
-                  multiline
-                  rows={4}
-                  InputProps={{ readOnly: true }}
-                  fullWidth
-                  disabled
-              />
-
-              {base64 && (
-                  <Box
-                      component="img"
-                      src={`data:${imagemMimeType};base64,${base64}`}
-                      alt="Preview"
-                      sx={{
-                        maxWidth: "100%",
-                        maxHeight: "200px",
-                        objectFit: "contain",
-                        border: "1px solid #ccc",
-                        borderRadius: 2,
-                      }}
-                  />
-              )}
-            </Box>
-          </SectionCard>
+          <ImagemSection
+              base64={base64}
+              fileName={fileName}
+              imagemMimeType={imagemMimeType}
+              urlInput={urlInput}
+              setUrlInput={setUrlInput}
+              onFileChange={handleFileChange}
+              blobToBase64={blobToBase64}
+              onError={(msg) => setMessage([msg])}
+          />
 
           <MissaForm
               missas={missas}
@@ -789,12 +675,22 @@ const IgrejaCriar = () => {
               onDelete={handleDeleteRedeSocial}
           />
 
-          <Box display="flex" gap={2}>
+          <Box display="flex" gap={2} sx={{
+            position: "sticky",
+            bottom: 0,
+            zIndex: 5,
+            py: 1.5,
+            px: 2,
+            bgcolor: "background.paper",
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 2,
+          }}>
             <Button
                 variant="outlined"
                 color="inherit"
                 startIcon={<ArrowBack />}
-                onClick={() => navigate(-1)}
+                onClick={() => navegarProtegido(-1)}
                 disabled={loading}
             >
               Voltar
@@ -815,6 +711,7 @@ const IgrejaCriar = () => {
                   "Criar Igreja"
               )}
             </Button>
+            {sujo && <StatusChip label="Alterações não salvas" color="warning" sx={{ alignSelf: "center" }} />}
           </Box>
 
           {Object.keys(message).length > 0 && (

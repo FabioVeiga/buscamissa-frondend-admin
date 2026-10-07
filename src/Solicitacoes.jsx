@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import Menu from "./Components/Menu";
+import PageHeader from "./Components/PageHeader";
+import StatusChip from "./Components/StatusChip";
+import EmptyState from "./Components/EmptyState";
+import LoadingState from "./Components/LoadingState";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, CircularProgress, Box, Typography, Button, Dialog,
+  Paper, Box, Typography, Button, Dialog,
   DialogActions, DialogContent, DialogTitle, TextField, Checkbox,
-  FormControlLabel, Select, MenuItem, TableFooter, Chip, Divider,
-  Tooltip, IconButton, Snackbar, Alert,
-} from "@mui/material";
-import { Link, CheckCircle, Cancel, OpenInNew, Search } from "@mui/icons-material";
+  FormControlLabel, Select, MenuItem, TableFooter, Divider,
+  Tooltip, IconButton, Snackbar, Alert } from "@mui/material";
+import { Link, OpenInNew, Search } from "@mui/icons-material";
 import api from "./services/apiService";
 import IgrejaDetalheModal from "./Igreja/IgrejaDetalhesModal";
 
@@ -135,55 +138,42 @@ const SolicitacoesPage = () => {
     <Menu>
       <Box sx={{ p: { xs: 1, sm: 2 } }}>
         {/* Cabeçalho */}
-        <Box
-          display="flex"
-          flexDirection={{ xs: "column", sm: "row" }}
-          justifyContent="space-between"
-          alignItems={{ xs: "stretch", sm: "center" }}
-          gap={2}
-          sx={{ mb: 3 }}
-        >
-          <Box>
-            <Typography variant="h5" fontWeight={700}>Solicitações</Typography>
-            <Typography variant="body2" color="text.secondary">
-              Gerencie e responda as solicitações recebidas
-            </Typography>
-          </Box>
-
-          <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} gap={1} alignItems={{ xs: "stretch", sm: "center" }}>
-            <Select
-              value={filtroResolvida}
-              onChange={handleFiltroChange}
-              displayEmpty
-              size="small"
-              sx={{ minWidth: { xs: "100%", sm: 180 } }}
-            >
-              <MenuItem value="">Todas</MenuItem>
-              <MenuItem value="true">Resolvidas</MenuItem>
-              <MenuItem value="false">Não Resolvidas</MenuItem>
-            </Select>
-            <Button
-              variant="contained"
-              startIcon={<Search />}
-              onClick={buscarSolicitacoes}
-              disabled={isLoading}
-            >
-              Pesquisar
-            </Button>
-          </Box>
-        </Box>
+        <PageHeader
+          title="Solicitações"
+          subtitle="Gerencie e responda as solicitações recebidas"
+          actions={
+            <>
+                <Select
+                  value={filtroResolvida}
+                  onChange={handleFiltroChange}
+                  displayEmpty
+                  size="small"
+                  sx={{ minWidth: { xs: "100%", sm: 180 } }}
+                >
+                  <MenuItem value="">Todas</MenuItem>
+                  <MenuItem value="true">Resolvidas</MenuItem>
+                  <MenuItem value="false">Não Resolvidas</MenuItem>
+                </Select>
+                <Button
+                  variant="contained"
+                  startIcon={<Search />}
+                  onClick={buscarSolicitacoes}
+                  disabled={isLoading}
+                >
+                  Pesquisar
+                </Button>
+            </>
+          }
+        />
 
         {/* Tabela */}
         <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 2 }}>
           {isLoading ? (
-            <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" py={8}>
-              <CircularProgress size={48} />
-              <Typography variant="body1" mt={2} color="text.secondary">Carregando...</Typography>
-            </Box>
+            <LoadingState />
           ) : (
             <Table>
               <TableHead>
-                <TableRow sx={{ backgroundColor: "grey.100" }}>
+                <TableRow>
                   <TableCell><strong>ID</strong></TableCell>
                   <TableCell><strong>Solicitante</strong></TableCell>
                   <TableCell><strong>Igreja</strong></TableCell>
@@ -241,12 +231,9 @@ const SolicitacoesPage = () => {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          icon={s.resolvido ? <CheckCircle fontSize="small" /> : <Cancel fontSize="small" />}
+                        <StatusChip
                           label={s.resolvido ? "Resolvida" : "Pendente"}
                           color={s.resolvido ? "success" : "warning"}
-                          size="small"
-                          variant="outlined"
                         />
                       </TableCell>
                       <TableCell>{formatarData(s.dataSolucao)}</TableCell>
@@ -266,9 +253,9 @@ const SolicitacoesPage = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
-                      <Typography color="text.secondary">Nenhuma solicitação encontrada.</Typography>
-                    </TableCell>
+                    <TableCell colSpan={8}>
+                    <EmptyState title="Nenhuma solicitação encontrada" />
+                  </TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -301,7 +288,7 @@ const SolicitacoesPage = () => {
 
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}>
           {/* Dados da solicitação */}
-          <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, backgroundColor: "grey.50" }}>
+          <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, backgroundColor: "action.hover" }}>
             <Typography variant="caption" color="text.secondary" fontWeight={600}>
               ID #{selectedSolicitacao?.id}
             </Typography>

@@ -4,7 +4,7 @@ import Grid from "@mui/material/Grid2";
 import api from "../services/apiService";
 import ErrorSpan from "../ErrorSpan";
 import { useEndereco } from "../Context/EnderecoContext";
-import { isCepValid } from "../utils";
+import { isCepValid, formatarCep } from "../utils";
 //import { useNavigate } from "react-router-dom";
 import RedirectModal from "../Components/RedirectModal";
 
@@ -75,7 +75,8 @@ const BuscaPorCEP = () => {
       sx={{
         margin: "0 auto",
         padding: 2,
-        border: "1px solid #ccc",
+        border: "1px solid",
+        borderColor: "divider",
         borderRadius: 2,
         width: "100%",
         boxSizing: "border-box", // Garantir que padding e border sejam incluídos nas dimensões
@@ -85,9 +86,10 @@ const BuscaPorCEP = () => {
       <TextField
         label="CEP"
         value={cep}
-        onChange={(e) => setCep(e.target.value)}
+        onChange={(e) => setCep(formatarCep(e.target.value))}
         fullWidth
-        placeholder="Digite o CEP"
+        placeholder="00000-000"
+        slotProps={{ htmlInput: { inputMode: "numeric", maxLength: 9 } }}
       />
 
       {/* Botão para buscar */}
