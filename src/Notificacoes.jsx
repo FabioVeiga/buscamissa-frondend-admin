@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import Menu from "./Components/Menu";
 import PageHeader from "./Components/PageHeader";
 import PageContainer from "./Components/PageContainer";
+import EmptyState from "./Components/EmptyState";
+import LoadingState from "./Components/LoadingState";
+import StatusChip from "./Components/StatusChip";
 import {
   Autocomplete,
   Table,
@@ -11,7 +14,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  CircularProgress,
   Box,
   Typography,
   Button,
@@ -21,9 +23,7 @@ import {
   DialogActions,
   TextField,
   MenuItem,
-  Chip,
-  Alert,
-} from "@mui/material";
+  Alert } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import api from "./services/apiService";
 
@@ -171,12 +171,7 @@ const NotificacoesPage = () => {
       <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
 
         {isLoading ? (
-          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" py={4}>
-            <CircularProgress size={60} />
-            <Typography variant="h6" mt={2}>
-              Carregando...
-            </Typography>
-          </Box>
+          <LoadingState />
         ) : (
           <Table>
             <TableHead>
@@ -200,7 +195,7 @@ const NotificacoesPage = () => {
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Chip size="small" label={n.tipo} color={corTipo(n.tipo)} />
+                      <StatusChip label={n.tipo} color={corTipo(n.tipo)} />
                     </TableCell>
                     <TableCell>{n.criadaPor}</TableCell>
                     <TableCell>{new Date(n.criadaEm).toLocaleString("pt-BR")}</TableCell>
@@ -212,8 +207,8 @@ const NotificacoesPage = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    Nenhuma notificação enviada ainda.
+                  <TableCell colSpan={6}>
+                    <EmptyState title="Nenhuma notificação enviada ainda" />
                   </TableCell>
                 </TableRow>
               )}

@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import Menu from "./Components/Menu";
 import PageHeader from "./Components/PageHeader";
 import PageContainer from "./Components/PageContainer";
+import EmptyState from "./Components/EmptyState";
+import LoadingState from "./Components/LoadingState";
+import StatusChip from "./Components/StatusChip";
 import {
   Table,
   TableBody,
@@ -10,8 +13,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  CircularProgress,
-  Box,
   Typography,
   Tabs,
   Tab,
@@ -21,9 +22,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Chip,
-  Alert,
-} from "@mui/material";
+  Alert } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import api from "./services/apiService";
@@ -116,12 +115,7 @@ const SolicitacoesVinculoCapelaPage = () => {
         </Tabs>
 
         {isLoading ? (
-          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" py={4}>
-            <CircularProgress size={60} />
-            <Typography variant="h6" mt={2}>
-              Carregando...
-            </Typography>
-          </Box>
+          <LoadingState />
         ) : (
           <Table>
             <TableHead>
@@ -160,7 +154,7 @@ const SolicitacoesVinculoCapelaPage = () => {
                       </TableCell>
                       <TableCell>{new Date(r.dataSolicitacao).toLocaleString("pt-BR")}</TableCell>
                       <TableCell align="center">
-                        <Chip size="small" label={meta.label} color={meta.color} />
+                        <StatusChip label={meta.label} color={meta.color} />
                       </TableCell>
                       <TableCell align="center" sx={{ whiteSpace: "nowrap" }}>
                         {r.status === "Pendente" && (
@@ -189,8 +183,8 @@ const SolicitacoesVinculoCapelaPage = () => {
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    <Typography color="text.secondary">Nenhuma solicitação encontrada.</Typography>
+                  <TableCell colSpan={6}>
+                    <EmptyState title="Nenhuma solicitação encontrada" />
                   </TableCell>
                 </TableRow>
               )}

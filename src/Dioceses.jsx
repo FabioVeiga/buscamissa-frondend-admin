@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import Menu from "./Components/Menu";
 import PageHeader from "./Components/PageHeader";
+import EmptyState from "./Components/EmptyState";
 import PageContainer from "./Components/PageContainer";
+import LoadingState from "./Components/LoadingState";
+import StatusChip from "./Components/StatusChip";
 import {
   Table,
   TableBody,
@@ -10,7 +13,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  CircularProgress,
   Box,
   Typography,
   Tabs,
@@ -24,11 +26,9 @@ import {
   MenuItem,
   FormControlLabel,
   Switch,
-  Chip,
   IconButton,
   Tooltip,
-  Alert,
-} from "@mui/material";
+  Alert } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import api from "./services/apiService";
@@ -190,12 +190,7 @@ const DiocesesPage = () => {
         </Box>
 
         {isLoading ? (
-          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" py={4}>
-            <CircularProgress size={60} />
-            <Typography variant="h6" mt={2}>
-              Carregando...
-            </Typography>
-          </Box>
+          <LoadingState />
         ) : (
           <Table>
             <TableHead>
@@ -234,11 +229,7 @@ const DiocesesPage = () => {
                       <TableCell>{r.arquidioceseNome || "—"}</TableCell>
                     )}
                     <TableCell align="center">
-                      <Chip
-                        size="small"
-                        label={r.ativo ? "Ativa" : "Inativa"}
-                        color={r.ativo ? "success" : "default"}
-                      />
+                      <StatusChip label={r.ativo ? "Ativa" : "Inativa"} color={r.ativo ? "success" : "default"} />
                     </TableCell>
                     <TableCell align="center">
                       <Tooltip title="Editar">
@@ -251,8 +242,8 @@ const DiocesesPage = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    Nenhuma {tituloRecurso.toLowerCase()} cadastrada.
+                  <TableCell colSpan={7}>
+                    <EmptyState title={`Nenhuma ${tituloRecurso.toLowerCase()} cadastrada`} />
                   </TableCell>
                 </TableRow>
               )}

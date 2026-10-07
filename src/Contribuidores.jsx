@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import Menu from "./Components/Menu";
 import PageHeader from "./Components/PageHeader";
 import PageContainer from "./Components/PageContainer";
-import {  Table,  TableBody,  TableCell,  TableContainer,  TableHead,  TableRow,  Paper,  CircularProgress,  Box,  Typography,  Button,  Dialog,  DialogActions,  DialogContent,  DialogTitle,  TextField,  TableFooter} from "@mui/material";
+import LoadingState from "./Components/LoadingState";
+import {  Table,  TableBody,  TableCell,  TableContainer,  TableHead,  TableRow,  Paper,  Typography,  Button,  Dialog,  DialogActions,  DialogContent,  DialogTitle,  TextField,  TableFooter} from "@mui/material";
 import api from "./services/apiService";
 
 const ContribuidoresPage = () => {
@@ -86,18 +87,7 @@ const ContribuidoresPage = () => {
         sx={{ p: 2, borderRadius: 2, overflow: "auto" }}
       >
         {isLoading ? (
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
-            bgcolor="background.default"
-          >
-            <CircularProgress size={60} />
-            <Typography variant="h6" mt={2}>
-              Carregando...
-            </Typography>
-          </Box>
+          <LoadingState />
         ) : (
           <Table>
             <TableHead>

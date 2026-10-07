@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import Menu from "./Components/Menu";
 import PageHeader from "./Components/PageHeader";
 import PageContainer from "./Components/PageContainer";
+import EmptyState from "./Components/EmptyState";
+import LoadingState from "./Components/LoadingState";
 import {
   Table,
   TableBody,
@@ -10,11 +12,7 @@ import {
   TableHead,
   TableRow,
   Paper,
-  CircularProgress,
-  Box,
-  Typography,
-  Switch,
-} from "@mui/material";
+  Switch } from "@mui/material";
 import api from "./services/apiService";
 
 const FeatureTogglesPage = () => {
@@ -68,12 +66,7 @@ const FeatureTogglesPage = () => {
       />
       <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
         {isLoading ? (
-          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" py={4}>
-            <CircularProgress size={60} />
-            <Typography variant="h6" mt={2}>
-              Carregando...
-            </Typography>
-          </Box>
+          <LoadingState />
         ) : (
           <Table>
             <TableHead>
@@ -107,8 +100,8 @@ const FeatureTogglesPage = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} align="center">
-                    Nenhum feature toggle cadastrado.
+                  <TableCell colSpan={4}>
+                    <EmptyState title="Nenhum feature toggle cadastrado" />
                   </TableCell>
                 </TableRow>
               )}

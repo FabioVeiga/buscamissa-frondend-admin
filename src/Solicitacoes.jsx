@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import Menu from "./Components/Menu";
 import PageHeader from "./Components/PageHeader";
+import StatusChip from "./Components/StatusChip";
+import EmptyState from "./Components/EmptyState";
+import LoadingState from "./Components/LoadingState";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, CircularProgress, Box, Typography, Button, Dialog,
+  Paper, Box, Typography, Button, Dialog,
   DialogActions, DialogContent, DialogTitle, TextField, Checkbox,
-  FormControlLabel, Select, MenuItem, TableFooter, Chip, Divider,
-  Tooltip, IconButton, Snackbar, Alert,
-} from "@mui/material";
-import { Link, CheckCircle, Cancel, OpenInNew, Search } from "@mui/icons-material";
+  FormControlLabel, Select, MenuItem, TableFooter, Divider,
+  Tooltip, IconButton, Snackbar, Alert } from "@mui/material";
+import { Link, OpenInNew, Search } from "@mui/icons-material";
 import api from "./services/apiService";
 import IgrejaDetalheModal from "./Igreja/IgrejaDetalhesModal";
 
@@ -167,10 +169,7 @@ const SolicitacoesPage = () => {
         {/* Tabela */}
         <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 2 }}>
           {isLoading ? (
-            <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" py={8}>
-              <CircularProgress size={48} />
-              <Typography variant="body1" mt={2} color="text.secondary">Carregando...</Typography>
-            </Box>
+            <LoadingState />
           ) : (
             <Table>
               <TableHead>
@@ -232,12 +231,9 @@ const SolicitacoesPage = () => {
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          icon={s.resolvido ? <CheckCircle fontSize="small" /> : <Cancel fontSize="small" />}
+                        <StatusChip
                           label={s.resolvido ? "Resolvida" : "Pendente"}
                           color={s.resolvido ? "success" : "warning"}
-                          size="small"
-                          variant="outlined"
                         />
                       </TableCell>
                       <TableCell>{formatarData(s.dataSolucao)}</TableCell>
@@ -257,9 +253,9 @@ const SolicitacoesPage = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
-                      <Typography color="text.secondary">Nenhuma solicitação encontrada.</Typography>
-                    </TableCell>
+                    <TableCell colSpan={8}>
+                    <EmptyState title="Nenhuma solicitação encontrada" />
+                  </TableCell>
                   </TableRow>
                 )}
               </TableBody>

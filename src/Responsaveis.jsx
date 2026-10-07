@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import Menu from "./Components/Menu";
 import PageHeader from "./Components/PageHeader";
+import EmptyState from "./Components/EmptyState";
 import PageContainer from "./Components/PageContainer";
+import LoadingState from "./Components/LoadingState";
+import StatusChip from "./Components/StatusChip";
 import {
   Table,
   TableBody,
@@ -11,7 +14,6 @@ import {
   TableRow,
   Paper,
   CircularProgress,
-  Box,
   Typography,
   Tabs,
   Tab,
@@ -21,11 +23,9 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Chip,
   Tooltip,
   Alert,
-  Snackbar,
-} from "@mui/material";
+  Snackbar } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import BlockIcon from "@mui/icons-material/Block";
@@ -180,12 +180,7 @@ const ResponsaveisPage = () => {
         </Tabs>
 
         {isLoading ? (
-          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" py={4}>
-            <CircularProgress size={60} />
-            <Typography variant="h6" mt={2}>
-              Carregando...
-            </Typography>
-          </Box>
+          <LoadingState />
         ) : (
           <Table>
             <TableHead>
@@ -233,7 +228,7 @@ const ResponsaveisPage = () => {
                         {new Date(r.dataSolicitacao).toLocaleString("pt-BR")}
                       </TableCell>
                       <TableCell align="center">
-                        <Chip size="small" label={meta.label} color={meta.color} />
+                        <StatusChip label={meta.label} color={meta.color} />
                       </TableCell>
                       <TableCell align="center" sx={{ whiteSpace: "nowrap" }}>
                         <Tooltip title="Ir para edição da Igreja">
@@ -317,10 +312,11 @@ const ResponsaveisPage = () => {
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    {aba === 0
-                      ? "Nenhuma solicitação pendente. 🎉"
-                      : "Nenhum registro."}
+                  <TableCell colSpan={6}>
+                    <EmptyState
+                      title={aba === 0 ? "Nenhuma solicitação pendente" : "Nenhum registro"}
+                      description={aba === 0 ? "Tudo em dia por aqui." : undefined}
+                    />
                   </TableCell>
                 </TableRow>
               )}

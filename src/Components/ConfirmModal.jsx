@@ -1,23 +1,16 @@
 /* eslint-disable react/prop-types */
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from "@mui/material";
+import ConfirmDialog from "./ConfirmDialog";
 
-const ConfirmModal = ({ open, onClose, onConfirm, title, message }) => {
-  return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{title}</DialogTitle>
-      <DialogContent>
-        <DialogContentText>{message}</DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="secondary">
-          Não
-        </Button>
-        <Button onClick={onConfirm} color="primary" autoFocus>
-          Sim
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
+const ConfirmModal = ({ open, onClose, onConfirm, title, message }) => (
+  <ConfirmDialog
+    open={open}
+    onClose={onClose}
+    onConfirm={onConfirm}
+    title={title}
+    message={message}
+    confirmLabel="Sim"
+    cancelLabel="Não"
+  />
+);
 
 export default ConfirmModal;

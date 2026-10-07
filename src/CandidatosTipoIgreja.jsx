@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import Menu from "./Components/Menu";
 import PageHeader from "./Components/PageHeader";
 import PageContainer from "./Components/PageContainer";
+import EmptyState from "./Components/EmptyState";
+import LoadingState from "./Components/LoadingState";
+import StatusChip from "./Components/StatusChip";
 import {
   Table,
   TableBody,
@@ -10,12 +13,8 @@ import {
   TableHead,
   TableRow,
   Paper,
-  CircularProgress,
-  Box,
-  Typography,
   Button,
-  Chip,
-} from "@mui/material";
+  Chip } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import api from "./services/apiService";
@@ -77,12 +76,7 @@ const CandidatosTipoIgrejaPage = () => {
       <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
 
         {isLoading ? (
-          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" py={4}>
-            <CircularProgress size={60} />
-            <Typography variant="h6" mt={2}>
-              Carregando...
-            </Typography>
-          </Box>
+          <LoadingState />
         ) : (
           <Table>
             <TableHead>
@@ -106,7 +100,7 @@ const CandidatosTipoIgrejaPage = () => {
                     </TableCell>
                     <TableCell align="center" sx={{ whiteSpace: "nowrap" }}>
                       {aplicados.has(r.id) ? (
-                        <Chip size="small" label="Aplicado" color="success" />
+                        <StatusChip label="Aplicado" color="success" />
                       ) : (
                         <>
                           <Button
@@ -134,8 +128,8 @@ const CandidatosTipoIgrejaPage = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">
-                    <Typography color="text.secondary">Nenhuma candidata encontrada.</Typography>
+                  <TableCell colSpan={5}>
+                    <EmptyState title="Nenhuma candidata encontrada" />
                   </TableCell>
                 </TableRow>
               )}
