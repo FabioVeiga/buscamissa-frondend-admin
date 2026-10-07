@@ -18,76 +18,26 @@ import {
 } from "@mui/material";
 import { useAuth } from "../Context/AuthContext";
 import { useColorMode } from "../Context/ColorModeContext";
+import SearchIcon from "@mui/icons-material/Search";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import SessaoCountdown from "./SessaoCountdown";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/apiService";
 import logoBM from "../assets/logoBM.svg";
-import HomeIcon from "@mui/icons-material/Home";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import ChurchIcon from "@mui/icons-material/Church";
 import LogoutIcon from "@mui/icons-material/Logout";
-import BuildIcon from "@mui/icons-material/Build";
-import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
-import EmailIcon from "@mui/icons-material/Email";
-import InsightsIcon from "@mui/icons-material/Insights";
-import FactCheckIcon from "@mui/icons-material/FactCheck";
-import AnnouncementIcon from "@mui/icons-material/Announcement";
-import MergeTypeIcon from "@mui/icons-material/MergeType";
-import ToggleOnIcon from "@mui/icons-material/ToggleOn";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import { SIDEBAR } from "../theme";
+import { navSections } from "./navItems.jsx";
+import GlobalSearch from "./GlobalSearch";
 
 const DRAWER_WIDTH = 260;
 const DRAWER_WIDTH_COLLAPSED = 72;
 const TOP_BAR_HEIGHT = 56;
 const TOP_BAR_HEIGHT_SM = 64;
-
-const navSections = [
-  {
-    title: "Operação",
-    items: [
-      { path: "/home", label: "Dashboard", icon: HomeIcon },
-      { path: "/igreja", label: "Igrejas", icon: ChurchIcon },
-      { path: "/aprovacoes", label: "Aprovações Pendentes", icon: FactCheckIcon, badgeKey: "aprovacoes" },
-      { path: "/responsaveis", label: "Responsáveis Verificados", icon: VerifiedUserIcon, badgeKey: "responsaveis" },
-      { path: "/reportar-problema", label: "Problemas Reportados", icon: AnnouncementIcon, badgeKey: "problemas" },
-      { path: "/solicitacoes", label: "Solicitações", icon: BuildIcon, badgeKey: "solicitacoes" },
-      { path: "/solicitacoes-vinculo-capela", label: "Vínculos de Capela", icon: AccountBalanceIcon },
-    ],
-  },
-  {
-    title: "Conteúdo",
-    items: [
-      { path: "/email-evento", label: "Divulgação", icon: EmailIcon },
-      { path: "/notificacoes", label: "Notificações", icon: NotificationsIcon },
-      { path: "/dioceses", label: "Dioceses", icon: AccountBalanceIcon },
-      { path: "/candidatos-tipo-igreja", label: "Candidatas a Reclassificação", icon: AccountBalanceIcon },
-      { path: "/mesclar-metricas", label: "Mesclar Métricas", icon: MergeTypeIcon },
-    ],
-  },
-  {
-    title: "Relatórios",
-    items: [
-      { path: "/indicadores", label: "Indicadores", icon: InsightsIcon },
-      { path: "/contribuidores", label: "Contribuidores", icon: CurrencyExchangeIcon },
-    ],
-  },
-  {
-    title: "Sistema",
-    items: [
-      { path: "/usuario", label: "Usuários", icon: AccountCircleIcon },
-      { path: "/feature-toggles", label: "Feature Toggles", icon: ToggleOnIcon },
-    ],
-  },
-];
 
 const pageTitles = {
   "/home": "Dashboard",
@@ -119,6 +69,18 @@ const Menu = ({ children }) => {
   const location = useLocation();
   const { logout } = useAuth();
   const { mode, toggleColorMode } = useColorMode();
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const drawerWidth = isMobile ? DRAWER_WIDTH : desktopOpen ? DRAWER_WIDTH : DRAWER_WIDTH_COLLAPSED;
   const pageTitle = pageTitles[location.pathname] || "Busca Missa Admin";
@@ -350,7 +312,9 @@ const Menu = ({ children }) => {
             {mobileOpen ? <CloseIcon /> : <MenuIcon />}
           </IconButton>
           <img src={logoBM} alt="Busca Missa" style={{ height: 28, width: "auto" }} />
-          <Box sx={{ minWidth: 48 }} />
+          <IconButton color="inherit" edge="end" onClick={() => setSearchOpen(true)} aria-label="Abrir busca global" sx={{ minWidth: 48, minHeight: 48 }}>
+            <SearchIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
 
@@ -429,7 +393,38 @@ const Menu = ({ children }) => {
           <Typography variant="h6" fontWeight={600} color="text.primary">
             {pageTitle}
           </Typography>
+          <Box sx={{ flex: 1 }} />
+          <Box
+            component="button"
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            aria-label="Abrir busca global"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              width: 280,
+              px: 1.5,
+              py: 0.75,
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 2,
+              bgcolor: "background.default",
+              color: "text.secondary",
+              font: "inherit",
+              fontSize: "0.875rem",
+              cursor: "pointer",
+              "&:hover": { borderColor: "text.disabled" },
+            }}
+          >
+            <SearchIcon fontSize="small" />
+            <Box component="span" sx={{ flex: 1, textAlign: "left" }}>Buscar…</Box>
+            <Box component="kbd" sx={{ fontSize: "0.7rem", px: 0.75, py: 0.125, border: "1px solid", borderColor: "divider", borderRadius: 1, fontFamily: "inherit" }}>
+              {navigator.platform?.toLowerCase().includes("mac") ? "⌘K" : "Ctrl K"}
+            </Box>
+          </Box>
         </Box>
+        <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
         <Box
           sx={{
             flex: 1,
