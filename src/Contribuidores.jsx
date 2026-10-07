@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import Menu from "./Components/Menu";
+import PageHeader from "./Components/PageHeader";
+import PageContainer from "./Components/PageContainer";
 import {  Table,  TableBody,  TableCell,  TableContainer,  TableHead,  TableRow,  Paper,  CircularProgress,  Box,  Typography,  Button,  Dialog,  DialogActions,  DialogContent,  DialogTitle,  TextField,  TableFooter} from "@mui/material";
 import api from "./services/apiService";
 
@@ -70,30 +72,26 @@ const ContribuidoresPage = () => {
 
   return (
     <Menu>
+      <PageContainer>
+      <PageHeader
+        title="Contribuidores"
+        actions={
+          <Button variant="contained" color="primary" onClick={handleOpenModal}>
+            Inserir Contribuidores
+          </Button>
+        }
+      />
       <TableContainer
         component={Paper}
         sx={{ p: 2, borderRadius: 2, overflow: "auto" }}
       >
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          flexWrap="wrap"
-          gap={2}
-          sx={{ mb: 2 }}
-        >
-          <Typography variant="h5" fontWeight={600}>Contribuidores</Typography>
-          <Button variant="contained" color="primary" onClick={handleOpenModal}>
-            Inserir Contribuidores
-          </Button>
-        </Box>
         {isLoading ? (
           <Box
             display="flex"
             flexDirection="column"
             alignItems="center"
             justifyContent="center"
-            bgcolor="#f5f5f5"
+            bgcolor="background.default"
           >
             <CircularProgress size={60} />
             <Typography variant="h6" mt={2}>
@@ -166,6 +164,7 @@ const ContribuidoresPage = () => {
           </Button>
         </DialogActions>
         </Dialog>
+      </PageContainer>
     </Menu>
   );
 };

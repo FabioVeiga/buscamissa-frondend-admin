@@ -466,7 +466,7 @@ const UsuarioPage = () => {
             flexDirection="column"
             alignItems="center"
             justifyContent="center"
-            bgcolor="#f5f5f5"
+            bgcolor="background.default"
           >
             <CircularProgress size={60} />
             <Typography variant="h6" mt={2}>

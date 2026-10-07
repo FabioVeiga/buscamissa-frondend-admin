@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Menu from "./Components/Menu";
+import PageHeader from "./Components/PageHeader";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, CircularProgress, Box, Typography, Button, Dialog,
@@ -135,43 +136,33 @@ const SolicitacoesPage = () => {
     <Menu>
       <Box sx={{ p: { xs: 1, sm: 2 } }}>
         {/* Cabeçalho */}
-        <Box
-          display="flex"
-          flexDirection={{ xs: "column", sm: "row" }}
-          justifyContent="space-between"
-          alignItems={{ xs: "stretch", sm: "center" }}
-          gap={2}
-          sx={{ mb: 3 }}
-        >
-          <Box>
-            <Typography variant="h5" fontWeight={700}>Solicitações</Typography>
-            <Typography variant="body2" color="text.secondary">
-              Gerencie e responda as solicitações recebidas
-            </Typography>
-          </Box>
-
-          <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} gap={1} alignItems={{ xs: "stretch", sm: "center" }}>
-            <Select
-              value={filtroResolvida}
-              onChange={handleFiltroChange}
-              displayEmpty
-              size="small"
-              sx={{ minWidth: { xs: "100%", sm: 180 } }}
-            >
-              <MenuItem value="">Todas</MenuItem>
-              <MenuItem value="true">Resolvidas</MenuItem>
-              <MenuItem value="false">Não Resolvidas</MenuItem>
-            </Select>
-            <Button
-              variant="contained"
-              startIcon={<Search />}
-              onClick={buscarSolicitacoes}
-              disabled={isLoading}
-            >
-              Pesquisar
-            </Button>
-          </Box>
-        </Box>
+        <PageHeader
+          title="Solicitações"
+          subtitle="Gerencie e responda as solicitações recebidas"
+          actions={
+            <>
+                <Select
+                  value={filtroResolvida}
+                  onChange={handleFiltroChange}
+                  displayEmpty
+                  size="small"
+                  sx={{ minWidth: { xs: "100%", sm: 180 } }}
+                >
+                  <MenuItem value="">Todas</MenuItem>
+                  <MenuItem value="true">Resolvidas</MenuItem>
+                  <MenuItem value="false">Não Resolvidas</MenuItem>
+                </Select>
+                <Button
+                  variant="contained"
+                  startIcon={<Search />}
+                  onClick={buscarSolicitacoes}
+                  disabled={isLoading}
+                >
+                  Pesquisar
+                </Button>
+            </>
+          }
+        />
 
         {/* Tabela */}
         <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 2 }}>
@@ -183,7 +174,7 @@ const SolicitacoesPage = () => {
           ) : (
             <Table>
               <TableHead>
-                <TableRow sx={{ backgroundColor: "grey.100" }}>
+                <TableRow>
                   <TableCell><strong>ID</strong></TableCell>
                   <TableCell><strong>Solicitante</strong></TableCell>
                   <TableCell><strong>Igreja</strong></TableCell>
@@ -301,7 +292,7 @@ const SolicitacoesPage = () => {
 
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}>
           {/* Dados da solicitação */}
-          <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, backgroundColor: "grey.50" }}>
+          <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, backgroundColor: "action.hover" }}>
             <Typography variant="caption" color="text.secondary" fontWeight={600}>
               ID #{selectedSolicitacao?.id}
             </Typography>

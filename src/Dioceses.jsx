@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Menu from "./Components/Menu";
+import PageHeader from "./Components/PageHeader";
+import PageContainer from "./Components/PageContainer";
 import {
   Table,
   TableBody,
@@ -151,21 +153,17 @@ const DiocesesPage = () => {
 
   return (
     <Menu>
-      <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
-        <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 1 }}>
-          <Box>
-            <Typography variant="h5" fontWeight={600}>
-              Arquidioceses e Dioceses
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Estrutura eclesiástica que será relacionada às paróquias. Exclusão é
-              sempre lógica (inativar), nunca física.
-            </Typography>
-          </Box>
+      <PageContainer>
+      <PageHeader
+        title="Arquidioceses e Dioceses"
+        subtitle={`Estrutura eclesiástica que será relacionada às paróquias. Exclusão é sempre lógica (inativar), nunca física.`}
+        actions={
           <Button variant="contained" startIcon={<AddIcon />} onClick={abrirNovo}>
             Nova {tituloRecurso}
           </Button>
-        </Box>
+        }
+      />
+      <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
 
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
           <Tabs value={aba} onChange={(_, v) => setAba(v)} sx={{ mb: 1 }}>
@@ -350,6 +348,7 @@ const DiocesesPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      </PageContainer>
     </Menu>
   );
 };

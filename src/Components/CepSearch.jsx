@@ -75,7 +75,8 @@ const BuscaPorCEP = () => {
       sx={{
         margin: "0 auto",
         padding: 2,
-        border: "1px solid #ccc",
+        border: "1px solid",
+        borderColor: "divider",
         borderRadius: 2,
         width: "100%",
         boxSizing: "border-box", // Garantir que padding e border sejam incluídos nas dimensões

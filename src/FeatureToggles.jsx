@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import Menu from "./Components/Menu";
+import PageHeader from "./Components/PageHeader";
+import PageContainer from "./Components/PageContainer";
 import {
   Table,
   TableBody,
@@ -59,16 +61,12 @@ const FeatureTogglesPage = () => {
 
   return (
     <Menu>
+      <PageContainer>
+      <PageHeader
+        title="Feature Toggles"
+        subtitle={`Liga/desliga features do site público sem precisar de deploy. Alterações entram em vigor em até 1 minuto (cache do site).`}
+      />
       <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="h5" fontWeight={600}>
-            Feature Toggles
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Liga/desliga features do site público sem precisar de deploy. Alterações
-            entram em vigor em até 1 minuto (cache do site).
-          </Typography>
-        </Box>
         {isLoading ? (
           <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" py={4}>
             <CircularProgress size={60} />
@@ -118,6 +116,7 @@ const FeatureTogglesPage = () => {
           </Table>
         )}
       </TableContainer>
+      </PageContainer>
     </Menu>
   );
 };

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import Menu from "./Components/Menu";
+import PageHeader from "./Components/PageHeader";
+import PageContainer from "./Components/PageContainer";
 import {
   Table,
   TableBody,
@@ -67,18 +69,12 @@ const CandidatosTipoIgrejaPage = () => {
 
   return (
     <Menu>
+      <PageContainer>
+      <PageHeader
+        title="Candidatas a reclassificação de tipo"
+        subtitle={`Igrejas hoje classificadas como Paróquia (valor padrão do backfill original) cujo nome sugere capela/comunidade/santuário. Identificação por heurística — revise antes de aplicar (ex.: "Paróquia Santuário de Fátima" pode legitimamente ser uma paróquia). Aplicar só corrige o TIPO; a paróquia-sede continua sendo definida à parte, na tela de edição da igreja.`}
+      />
       <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="h5" fontWeight={600}>
-            Candidatas a reclassificação de tipo
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Igrejas hoje classificadas como Paróquia (valor padrão do backfill original) cujo nome sugere
-            capela/comunidade/santuário. Identificação por heurística — revise antes de aplicar (ex.: &quot;Paróquia
-            Santuário de Fátima&quot; pode legitimamente ser uma paróquia). Aplicar só corrige o TIPO; a paróquia-sede
-            continua sendo definida à parte, na tela de edição da igreja.
-          </Typography>
-        </Box>
 
         {isLoading ? (
           <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" py={4}>
@@ -147,6 +143,7 @@ const CandidatosTipoIgrejaPage = () => {
           </Table>
         )}
       </TableContainer>
+      </PageContainer>
     </Menu>
   );
 };

@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Menu from "./Components/Menu";
+import PageHeader from "./Components/PageHeader";
+import PageContainer from "./Components/PageContainer";
 import {
   Autocomplete,
   Table,
@@ -156,21 +158,17 @@ const NotificacoesPage = () => {
 
   return (
     <Menu>
-      <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
-        <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 1 }}>
-          <Box>
-            <Typography variant="h5" fontWeight={600}>
-              Notificações
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Avisos in-app para responsáveis verificados — só chegam a igrejas
-              que já têm um responsável aprovado.
-            </Typography>
-          </Box>
+      <PageContainer>
+      <PageHeader
+        title="Notificações"
+        subtitle={`Avisos in-app para responsáveis verificados — só chegam a igrejas que já têm um responsável aprovado.`}
+        actions={
           <Button variant="contained" startIcon={<AddIcon />} onClick={abrirNova}>
             Nova notificação
           </Button>
-        </Box>
+        }
+      />
+      <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
 
         {isLoading ? (
           <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" py={4}>
@@ -325,6 +323,7 @@ const NotificacoesPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      </PageContainer>
     </Menu>
   );
 };

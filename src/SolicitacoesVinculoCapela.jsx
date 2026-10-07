@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Menu from "./Components/Menu";
+import PageHeader from "./Components/PageHeader";
+import PageContainer from "./Components/PageContainer";
 import {
   Table,
   TableBody,
@@ -101,17 +103,12 @@ const SolicitacoesVinculoCapelaPage = () => {
 
   return (
     <Menu>
+      <PageContainer>
+      <PageHeader
+        title="Solicitações de Vínculo de Capela"
+        subtitle={`Pedidos de responsáveis para anexar uma capela/comunidade órfã à própria paróquia (Fase 4 do vínculo Igreja↔Diocese). Aprovar seta Igreja.IgrejaPaiId da capela para a paróquia solicitante.`}
+      />
       <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="h5" fontWeight={600}>
-            Solicitações de Vínculo de Capela
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Pedidos de responsáveis para anexar uma capela/comunidade órfã à
-            própria paróquia (Fase 4 do vínculo Igreja↔Diocese). Aprovar seta
-            Igreja.IgrejaPaiId da capela para a paróquia solicitante.
-          </Typography>
-        </Box>
 
         <Tabs value={aba} onChange={(_, v) => setAba(v)} sx={{ mb: 1 }}>
           <Tab label="Fila de pendentes" />
@@ -231,6 +228,7 @@ const SolicitacoesVinculoCapelaPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      </PageContainer>
     </Menu>
   );
 };

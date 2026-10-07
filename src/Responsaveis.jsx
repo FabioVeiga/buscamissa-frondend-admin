@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Menu from "./Components/Menu";
+import PageHeader from "./Components/PageHeader";
+import PageContainer from "./Components/PageContainer";
 import {
   Table,
   TableBody,
@@ -165,17 +167,12 @@ const ResponsaveisPage = () => {
 
   return (
     <Menu>
+      <PageContainer>
+      <PageHeader
+        title="Responsáveis Verificados"
+        subtitle={`Solicitações de responsáveis pelas igrejas (pároco/secretaria). Toda decisão notifica o usuário por e-mail. Aprovado vira perfil Dono e pode editar os dados da igreja direto pelo site.`}
+      />
       <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="h5" fontWeight={600}>
-            Responsáveis Verificados
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Solicitações de responsáveis pelas igrejas (pároco/secretaria). Toda
-            decisão notifica o usuário por e-mail. Aprovado vira perfil Dono e
-            pode editar os dados da igreja direto pelo site.
-          </Typography>
-        </Box>
 
         <Tabs value={aba} onChange={(_, v) => setAba(v)} sx={{ mb: 1 }}>
           <Tab label="Fila de pendentes" />
@@ -447,6 +444,7 @@ const ResponsaveisPage = () => {
           {erroIgreja}
         </Alert>
       </Snackbar>
+      </PageContainer>
     </Menu>
   );
 };
