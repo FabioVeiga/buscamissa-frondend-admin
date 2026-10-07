@@ -36,7 +36,10 @@ const LoginPage = () => {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%)",
+          background: (t) =>
+            t.palette.mode === "dark"
+              ? "linear-gradient(135deg, #0b1220 0%, #111a2e 100%)"
+              : "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f8fafc 100%)",
           p: 2,
         }}
       >

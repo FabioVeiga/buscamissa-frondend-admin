@@ -17,6 +17,9 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { useAuth } from "../Context/AuthContext";
+import { useColorMode } from "../Context/ColorModeContext";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import LightModeIcon from "@mui/icons-material/LightMode";
 import SessaoCountdown from "./SessaoCountdown";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/apiService";
@@ -115,6 +118,7 @@ const Menu = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
+  const { mode, toggleColorMode } = useColorMode();
 
   const drawerWidth = isMobile ? DRAWER_WIDTH : desktopOpen ? DRAWER_WIDTH : DRAWER_WIDTH_COLLAPSED;
   const pageTitle = pageTitles[location.pathname] || "Busca Missa Admin";
@@ -278,6 +282,30 @@ const Menu = ({ children }) => {
         </Box>
       )}
       <List sx={{ px: 1.5, py: 1, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+        <ListItem disablePadding sx={{ mb: 0.25 }}>
+          <Tooltip title={desktopOpen || isMobile ? "" : mode === "dark" ? "Tema claro" : "Tema escuro"} placement="right">
+            <ListItemButton
+              onClick={toggleColorMode}
+              sx={{
+                borderRadius: 2,
+                py: 1.25,
+                px: 1.5,
+                color: SIDEBAR.text,
+                "&:hover": { backgroundColor: SIDEBAR.bgHover },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: desktopOpen || isMobile ? 40 : 36, color: "inherit" }}>
+                {mode === "dark" ? <LightModeIcon sx={{ fontSize: 22 }} /> : <DarkModeIcon sx={{ fontSize: 22 }} />}
+              </ListItemIcon>
+              {(desktopOpen || isMobile) && (
+                <ListItemText
+                  primary={mode === "dark" ? "Tema claro" : "Tema escuro"}
+                  primaryTypographyProps={{ fontWeight: 500, fontSize: "0.9375rem" }}
+                />
+              )}
+            </ListItemButton>
+          </Tooltip>
+        </ListItem>
         <ListItem disablePadding>
           <ListItemButton
             onClick={handleLogout}

@@ -49,7 +49,7 @@ const ReportarProblemaModal = ({ open, onClose, problemaId, nome, email, descric
           width: "min(480px, 92vw)",
           maxHeight: "90vh",
           overflowY: "auto",
-          backgroundColor: "white",
+          backgroundColor: "background.paper",
           padding: "16px",
           borderRadius: "8px",
           boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
@@ -75,7 +75,7 @@ const ReportarProblemaModal = ({ open, onClose, problemaId, nome, email, descric
 
         <Box
           sx={{
-            backgroundColor: "grey.100",
+            backgroundColor: "action.hover",
             borderRadius: 1,
             padding: "12px",
             marginBottom: "16px",
