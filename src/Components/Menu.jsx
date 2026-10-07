@@ -19,13 +19,14 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { useAuth } from "../Context/AuthContext";
+import { useNavegacaoProtegida } from "../Context/UnsavedChangesContext";
 import { useColorMode } from "../Context/ColorModeContext";
 import SearchIcon from "@mui/icons-material/Search";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import SessaoCountdown from "./SessaoCountdown";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import api from "../services/apiService";
 import logoBM from "../assets/logoBM.svg";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -68,7 +69,7 @@ const Menu = ({ children }) => {
   const [desktopOpen, setDesktopOpen] = useState(true);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const navigate = useNavigate();
+  const navigate = useNavegacaoProtegida();
   const location = useLocation();
   const { logout } = useAuth();
   const { mode, toggleColorMode } = useColorMode();

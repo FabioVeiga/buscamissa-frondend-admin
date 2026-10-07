@@ -28,6 +28,8 @@ import ContatoForm from "./Components/ContatoForm";
 import EnderecoForm from "./Components/EnderecoForm";
 import SectionCard from "./Components/SectionCard";
 import ImagemSection from "./Components/ImagemSection";
+import { useAlteracoesNaoSalvas, useNavegacaoProtegida } from "../Context/UnsavedChangesContext";
+import StatusChip from "../Components/StatusChip";
 import RedesSociaisCriarSection from "./Components/RedesSociaisCriarSection";
 import IgrejasCepModal from "./Components/IgrejasCepModal";
 import AssistenteDivulgacao from "./Components/AssistenteDivulgacao";
@@ -453,6 +455,12 @@ const IgrejaCriar = () => {
     });
   };
 
+  const navegarProtegido = useNavegacaoProtegida();
+  const { sujo, marcarSalvo } = useAlteracoesNaoSalvas(
+    JSON.stringify({ formData, endereco, missas, redeSociais, base64 }),
+    "criar"
+  );
+
   const handleNavigate = (path) => {
     navigate(path);
   };
@@ -527,6 +535,7 @@ const IgrejaCriar = () => {
     api
      .post("/api/v1/Admin/igreja/criar", formData)
      .then((response) => {
+       marcarSalvo();
        setMessage("Igreja criada com sucesso!");
 
        const igreja = response.data?.data?.response;
@@ -681,7 +690,7 @@ const IgrejaCriar = () => {
                 variant="outlined"
                 color="inherit"
                 startIcon={<ArrowBack />}
-                onClick={() => navigate(-1)}
+                onClick={() => navegarProtegido(-1)}
                 disabled={loading}
             >
               Voltar
@@ -702,6 +711,7 @@ const IgrejaCriar = () => {
                   "Criar Igreja"
               )}
             </Button>
+            {sujo && <StatusChip label="Alterações não salvas" color="warning" sx={{ alignSelf: "center" }} />}
           </Box>
 
           {Object.keys(message).length > 0 && (
