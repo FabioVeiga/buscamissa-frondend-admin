@@ -9,7 +9,7 @@ import {
 import Grid from "@mui/material/Grid2";
 import { OpenInNew, CheckCircle, Cancel, TravelExplore, Clear } from "@mui/icons-material";
 import SectionCard from "./SectionCard";
-import { apenasNumeros } from "../../utils";
+import { apenasNumeros, formatarTelefone } from "../../utils";
 import api from "../../services/apiService";
 
 const normalizarUrlWebsite = (valor) => {
@@ -35,7 +35,7 @@ const ContatoForm = ({ contato = {}, onChange }) => {
         onChange({
             ...contato,
             [dddField]: digitos.slice(0, 2),
-            [telefoneField]: digitos.slice(2),
+            [telefoneField]: digitos.slice(2, 11),
         });
     };
 
@@ -103,6 +103,7 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                 <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                         label="Email de Contato"
+                        inputProps={{ inputMode: "email" }}
                         value={contato.emailContato || ""}
                         onChange={(e) => handleChange("emailContato", e.target.value.replace(/\s/g, ""))}
                         fullWidth
@@ -121,7 +122,9 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextField
                         label="Telefone"
-                        value={`${contato.ddd || ""}${contato.telefone || ""}`}
+                        placeholder="(00) 00000-0000"
+                        inputProps={{ inputMode: "tel" }}
+                        value={formatarTelefone(`${contato.ddd || ""}${contato.telefone || ""}`)}
                         onChange={handleTelefoneChange("ddd", "telefone")}
                         fullWidth
                         size="small"
@@ -139,7 +142,9 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <TextField
                         label="Telefone WhatsApp"
-                        value={`${contato.dddWhatsApp || ""}${contato.telefoneWhatsApp || ""}`}
+                        placeholder="(00) 00000-0000"
+                        inputProps={{ inputMode: "tel" }}
+                        value={formatarTelefone(`${contato.dddWhatsApp || ""}${contato.telefoneWhatsApp || ""}`)}
                         onChange={handleTelefoneChange("dddWhatsApp", "telefoneWhatsApp")}
                         fullWidth
                         size="small"

@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import CepReversoModal from "../../Components/CepReversoModal";
+import { formatarCep } from "../../utils";
 import SectionCard from "./SectionCard";
 import api from "../../services/apiService";
 
@@ -107,7 +108,8 @@ const EnderecoForm = ({
                     <TextField
                         label="CEP"
                         value={endereco?.cep || ""}
-                        onChange={(e) => handleChange("cep", e.target.value)}
+                        onChange={(e) => handleChange("cep", formatarCep(e.target.value))}
+                        inputProps={{ inputMode: "numeric", maxLength: 9, placeholder: "00000-000" }}
                         fullWidth
                     />
                 </Grid>
@@ -126,6 +128,7 @@ const EnderecoForm = ({
                         label="Número"
                         value={endereco?.numero || ""}
                         onChange={(e) => handleChange("numero", e.target.value)}
+                        inputProps={{ inputMode: "numeric" }}
                         fullWidth
                     />
                 </Grid>
