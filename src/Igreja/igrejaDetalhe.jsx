@@ -9,6 +9,7 @@ import {
   Button,
 } from "@mui/material";
 //import Grid from "@mui/material/Grid2";
+import PageHeader from "../Components/PageHeader";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const IgrejaDetalhe = () => {
@@ -20,9 +21,7 @@ const IgrejaDetalhe = () => {
   return (
     <Card>
       <CardContent>
-        <Typography variant="h4" gutterBottom>
-          {data.nome}
-        </Typography>
+        <PageHeader title={data.nome} sx={{ mb: 1 }} />
 
         <Typography variant="subtitle1" gutterBottom>
           <strong>Id:</strong> {data.id}

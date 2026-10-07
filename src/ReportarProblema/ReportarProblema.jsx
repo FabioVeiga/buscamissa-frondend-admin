@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  Box,
-  Button,
-  Chip,
-  CircularProgress,
-  IconButton,
   Link,
   Paper,
   Stack,
@@ -16,15 +11,18 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Tooltip,
-  Typography,
-} from "@mui/material";
+  Typography } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CancelIcon from "@mui/icons-material/Cancel";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useNavigate } from "react-router-dom";
 import Menu from "../Components/Menu";
+import PageContainer from "../Components/PageContainer";
+import PageHeader from "../Components/PageHeader";
+import StatusChip from "../Components/StatusChip";
+import EmptyState from "../Components/EmptyState";
+import LoadingState from "../Components/LoadingState";
+import RowActions from "../Components/RowActions";
 import Pagination from "../Components/Paginacao";
 import api from "../services/apiService";
 import IgrejaDetalheModal from "../Igreja/IgrejaDetalhesModal";
@@ -92,6 +90,8 @@ const ReportarProblemaPage = () => {
 
   return (
     <Menu>
+      <PageContainer>
+      <PageHeader title="Problemas reportados" subtitle="Relatos de usuários sobre dados de igrejas" />
       <Stack spacing={2}>
         <Paper sx={{ p: 2, borderRadius: 2 }}>
           <TextField
@@ -113,7 +113,7 @@ const ReportarProblemaPage = () => {
           <Typography variant="h6" sx={{ mb: 2 }}>Problemas Reportados</Typography>
 
           {isLoading ? (
-            <Box display="flex" justifyContent="center" py={6}><CircularProgress /></Box>
+            <LoadingState />
           ) : (
             <>
               <Table size="small">
@@ -130,7 +130,7 @@ const ReportarProblemaPage = () => {
                 </TableHead>
                 <TableBody>
                   {itens.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} align="center">Nenhum problema reportado encontrado.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={7}><EmptyState title="Nenhum problema reportado encontrado" /></TableCell></TableRow>
                   ) : (
                     itens.map((item) => (
                       <TableRow key={item.id} hover>
@@ -157,33 +157,20 @@ const ReportarProblemaPage = () => {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Chip
-                            icon={resolvido(item) ? <CheckCircleIcon fontSize="small" /> : <CancelIcon fontSize="small" />}
+                          <StatusChip
                             label={resolvido(item) ? "Resolvido" : "Pendente"}
                             color={resolvido(item) ? "success" : "warning"}
-                            size="small"
-                            variant="outlined"
                           />
                         </TableCell>
                         <TableCell>{formatarData(item.dataCriacao)}</TableCell>
                         <TableCell align="center">
-                          <Stack direction="row" spacing={0.5} justifyContent="center">
-                            <Tooltip title="Ver detalhes da igreja">
-                              <IconButton size="small" onClick={() => setDetalheIgrejaId(item.igrejaId)}>
-                                <VisibilityIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Editar igreja">
-                              <IconButton size="small" onClick={() => editarIgreja(item)}>
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                            {!resolvido(item) && (
-                              <Button size="small" variant="contained" onClick={() => setProblemaAberto(item)}>
-                                Resolver
-                              </Button>
-                            )}
-                          </Stack>
+                          <RowActions
+                            actions={[
+                              { label: "Ver detalhes da igreja", icon: <VisibilityIcon fontSize="small" />, onClick: () => setDetalheIgrejaId(item.igrejaId) },
+                              { label: "Editar igreja", icon: <EditIcon fontSize="small" />, onClick: () => editarIgreja(item) },
+                              { label: "Resolver", icon: <CheckCircleIcon fontSize="small" />, color: "primary", onClick: () => setProblemaAberto(item), hidden: resolvido(item) },
+                            ]}
+                          />
                         </TableCell>
                       </TableRow>
                     ))
@@ -207,6 +194,7 @@ const ReportarProblemaPage = () => {
           )}
         </TableContainer>
       </Stack>
+      </PageContainer>
 
       <IgrejaDetalheModal
         open={!!detalheIgrejaId}
