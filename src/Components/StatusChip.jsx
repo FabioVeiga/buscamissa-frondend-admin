@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Chip } from '@mui/material';
 import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
 import ErrorOutline from '@mui/icons-material/ErrorOutline';

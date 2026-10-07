@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Box, Typography } from '@mui/material';
 import InboxOutlined from '@mui/icons-material/InboxOutlined';
 

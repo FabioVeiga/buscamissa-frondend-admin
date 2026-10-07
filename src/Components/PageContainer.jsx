@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Box } from '@mui/material';
 
 /** Container padrão de página: largura máxima e espaçamento consistentes. */

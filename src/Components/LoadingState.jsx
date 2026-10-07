@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Box, CircularProgress, Typography } from '@mui/material';
 
 /** Estado de carregamento padrão, discreto e centralizado. */

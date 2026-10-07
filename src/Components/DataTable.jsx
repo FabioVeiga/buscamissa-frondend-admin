@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import EmptyState from './EmptyState';
 import LoadingState from './LoadingState';

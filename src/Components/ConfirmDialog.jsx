@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 
 /** Diálogo de confirmação padrão (substitui modais de confirmação avulsos). */

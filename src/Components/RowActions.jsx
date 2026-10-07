@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { IconButton, Stack, Tooltip } from '@mui/material';
 
 /** Ações por linha: ícones pequenos com Tooltip e aria-label. actions: [{ label, icon, onClick, color, disabled, hidden }] */

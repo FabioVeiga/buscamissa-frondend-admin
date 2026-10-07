@@ -7,9 +7,12 @@ import {
   Typography,
   Button,
   Stack,
-  Grid,
   Box,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
+import PageHeader from "./Components/PageHeader";
+import PageContainer from "./Components/PageContainer";
+import KpiCard from "./Components/dashboard/KpiCard";
 import { useState, useEffect } from "react";
 import api from "./services/apiService";
 import MissaCardHome from "./Components/MissaCardHome";
@@ -30,7 +33,6 @@ const statCards = [
     label: "Igrejas",
     icon: ChurchIcon,
     color: "#3b82f6",
-    bgLight: "rgba(59, 130, 246, 0.1)",
     path: "/igreja",
   },
   {
@@ -38,14 +40,12 @@ const statCards = [
     label: "Missas",
     icon: ScheduleIcon,
     color: "#0ea5e9",
-    bgLight: "rgba(14, 165, 233, 0.1)",
   },
   {
     key: "quantidadeIgrejaReportarProblemaNaoAtendida",
     label: "Problemas reportados pendentes",
     icon: WarningAmberIcon,
     color: "#f59e0b",
-    bgLight: "rgba(245, 158, 11, 0.1)",
     path: "/reportar-problema",
   },
   {
@@ -53,7 +53,6 @@ const statCards = [
     label: "Solicitações pendentes",
     icon: AssignmentIcon,
     color: "#8b5cf6",
-    bgLight: "rgba(139, 92, 246, 0.1)",
     path: "/solicitacoes",
   },
   {
@@ -61,7 +60,6 @@ const statCards = [
     label: "Usuários",
     icon: PeopleIcon,
     color: "#22c55e",
-    bgLight: "rgba(34, 197, 94, 0.1)",
     path: "/usuario",
   },
   {
@@ -69,7 +67,6 @@ const statCards = [
     label: "Aprovações Pendentes",
     icon: FactCheckIcon,
     color: "#06b6d4",
-    bgLight: "rgba(6, 182, 212, 0.1)",
     path: "/aprovacoes",
     badge: "aprovacoes",
   },
@@ -78,7 +75,6 @@ const statCards = [
     label: "Responsáveis Verificados",
     icon: VerifiedUserIcon,
     color: "#ec4899",
-    bgLight: "rgba(236, 72, 153, 0.1)",
     path: "/responsaveis",
     badge: "responsaveis",
   },
@@ -87,7 +83,6 @@ const statCards = [
     label: "Visualizações da Home",
     icon: VisibilityIcon,
     color: "#10b981",
-    bgLight: "rgba(16, 185, 129, 0.1)",
     path: "/indicadores",
   },
 ];
@@ -103,11 +98,15 @@ const Home = () => {
     visualizacoesHome: 0,
   });
 
+  const [carregando, setCarregando] = useState(true);
+
   const fetchData = () => {
+    setCarregando(true);
     api
       .get("/api/v1/admin/igreja/infos")
       .then((response) => setData(prev => ({ ...prev, ...response.data.data })))
-      .catch((error) => console.error("Error fetching data:", error));
+      .catch((error) => console.error("Error fetching data:", error))
+      .finally(() => setCarregando(false));
 
     const paginacao = { "Paginacao.PageIndex": 1, "Paginacao.PageSize": 1 };
     api
@@ -147,76 +146,29 @@ const Home = () => {
 
   return (
     <Menu>
-      <Stack spacing={3} sx={{ width: "100%", maxWidth: 1200 }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
-          <Typography variant="body1" color="text.secondary">
-            Visão geral do painel
-          </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<RefreshIcon />}
-            onClick={fetchData}
-            size="medium"
-          >
-            Atualizar
-          </Button>
-        </Box>
+      <PageContainer>
+      <Stack spacing={3}>
+        <PageHeader
+          title="Visão geral"
+          subtitle="Resumo do sistema e pendências que precisam de atenção"
+          actions={
+            <Button variant="contained" color="primary" startIcon={<RefreshIcon />} onClick={fetchData}>
+              Atualizar
+            </Button>
+          }
+        />
 
         <Grid container spacing={2}>
-          {statCards.map(({ key, label, icon: Icon, color, bgLight, path }) => (
-            <Grid item xs={12} sm={6} md={4} key={key}>
-              <Card
+          {statCards.map(({ key, label, icon, color, path }) => (
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={key}>
+              <KpiCard
+                label={label}
+                value={data[key]}
+                icon={icon}
+                color={color}
+                loading={carregando}
                 onClick={path ? () => navigate(path) : undefined}
-                sx={{
-                  height: "100%",
-                  borderRadius: 2,
-                  boxShadow: "0 1px 3px 0 rgba(0,0,0,0.06)",
-                  border: "1px solid rgba(0,0,0,0.04)",
-                  transition: "box-shadow 0.2s, transform 0.2s",
-                  ...(path && { cursor: "pointer" }),
-                  "&:hover": {
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                    ...(path && { transform: "translateY(-2px)" }),
-                  },
-                }}
-              >
-                <CardContent sx={{ p: 2.5, "&:last-child": { pb: 2.5 } }}>
-                  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
-                    <Box
-                      sx={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 2,
-                        bgcolor: bgLight,
-                        color,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <Icon sx={{ fontSize: 26 }} />
-                    </Box>
-                    <Box sx={{ minWidth: 0 }}>
-                      <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                        {label}
-                      </Typography>
-                      <Typography variant="h4" fontWeight={700} sx={{ color, mt: 0.25 }}>
-                        {data[key] ?? "—"}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
+              />
             </Grid>
           ))}
         </Grid>
@@ -252,6 +204,7 @@ const Home = () => {
           </CardContent>
         </Card>
       </Stack>
+      </PageContainer>
     </Menu>
   );
 };
