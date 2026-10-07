@@ -23,6 +23,7 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import Menu from "./Components/Menu";
+import { useNotificar } from "./Context/NotificationContext";
 import api from "./services/apiService";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -70,6 +71,7 @@ const OPCOES_ORDENACAO = [
 ];
 
 const UsuarioPage = () => {
+  const notificar = useNotificar();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -153,7 +155,7 @@ const UsuarioPage = () => {
           motivoBloqueio: !selectedUser.bloqueado ? motivo : null,
         }
       );
-      alert(
+      notificar.sucesso(
         `Usuário ${
           !selectedUser.bloqueado ? "bloqueado" : "desbloqueado"
         } com sucesso!`
@@ -168,7 +170,7 @@ const UsuarioPage = () => {
       }));
     } catch (error) {
       console.error("Erro ao bloquear/desbloquear:", error);
-      alert("Erro ao realizar a ação. Tente novamente.");
+      notificar.erro("Erro ao realizar a ação. Tente novamente.");
     } finally {
       handleCloseModal();
     }
@@ -274,11 +276,11 @@ const UsuarioPage = () => {
       await api.put(`/api/v1/Admin/usuario/resetar-senha/${selectedUser.id}`, {
         novaSenha,
       });
-      alert("Senha resetada com sucesso!");
+      notificar.sucesso("Senha resetada com sucesso!");
       handleCloseSenhaModal();
     } catch (error) {
       console.error("Erro ao resetar senha:", error);
-      alert("Erro ao resetar a senha. Tente novamente.");
+      notificar.erro("Erro ao resetar a senha. Tente novamente.");
     }
   };
 

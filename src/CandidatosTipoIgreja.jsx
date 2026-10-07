@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Menu from "./Components/Menu";
+import { useNotificar } from "./Context/NotificationContext";
 import PageHeader from "./Components/PageHeader";
 import PageContainer from "./Components/PageContainer";
 import DataTable from "./Components/DataTable";
@@ -14,6 +15,7 @@ import { buscarIgrejaCompletaPorId, normalizarIgrejaParaEdicao } from "./service
 import { useNavigate } from "react-router-dom";
 
 const CandidatosTipoIgrejaPage = () => {
+  const notificar = useNotificar();
   const navigate = useNavigate();
   const [registros, setRegistros] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,7 +54,7 @@ const CandidatosTipoIgrejaPage = () => {
       const igrejaCompleta = await buscarIgrejaCompletaPorId(registro.id);
       navigate("/igrejaEditar", { state: { row: normalizarIgrejaParaEdicao(igrejaCompleta) } });
     } catch {
-      alert("Não foi possível carregar os dados desta igreja.");
+      notificar.erro("Não foi possível carregar os dados desta igreja.");
     } finally {
       setCarregandoVerId(null);
     }
