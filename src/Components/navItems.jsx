@@ -24,7 +24,7 @@ export const navSections = [
       { path: "/responsaveis", label: "Responsáveis Verificados", icon: VerifiedUserIcon, badgeKey: "responsaveis" },
       { path: "/reportar-problema", label: "Problemas Reportados", icon: AnnouncementIcon, badgeKey: "problemas" },
       { path: "/solicitacoes", label: "Solicitações", icon: BuildIcon, badgeKey: "solicitacoes" },
-      { path: "/solicitacoes-vinculo-capela", label: "Vínculos de Capela", icon: AccountBalanceIcon },
+      { path: "/solicitacoes-vinculo-capela", label: "Vínculos de Capela", icon: AccountBalanceIcon, badgeKey: "vinculos" },
     ],
   },
   {
