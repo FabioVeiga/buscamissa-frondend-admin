@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Menu from "./Components/Menu";
+import { useNotificar } from "./Context/NotificationContext";
 import PageHeader from "./Components/PageHeader";
 import PageContainer from "./Components/PageContainer";
 import LoadingState from "./Components/LoadingState";
@@ -7,6 +8,7 @@ import {  Table,  TableBody,  TableCell,  TableContainer,  TableHead,  TableRow,
 import api from "./services/apiService";
 
 const ContribuidoresPage = () => {
+  const notificar = useNotificar();
   const [contribuidores, setContribuidores] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [openModal, setOpenModal] = useState(false);
@@ -60,12 +62,12 @@ const ContribuidoresPage = () => {
       });
 
       if (response.status === 200) {
-        alert("Contribuidores inseridos com sucesso!");
+        notificar.sucesso("Contribuidores inseridos com sucesso!");
         await getContribuidores();
       }
     } catch (error) {
       console.error("Erro ao inserir contribuidores:", error);
-      alert("Erro ao inserir contribuidores. Tente novamente.");
+      notificar.erro("Erro ao inserir contribuidores. Tente novamente.");
     } finally {
       handleCloseModal();
     }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Menu from "./Components/Menu";
+import { useNotificar } from "./Context/NotificationContext";
 import PageHeader from "./Components/PageHeader";
 import PageContainer from "./Components/PageContainer";
 import DataTable from "./Components/DataTable";
@@ -8,6 +9,7 @@ import {
 import api from "./services/apiService";
 
 const FeatureTogglesPage = () => {
+  const notificar = useNotificar();
   const [toggles, setToggles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [savingChave, setSavingChave] = useState(null);
@@ -40,7 +42,7 @@ const FeatureTogglesPage = () => {
       await api.put(`/api/v1/admin/feature-toggles/${chave}`, { habilitado: novoValor });
     } catch (error) {
       console.error("Erro ao atualizar feature toggle:", error);
-      alert("Erro ao atualizar. Tente novamente.");
+      notificar.erro("Erro ao atualizar. Tente novamente.");
       setToggles((prev) =>
         prev.map((t) => (t.chave === chave ? { ...t, habilitado: habilitadoAtual } : t))
       );
