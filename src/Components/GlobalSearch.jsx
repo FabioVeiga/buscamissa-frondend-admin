@@ -15,7 +15,7 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import ChurchIcon from "@mui/icons-material/Church";
 import AddIcon from "@mui/icons-material/Add";
-import { useNavigate } from "react-router-dom";
+import { useNavegacaoProtegida } from "../Context/UnsavedChangesContext";
 import api from "../services/apiService";
 import { buscarIgrejaCompletaPorId, normalizarIgrejaParaEdicao } from "../services/igrejaHelpers";
 import { navSections } from "./navItems";
@@ -27,7 +27,7 @@ const semAcento = (t) => (t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLo
 
 /** Busca global (Ctrl/Cmd+K): atalhos de páginas e igrejas por nome ou ID. */
 const GlobalSearch = ({ open, onClose }) => {
-  const navigate = useNavigate();
+  const navigate = useNavegacaoProtegida();
   const [termo, setTermo] = useState("");
   const [igrejas, setIgrejas] = useState([]);
   const [buscando, setBuscando] = useState(false);

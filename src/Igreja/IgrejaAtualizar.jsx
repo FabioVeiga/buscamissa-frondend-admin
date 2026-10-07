@@ -37,6 +37,8 @@ import RedesSociaisSection from "./Components/RedesSociaisSection";
 import SectionCard from "./Components/SectionCard";
 import Grid from "@mui/material/Grid2";
 import ImagemSection from "./Components/ImagemSection";
+import { useAlteracoesNaoSalvas, useNavegacaoProtegida } from "../Context/UnsavedChangesContext";
+import StatusChip from "../Components/StatusChip";
 import IgrejasCepModal from "./Components/IgrejasCepModal";
 import ReportarProblemaModal from "./Components/ReportarProblemaModal";
 import IgrejaMetricasTab from "./Components/IgrejaMetricasTab";
@@ -139,6 +141,12 @@ const IgrejaAtualizar = () => {
     setImagemAlterada(false);
     setMessage(errorMensage());
   }, [state?.row]);
+
+  const navegarProtegido = useNavegacaoProtegida();
+  const { sujo, marcarSalvo } = useAlteracoesNaoSalvas(
+    JSON.stringify({ formData, endereco, formDatamissas, formDataSessoes, formDataRedeSociais, base64 }),
+    state?.row
+  );
 
   const handleShowError = (mensagem) => {
     setMessage({
@@ -623,6 +631,7 @@ const IgrejaAtualizar = () => {
     api
         .put("/api/v1/Admin/igreja/atualizar", req)
         .then((response) => {
+          marcarSalvo();
           // O backend recalcula o cidadeSlug (e, na primeira vez, slug/nomeUnico)
           // a cada edição — sem sincronizar aqui, o link exibido para compartilhar
           // ficava com o cidadeSlug antigo até a tela ser recarregada.
@@ -940,7 +949,7 @@ const IgrejaAtualizar = () => {
             variant="outlined"
             color="inherit"
             startIcon={<ArrowBack />}
-            onClick={() => navigate(-1)}
+            onClick={() => navegarProtegido(-1)}
             disabled={loading}
           >
             Voltar
@@ -960,6 +969,7 @@ const IgrejaAtualizar = () => {
               "Editar Igreja"
             )}
           </Button>
+          {sujo && <StatusChip label="Alterações não salvas" color="warning" sx={{ alignSelf: "center" }} />}
         </Box>
         <Box display="flex">
           {message.show && (
