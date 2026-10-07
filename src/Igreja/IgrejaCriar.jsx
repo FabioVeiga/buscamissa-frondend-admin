@@ -28,6 +28,7 @@ import ContatoForm from "./Components/ContatoForm";
 import EnderecoForm from "./Components/EnderecoForm";
 import SectionCard from "./Components/SectionCard";
 import ImagemSection from "./Components/ImagemSection";
+import useImagemIgreja from "../hooks/useImagemIgreja";
 import { useAlteracoesNaoSalvas, useNavegacaoProtegida } from "../Context/UnsavedChangesContext";
 import StatusChip from "../Components/StatusChip";
 import RedesSociaisCriarSection from "./Components/RedesSociaisCriarSection";
@@ -64,10 +65,10 @@ const IgrejaCriar = () => {
 
   const [missas, setMissas] = useState([]);
   const [redeSociais, setRedeSociais] = useState([]);
-  const [base64, setBase64] = useState("");
-  const [fileName, setFileName] = useState("");
-  const [imagemMimeType, setImagemMimeType] = useState("image/png");
-  const [urlInput, setUrlInput] = useState("");
+  const {
+    base64, fileName, urlInput, setUrlInput, imagemMimeType,
+    handleFileChange, blobToBase64,
+  } = useImagemIgreja();
 
   const [openCepReverso, setOpenCepReverso] = useState(false);
   const [candidatosCep, setCandidatosCep] = useState([]);
@@ -107,33 +108,6 @@ const IgrejaCriar = () => {
       estado: enderecoResponse.estado || prev?.estado || "",
       regiao: enderecoResponse.regiao || prev?.regiao || "",
     }));
-  };
-
-  const limparFormulario = () => {
-    setFormData({
-      nome: "",
-      tipoIgreja: 1,
-    tipoIgrejaDescricao: "",
-      paroco: "",
-      imagem: "",
-      contato: {
-        emailContato: "",
-        ddd: "",
-        telefone: "",
-        dddWhatsApp: "",
-        telefoneWhatsApp: "",
-      },
-    });
-    setFormDataRedeSociais({
-      tipoRedeSocial: "",
-      nomeDoPerfil: "",
-    });
-    setMissas([]);
-    setRedeSociais([]);
-    setBase64("");
-    setFileName("");
-    setUrlInput("");
-    setEndereco({});
   };
 
   const buscarIgrejaCompletaPorNomeUnico = async (nomeUnico) => {
@@ -180,10 +154,6 @@ const IgrejaCriar = () => {
     };
   };
   
-  const limparEndereco = () => {
-    setEndereco({});
-  };
-
   const handleEditarIgrejaCep = async (igreja) => {
     if (!igreja?.nomeUnico) {
       setMessage(["Nome único da igreja não informado."]);
@@ -416,43 +386,6 @@ const IgrejaCriar = () => {
     setRedeSociais((prev) =>
       prev.filter((_, index) => index !== indexToDelete)
     );
-  };
-
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        // O resultado contém a base64 da imagem
-        const base64String = e.target.result.split(",")[1]; // Remove o cabeçalho 'data:image/jpeg;base64,'
-        setBase64(base64String);
-        setFileName(file.name);
-        setImagemMimeType(file.type || "image/png");
-      };
-
-      reader.readAsDataURL(file); // Lê o arquivo como uma DataURL
-    }
-  };
-
-  // Utilitário: converte Blob para base64 e atualiza estado
-  const blobToBase64 = (blob, name) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const base64String = e.target.result.split(",")[1];
-          setBase64(base64String);
-          setFileName(name || "image");
-          setImagemMimeType(blob.type || "image/png");
-          resolve(base64String);
-        } catch (err) {
-          reject(err);
-        }
-      };
-      reader.onerror = (err) => reject(err);
-      reader.readAsDataURL(blob);
-    });
   };
 
   const navegarProtegido = useNavegacaoProtegida();

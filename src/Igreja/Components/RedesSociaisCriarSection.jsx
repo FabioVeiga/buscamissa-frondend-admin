@@ -93,7 +93,7 @@ const RedesSociaisCriarSection = ({
                                 {rede.nomeDoPerfil}
                             </Typography>
 
-                            <IconButton color="error" size="small" onClick={() => onDelete(index)}>
+                            <IconButton aria-label="Excluir rede social" color="error" size="small" onClick={() => onDelete(index)}>
                                 <Delete />
                             </IconButton>
                         </ListItem>

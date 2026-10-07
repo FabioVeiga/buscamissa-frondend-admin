@@ -50,7 +50,7 @@ export const buildTheme = (mode = 'light') => {
     borderRadius: 10,
   },
   typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
     h4: { fontWeight: 700, letterSpacing: '-0.02em' },
     h5: { fontWeight: 600, letterSpacing: '-0.01em' },
     h6: { fontWeight: 600 },

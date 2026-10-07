@@ -770,7 +770,7 @@ const Indicadores = () => {
                       placeholder="Buscar página ou categoria…"
                       value={buscaPagina}
                       onChange={(e) => setBuscaPagina(e.target.value)}
-                      InputProps={{ startAdornment: <SearchIcon fontSize="small" sx={{ color: "text.disabled", mr: 1 }} /> }}
+                      slotProps={{ input: { startAdornment: <SearchIcon fontSize="small" sx={{ color: "text.disabled", mr: 1 }} /> } }}
                       sx={{ minWidth: 240 }}
                     />
                   </Stack>
