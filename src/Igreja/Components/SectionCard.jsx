@@ -9,9 +9,8 @@ const SectionCard = ({ title, subtitle, children, sx = {}, ...props }) => {
                 p: { xs: 2, md: 3 },
                 border: "1px solid",
                 borderColor: "divider",
-                borderRadius: 3,
+                borderRadius: 1.2,
                 backgroundColor: "background.paper",
-                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.04)",
                 ...sx,
             }}
         >

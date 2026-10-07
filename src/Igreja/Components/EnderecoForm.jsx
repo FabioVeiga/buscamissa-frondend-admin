@@ -99,7 +99,7 @@ const EnderecoForm = ({
             title="Endereço"
             subtitle="Complete o endereço manualmente ou utilize as buscas automáticas."
             sx={{
-                backgroundColor: "#fafafa",
+                backgroundColor: "action.hover",
             }}
         >
             <Grid container spacing={2}>

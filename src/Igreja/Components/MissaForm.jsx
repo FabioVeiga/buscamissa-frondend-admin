@@ -582,7 +582,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                         <TableContainer component={Paper} sx={{ mt: 1, borderRadius: 2 }}>
                             <Table size="small">
                                 <TableHead>
-                                    <TableRow sx={{ backgroundColor: "grey.100" }}>
+                                    <TableRow>
                                         <TableCell padding="checkbox">
                                             <Checkbox
                                                 size="small"
@@ -607,7 +607,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                                         return (
                                             <React.Fragment key={`grupo-${dia.value}`}>
                                                 <TableRow>
-                                                    <TableCell colSpan={4} sx={{ backgroundColor: "grey.50", py: 0.5 }}>
+                                                    <TableCell colSpan={4} sx={{ backgroundColor: "action.hover", py: 0.5 }}>
                                                         <Typography variant="caption" fontWeight={700}>
                                                             {dia.label}
                                                         </Typography>
@@ -637,7 +637,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                                     {missas.some((m) => !ehSemanal(m)) && (
                                         <React.Fragment key="grupo-dia-fixo">
                                             <TableRow>
-                                                <TableCell colSpan={4} sx={{ backgroundColor: "grey.50", py: 0.5 }}>
+                                                <TableCell colSpan={4} sx={{ backgroundColor: "action.hover", py: 0.5 }}>
                                                     <Typography variant="caption" fontWeight={700}>
                                                         Mensais (dia fixo e dia da semana no mês)
                                                     </Typography>

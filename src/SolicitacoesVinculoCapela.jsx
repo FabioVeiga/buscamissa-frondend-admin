@@ -1,15 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import Menu from "./Components/Menu";
+import PageHeader from "./Components/PageHeader";
+import PageContainer from "./Components/PageContainer";
+import DataTable from "./Components/DataTable";
+import RowActions from "./Components/RowActions";
+import StatusChip from "./Components/StatusChip";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  CircularProgress,
-  Box,
   Typography,
   Tabs,
   Tab,
@@ -19,9 +15,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Chip,
-  Alert,
-} from "@mui/material";
+  Alert } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import api from "./services/apiService";
@@ -101,106 +95,71 @@ const SolicitacoesVinculoCapelaPage = () => {
 
   return (
     <Menu>
-      <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="h5" fontWeight={600}>
-            Solicitações de Vínculo de Capela
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Pedidos de responsáveis para anexar uma capela/comunidade órfã à
-            própria paróquia (Fase 4 do vínculo Igreja↔Diocese). Aprovar seta
-            Igreja.IgrejaPaiId da capela para a paróquia solicitante.
-          </Typography>
-        </Box>
+      <PageContainer>
+      <PageHeader
+        title="Solicitações de Vínculo de Capela"
+        subtitle={`Pedidos de responsáveis para anexar uma capela/comunidade órfã à própria paróquia (Fase 4 do vínculo Igreja↔Diocese). Aprovar seta Igreja.IgrejaPaiId da capela para a paróquia solicitante.`}
+      />
+      <Tabs value={aba} onChange={(_, v) => setAba(v)} sx={{ mb: 1.5 }}>
+        <Tab label="Fila de pendentes" />
+        <Tab label="Histórico completo" />
+      </Tabs>
 
-        <Tabs value={aba} onChange={(_, v) => setAba(v)} sx={{ mb: 1 }}>
-          <Tab label="Fila de pendentes" />
-          <Tab label="Histórico completo" />
-        </Tabs>
-
-        {isLoading ? (
-          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" py={4}>
-            <CircularProgress size={60} />
-            <Typography variant="h6" mt={2}>
-              Carregando...
-            </Typography>
-          </Box>
-        ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Capela/comunidade</TableCell>
-                <TableCell>Paróquia solicitante</TableCell>
-                <TableCell>Solicitante</TableCell>
-                <TableCell>Solicitado em</TableCell>
-                <TableCell align="center">Status</TableCell>
-                <TableCell align="center">Ações</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {registros.length > 0 ? (
-                registros.map((r) => {
-                  const meta = STATUS_META[r.status] || { label: r.status, color: "default" };
-                  return (
-                    <TableRow key={r.id}>
-                      <TableCell>{r.capelaNome}</TableCell>
-                      <TableCell>{r.paroquiaNome}</TableCell>
-                      <TableCell>
-                        {r.usuarioNome}
-                        <Typography variant="caption" display="block" color="text.secondary">
-                          {r.usuarioEmail}
-                        </Typography>
-                        {r.observacao && (
-                          <Typography variant="caption" display="block" color="text.secondary">
-                            {r.observacao}
-                          </Typography>
-                        )}
-                        {r.motivoRevisao && (
-                          <Typography variant="caption" display="block" color="error.main">
-                            Motivo: {r.motivoRevisao} ({r.revisadoPor})
-                          </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell>{new Date(r.dataSolicitacao).toLocaleString("pt-BR")}</TableCell>
-                      <TableCell align="center">
-                        <Chip size="small" label={meta.label} color={meta.color} />
-                      </TableCell>
-                      <TableCell align="center" sx={{ whiteSpace: "nowrap" }}>
-                        {r.status === "Pendente" && (
-                          <>
-                            <Button
-                              size="small"
-                              color="success"
-                              startIcon={<CheckCircleIcon />}
-                              onClick={() => abrirAcao(r, "aprovar")}
-                            >
-                              Aprovar
-                            </Button>
-                            <Button
-                              size="small"
-                              color="error"
-                              startIcon={<CancelIcon />}
-                              onClick={() => abrirAcao(r, "rejeitar")}
-                            >
-                              Rejeitar
-                            </Button>
-                          </>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    <Typography color="text.secondary">Nenhuma solicitação encontrada.</Typography>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </TableContainer>
+      <DataTable
+        loading={isLoading}
+        rows={registros}
+        getRowKey={(r) => r.id}
+        emptyTitle="Nenhuma solicitação encontrada"
+        columns={[
+          { key: "capelaNome", header: "Capela/comunidade" },
+          { key: "paroquiaNome", header: "Paróquia solicitante" },
+          {
+            key: "usuario",
+            header: "Solicitante",
+            render: (r) => (
+              <>
+                {r.usuarioNome}
+                <Typography variant="caption" display="block" color="text.secondary">
+                  {r.usuarioEmail}
+                </Typography>
+                {r.observacao && (
+                  <Typography variant="caption" display="block" color="text.secondary">
+                    {r.observacao}
+                  </Typography>
+                )}
+                {r.motivoRevisao && (
+                  <Typography variant="caption" display="block" color="error.main">
+                    Motivo: {r.motivoRevisao} ({r.revisadoPor})
+                  </Typography>
+                )}
+              </>
+            ),
+          },
+          { key: "dataSolicitacao", header: "Solicitado em", render: (r) => new Date(r.dataSolicitacao).toLocaleString("pt-BR") },
+          {
+            key: "status",
+            header: "Status",
+            align: "center",
+            render: (r) => {
+              const meta = STATUS_META[r.status] || { label: r.status, color: "default" };
+              return <StatusChip label={meta.label} color={meta.color} />;
+            },
+          },
+          {
+            key: "acoes",
+            header: "Ações",
+            align: "center",
+            render: (r) => (
+              <RowActions
+                actions={[
+                  { label: "Aprovar", icon: <CheckCircleIcon fontSize="small" />, color: "success", hidden: r.status !== "Pendente", onClick: () => abrirAcao(r, "aprovar") },
+                  { label: "Rejeitar", icon: <CancelIcon fontSize="small" />, color: "error", hidden: r.status !== "Pendente", onClick: () => abrirAcao(r, "rejeitar") },
+                ]}
+              />
+            ),
+          },
+        ]}
+      />
 
       <Dialog open={!!dialogAcao} onClose={() => setDialogAcao(null)} maxWidth="sm" fullWidth>
         <DialogTitle>{dialogAcao && tituloAcao[dialogAcao.acao]}</DialogTitle>
@@ -231,6 +190,7 @@ const SolicitacoesVinculoCapelaPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      </PageContainer>
     </Menu>
   );
 };

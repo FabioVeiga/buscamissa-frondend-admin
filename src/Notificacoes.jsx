@@ -1,15 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import Menu from "./Components/Menu";
+import PageHeader from "./Components/PageHeader";
+import PageContainer from "./Components/PageContainer";
+import DataTable from "./Components/DataTable";
+import StatusChip from "./Components/StatusChip";
 import {
   Autocomplete,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  CircularProgress,
   Box,
   Typography,
   Button,
@@ -19,9 +15,7 @@ import {
   DialogActions,
   TextField,
   MenuItem,
-  Chip,
-  Alert,
-} from "@mui/material";
+  Alert } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import api from "./services/apiService";
 
@@ -156,73 +150,41 @@ const NotificacoesPage = () => {
 
   return (
     <Menu>
-      <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
-        <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 1 }}>
-          <Box>
-            <Typography variant="h5" fontWeight={600}>
-              Notificações
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Avisos in-app para responsáveis verificados — só chegam a igrejas
-              que já têm um responsável aprovado.
-            </Typography>
-          </Box>
+      <PageContainer>
+      <PageHeader
+        title="Notificações"
+        subtitle={`Avisos in-app para responsáveis verificados — só chegam a igrejas que já têm um responsável aprovado.`}
+        actions={
           <Button variant="contained" startIcon={<AddIcon />} onClick={abrirNova}>
             Nova notificação
           </Button>
-        </Box>
-
-        {isLoading ? (
-          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" py={4}>
-            <CircularProgress size={60} />
-            <Typography variant="h6" mt={2}>
-              Carregando...
-            </Typography>
-          </Box>
-        ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Título</TableCell>
-                <TableCell>Tipo</TableCell>
-                <TableCell>Enviada por</TableCell>
-                <TableCell>Data</TableCell>
-                <TableCell align="center">Destinatários</TableCell>
-                <TableCell align="center">Lidas</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {notificacoes.length > 0 ? (
-                notificacoes.map((n) => (
-                  <TableRow key={n.id}>
-                    <TableCell>
-                      {n.titulo}
-                      <Typography variant="caption" display="block" color="text.secondary">
-                        {n.mensagem}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip size="small" label={n.tipo} color={corTipo(n.tipo)} />
-                    </TableCell>
-                    <TableCell>{n.criadaPor}</TableCell>
-                    <TableCell>{new Date(n.criadaEm).toLocaleString("pt-BR")}</TableCell>
-                    <TableCell align="center">{n.totalDestinos}</TableCell>
-                    <TableCell align="center">
-                      {n.totalLidos}/{n.totalDestinos}
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    Nenhuma notificação enviada ainda.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </TableContainer>
+        }
+      />
+      <DataTable
+        loading={isLoading}
+        rows={notificacoes}
+        getRowKey={(n) => n.id}
+        emptyTitle="Nenhuma notificação enviada ainda"
+        columns={[
+          {
+            key: "titulo",
+            header: "Título",
+            render: (n) => (
+              <>
+                {n.titulo}
+                <Typography variant="caption" display="block" color="text.secondary">
+                  {n.mensagem}
+                </Typography>
+              </>
+            ),
+          },
+          { key: "tipo", header: "Tipo", render: (n) => <StatusChip label={n.tipo} color={corTipo(n.tipo)} /> },
+          { key: "criadaPor", header: "Enviada por" },
+          { key: "criadaEm", header: "Data", render: (n) => new Date(n.criadaEm).toLocaleString("pt-BR") },
+          { key: "totalDestinos", header: "Destinatários", align: "center" },
+          { key: "lidas", header: "Lidas", align: "center", render: (n) => `${n.totalLidos}/${n.totalDestinos}` },
+        ]}
+      />
 
       <Dialog open={dialogAberto} onClose={() => !enviando && setDialogAberto(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Nova notificação</DialogTitle>
@@ -325,6 +287,7 @@ const NotificacoesPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      </PageContainer>
     </Menu>
   );
 };

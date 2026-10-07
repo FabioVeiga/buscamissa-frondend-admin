@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Box, Typography } from '@mui/material';
 
 /** Cabeçalho padrão de página: título, subtítulo opcional e ações à direita. */

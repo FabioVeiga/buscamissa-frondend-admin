@@ -2,10 +2,8 @@
 import { useEffect, useState } from "react";
 import {
   Box,
-  Button,
   Card,
   Chip,
-  CircularProgress,
   Link,
   Paper,
   Stack,
@@ -19,11 +17,8 @@ import {
   Tabs,
   TextField,
   Tooltip,
-  Typography,
-} from "@mui/material";
-import RefreshIcon from "@mui/icons-material/Refresh";
+  Typography } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import ClearIcon from "@mui/icons-material/Clear";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import FavoriteIcon from "@mui/icons-material/Favorite";
@@ -57,8 +52,13 @@ import GavelIcon from "@mui/icons-material/Gavel";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
-import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 import Grid from "@mui/material/Grid2";
+import KpiCard from "../Components/dashboard/KpiCard";
+import TendenciaBadge from "../Components/dashboard/TrendBadge";
+import PeriodFilter from "../Components/dashboard/PeriodFilter";
+import ChartCard from "../Components/dashboard/ChartCard";
+import LoadingState from "../Components/LoadingState";
+import { construirSparkline } from "../Components/dashboard/Sparkline";
 import { LineChart } from "@mui/x-charts/LineChart";
 import Menu from "../Components/Menu";
 import api from "../services/apiService";
@@ -216,83 +216,9 @@ const PAGINAS_CONFIG = [
 
 // Converte uma série diária num polyline SVG normalizado (100x28), para o
 // sparkline dos StatCard. Sem dados suficientes, não desenha nada.
-const construirSparkline = (serie, chave) => {
-  const valores = (serie || []).map((p) => p[chave] ?? 0);
-  if (valores.length < 2) return null;
-
-  const min = Math.min(...valores);
-  const max = Math.max(...valores);
-  const amplitude = max - min || 1;
-
-  return valores
-    .map((v, i) => {
-      const x = (i / (valores.length - 1)) * 100;
-      const y = 26 - ((v - min) / amplitude) * 24;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(" ");
-};
-
-const Sparkline = ({ pontos, color }) => {
-  if (!pontos) return null;
-  return (
-    <Box component="svg" viewBox="0 0 100 28" preserveAspectRatio="none" sx={{ width: "100%", height: 28, mt: 1, display: "block" }}>
-      <polyline fill="none" stroke={color} strokeWidth="2" points={pontos} />
-    </Box>
-  );
-};
-
-const TendenciaBadge = ({ tendencia, compacto }) => {
-  if (!tendencia) return null;
-  const subindo = tendencia.percentual > 0;
-  const estavel = tendencia.percentual === 0;
-  const Icon = estavel ? TrendingFlatIcon : subindo ? TrendingUpIcon : TrendingDownIcon;
-  const cor = estavel ? "text.secondary" : subindo ? "success.main" : "error.main";
-  const texto = tendencia.novo
-    ? "novo"
-    : `${tendencia.percentual > 0 ? "+" : ""}${tendencia.percentual}%`;
-
-  return (
-    <Stack direction="row" alignItems="center" spacing={0.3} sx={{ color: cor, mt: compacto ? 0 : 0.5 }}>
-      <Icon sx={{ fontSize: 16 }} />
-      <Typography variant="caption" fontWeight={600} sx={{ color: "inherit" }} noWrap>
-        {texto}{!compacto && " vs. período anterior"}
-      </Typography>
-    </Stack>
-  );
-};
-
-// Card de estatística com ícone, cor, badge de tendência e sparkline (ambos opcionais).
-const StatCard = ({ titulo, valor, icon: Icon, color, tendencia, sparkline }) => (
-  <Card variant="outlined" sx={{ p: 2, height: "100%" }}>
-    <Stack direction="row" spacing={2} alignItems="flex-start">
-      <Box
-        sx={{
-          width: 44,
-          height: 44,
-          borderRadius: 2,
-          bgcolor: `${color}1a`,
-          color,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-        }}
-      >
-        <Icon sx={{ fontSize: 24 }} />
-      </Box>
-      <Box sx={{ minWidth: 0, flex: 1 }}>
-        <Typography variant="body2" color="text.secondary" fontWeight={500}>
-          {titulo}
-        </Typography>
-        <Typography variant="h4" fontWeight={700} sx={{ color, mt: 0.25 }}>
-          {valor ?? 0}
-        </Typography>
-        <TendenciaBadge tendencia={tendencia} />
-        <Sparkline pontos={sparkline} color={color} />
-      </Box>
-    </Stack>
-  </Card>
+// Adaptador: mantém a API (titulo/valor/tendencia) usada nesta tela sobre o KpiCard padrão.
+const StatCard = ({ titulo, valor, icon, color, tendencia, sparkline }) => (
+  <KpiCard label={titulo} value={valor ?? 0} icon={icon} color={color} trend={tendencia} sparkline={sparkline} />
 );
 
 // Linha de barra horizontal (Pareto) para a aba "Páginas do site" — a largura da
@@ -478,12 +404,7 @@ const Indicadores = () => {
   if (loading) {
     return (
       <Menu>
-        <Box display="flex" flexDirection="column" alignItems="center" gap={2} py={6}>
-          <CircularProgress />
-          <Typography variant="body2" color="text.secondary">
-            Carregando indicadores...
-          </Typography>
-        </Box>
+        <LoadingState label="Carregando indicadores..." />
       </Menu>
     );
   }
@@ -572,119 +493,24 @@ const Indicadores = () => {
   return (
     <Menu>
       <Stack spacing={2}>
-        <Paper
-          sx={{
-            p: 2,
-            borderRadius: 2,
-            position: "sticky",
-            top: 8,
-            zIndex: 1,
-            border: "1px solid",
-            borderColor: "divider",
-          }}
-        >
-          <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems={{ xs: "stretch", md: "center" }}>
-            <Stack direction="row" alignItems="center" spacing={0.75} sx={{ color: "primary.main", flexShrink: 0 }}>
-              <AccessTimeIcon fontSize="small" />
-              <Typography variant="subtitle2" fontWeight={700}>Período</Typography>
-            </Stack>
-
-            <Stack
-              direction="row"
-              alignItems="center"
-              spacing={1}
-              sx={{
-                bgcolor: "action.hover",
-                borderRadius: 2,
-                px: 1.25,
-                py: 0.5,
-                flexWrap: "wrap",
-                rowGap: 0.5,
-              }}
-            >
-              <TextField
-                variant="standard"
-                label="De"
-                type="date"
-                size="small"
-                value={filtros.dataInicial}
-                onChange={(e) => setFiltros((f) => ({ ...f, dataInicial: e.target.value }))}
-                slotProps={{ inputLabel: { shrink: true } }}
-                sx={{ width: 150 }}
-              />
-              <Box sx={{ width: 14, height: 1.5, bgcolor: "text.disabled", flexShrink: 0, mt: 1.5 }} />
-              <TextField
-                variant="standard"
-                label="Até"
-                type="date"
-                size="small"
-                value={filtros.dataFinal}
-                onChange={(e) => setFiltros((f) => ({ ...f, dataFinal: e.target.value }))}
-                slotProps={{ inputLabel: { shrink: true } }}
-                sx={{ width: 150 }}
-              />
-            </Stack>
-
-            <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
-              <Chip
-                label="Hoje"
-                size="small"
-                clickable
-                color={atalhoAtivo === "hoje" ? "primary" : "default"}
-                variant={atalhoAtivo === "hoje" ? "filled" : "outlined"}
-                onClick={handleAtalhoPeriodo(periodoHoje)}
-              />
-              <Chip
-                label="Ontem"
-                size="small"
-                clickable
-                color={atalhoAtivo === "ontem" ? "primary" : "default"}
-                variant={atalhoAtivo === "ontem" ? "filled" : "outlined"}
-                onClick={handleAtalhoPeriodo(periodoOntem)}
-              />
-              <Chip
-                label="Mês corrente"
-                size="small"
-                clickable
-                color={atalhoAtivo === "mes" ? "primary" : "default"}
-                variant={atalhoAtivo === "mes" ? "filled" : "outlined"}
-                onClick={handleAtalhoPeriodo(periodoMesCorrente)}
-              />
-              <Chip
-                label="Ano corrente"
-                size="small"
-                clickable
-                color={atalhoAtivo === "ano" ? "primary" : "default"}
-                variant={atalhoAtivo === "ano" ? "filled" : "outlined"}
-                onClick={handleAtalhoPeriodo(periodoAnoCorrente)}
-              />
-            </Stack>
-
-            <Stack direction="row" spacing={1} sx={{ ml: { md: "auto" }, flexShrink: 0 }}>
-              <Button variant="contained" size="small" startIcon={<SearchIcon />} onClick={handlePesquisar}>
-                Pesquisar
-              </Button>
-              <Tooltip title="Limpar período (ver todo o histórico)">
-                <Button variant="outlined" size="small" onClick={handleLimpar} sx={{ minWidth: 0, px: 1.25 }}>
-                  <ClearIcon fontSize="small" />
-                </Button>
-              </Tooltip>
-              <Tooltip title="Atualizar dados do período atual">
-                <span>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => carregar(filtros)}
-                    disabled={loading}
-                    sx={{ minWidth: 0, px: 1.25 }}
-                  >
-                    {loading ? <CircularProgress size={16} /> : <RefreshIcon fontSize="small" />}
-                  </Button>
-                </span>
-              </Tooltip>
-            </Stack>
-          </Stack>
-        </Paper>
+        <PeriodFilter
+          sticky
+          dataInicial={filtros.dataInicial}
+          dataFinal={filtros.dataFinal}
+          onChangeInicial={(v) => setFiltros((f) => ({ ...f, dataInicial: v }))}
+          onChangeFinal={(v) => setFiltros((f) => ({ ...f, dataFinal: v }))}
+          activeKey={atalhoAtivo}
+          presets={[
+            { key: "hoje", label: "Hoje", onSelect: handleAtalhoPeriodo(periodoHoje) },
+            { key: "ontem", label: "Ontem", onSelect: handleAtalhoPeriodo(periodoOntem) },
+            { key: "mes", label: "Mês corrente", onSelect: handleAtalhoPeriodo(periodoMesCorrente) },
+            { key: "ano", label: "Ano corrente", onSelect: handleAtalhoPeriodo(periodoAnoCorrente) },
+          ]}
+          onSearch={handlePesquisar}
+          onClear={handleLimpar}
+          onRefresh={() => carregar(filtros)}
+          loading={loading}
+        />
 
         <Tabs value={abaAtiva} onChange={(e, valor) => setAbaAtiva(valor)}>
           <Tab value="geral" label="Visão geral" />
@@ -817,8 +643,7 @@ const Indicadores = () => {
                 </Grid>
 
                 {serieTemporal.length > 0 && (
-                  <Paper sx={{ p: 2, borderRadius: 2 }}>
-                    <Typography variant="h6" mb={1}>Evolução diária</Typography>
+                  <ChartCard title="Evolução diária" subtitle="Visualizações, favoritos e compartilhamentos por dia">
                     <LineChart
                       dataset={serieTemporal}
                       xAxis={[{ dataKey: "data", scaleType: "point", valueFormatter: formatarDataCurta }]}
@@ -832,7 +657,7 @@ const Indicadores = () => {
                       margin={{ left: 40, right: 20, top: 20, bottom: 30 }}
                       grid={{ horizontal: true }}
                     />
-                  </Paper>
+                  </ChartCard>
                 )}
               </>
             )}

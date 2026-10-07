@@ -35,6 +35,12 @@ import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { useNavigate } from "react-router-dom";
 import Menu from "../Components/Menu";
+import PageContainer from "../Components/PageContainer";
+import PageHeader from "../Components/PageHeader";
+import StatusChip from "../Components/StatusChip";
+import EmptyState from "../Components/EmptyState";
+import LoadingState from "../Components/LoadingState";
+import RowActions from "../Components/RowActions";
 import Pagination from "../Components/Paginacao";
 import api from "../services/apiService";
 import ErrorSpan from "../ErrorSpan";
@@ -71,6 +77,12 @@ const FILTROS_STATUS = [
   { valor: STATUS.FINALIZADO, label: "Finalizados" },
   { valor: STATUS.REJEITADO, label: "Rejeitados" },
 ];
+
+const COR_STATUS = {
+  [STATUS.FINALIZADO]: "success",
+  [STATUS.REJEITADO]: "error",
+};
+const corStatus = (status) => COR_STATUS[status] || "warning";
 
 const formatarData = (valor) => (valor ? new Date(valor).toLocaleString("pt-BR") : "-");
 
@@ -280,29 +292,24 @@ const Aprovacoes = () => {
     }
   };
 
+  const encerrado = (item) => item.status === STATUS.FINALIZADO || item.status === STATUS.REJEITADO;
+
   const renderAcoes = (item) => (
-    <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap justifyContent={isMobile ? "flex-start" : "center"}>
-      <Button size="small" startIcon={<VisibilityIcon />} onClick={() => abrirDetalhe(item)}>
-        Ver
-      </Button>
-      {item.status !== STATUS.FINALIZADO && item.status !== STATUS.REJEITADO && (
-        <>
-          <Button size="small" color="success" startIcon={<CheckCircleIcon />} onClick={() => aprovar(item.controleId)}>
-            Aprovar
-          </Button>
-          <Button size="small" color="secondary" startIcon={<EditIcon />} onClick={() => ajustar(item)}>
-            Ajustar
-          </Button>
-          <Button size="small" color="error" startIcon={<CancelIcon />} onClick={() => rejeitar(item.controleId)}>
-            Rejeitar
-          </Button>
-        </>
-      )}
-    </Stack>
+    <RowActions
+      justify={isMobile ? "flex-start" : "center"}
+      actions={[
+        { label: "Ver", icon: <VisibilityIcon fontSize="small" />, onClick: () => abrirDetalhe(item) },
+        { label: "Aprovar", icon: <CheckCircleIcon fontSize="small" />, color: "success", onClick: () => aprovar(item.controleId), hidden: encerrado(item) },
+        { label: "Ajustar", icon: <EditIcon fontSize="small" />, color: "secondary", onClick: () => ajustar(item), hidden: encerrado(item) },
+        { label: "Rejeitar", icon: <CancelIcon fontSize="small" />, color: "error", onClick: () => rejeitar(item.controleId), hidden: encerrado(item) },
+      ]}
+    />
   );
 
   return (
     <Menu>
+      <PageContainer>
+      <PageHeader title="Aprovações" subtitle="Solicitações de criação e alteração de igrejas" />
       <Stack spacing={2}>
         <Paper sx={{ p: 2, borderRadius: 2 }}>
           <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
@@ -335,14 +342,14 @@ const Aprovacoes = () => {
 
         {isLoading ? (
           <Paper sx={{ p: 2, borderRadius: 2 }}>
-            <Box display="flex" justifyContent="center" py={6}><CircularProgress /></Box>
+            <LoadingState />
           </Paper>
         ) : isMobile ? (
           <Paper sx={{ p: 2, borderRadius: 2 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>Aprovações Pendentes</Typography>
             <Stack spacing={1.5}>
               {itens.length === 0 ? (
-                <Typography color="text.secondary" textAlign="center" py={4}>Nenhum item encontrado.</Typography>
+                <EmptyState title="Nenhum item encontrado" />
               ) : (
                 itens.map((item) => (
                   <Card key={item.controleId} variant="outlined">
@@ -354,7 +361,7 @@ const Aprovacoes = () => {
                             {[item.cidade, item.uf].filter(Boolean).join(" / ") || "-"} · {item.tipo === "Criacao" ? "Criação" : "Alteração"}
                           </Typography>
                         </Box>
-                        <Chip label={STATUS_LABELS[item.status] || item.status} size="small" />
+                        <StatusChip label={STATUS_LABELS[item.status] || item.status} color={corStatus(item.status)} />
                       </Stack>
                       <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
                         {item.usuarioNome || "Ainda não atribuído"} · {formatarData(item.dataCriacao)}
@@ -390,7 +397,7 @@ const Aprovacoes = () => {
               </TableHead>
               <TableBody>
                 {itens.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} align="center">Nenhum item encontrado.</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={7}><EmptyState title="Nenhum item encontrado" /></TableCell></TableRow>
                 ) : (
                   itens.map((item) => (
                     <TableRow key={item.controleId} hover>
@@ -411,7 +418,7 @@ const Aprovacoes = () => {
                           <Typography variant="body2" color="text.secondary">Ainda não atribuído</Typography>
                         )}
                       </TableCell>
-                      <TableCell>{STATUS_LABELS[item.status] || item.status}</TableCell>
+                      <TableCell><StatusChip label={STATUS_LABELS[item.status] || item.status} color={corStatus(item.status)} /></TableCell>
                       <TableCell>{formatarData(item.dataCriacao)}</TableCell>
                       <TableCell align="center">
                         {renderAcoes(item)}
@@ -432,6 +439,7 @@ const Aprovacoes = () => {
           </TableContainer>
         )}
       </Stack>
+      </PageContainer>
 
       {/* Modal de detalhe — comparativo antes/depois */}
       <Dialog open={detalheAberto} onClose={fecharDetalhe} maxWidth="md" fullWidth fullScreen={isMobile}>

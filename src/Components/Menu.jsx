@@ -12,74 +12,35 @@ import {
   Toolbar,
   Typography,
   Badge,
-  Collapse,
+  Tooltip,
+  Breadcrumbs,
+  Link as MuiLink,
   useTheme,
   useMediaQuery,
 } from "@mui/material";
 import { useAuth } from "../Context/AuthContext";
+import { useColorMode } from "../Context/ColorModeContext";
+import SearchIcon from "@mui/icons-material/Search";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import LightModeIcon from "@mui/icons-material/LightMode";
 import SessaoCountdown from "./SessaoCountdown";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/apiService";
 import logoBM from "../assets/logoBM.svg";
-import HomeIcon from "@mui/icons-material/Home";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import ChurchIcon from "@mui/icons-material/Church";
 import LogoutIcon from "@mui/icons-material/Logout";
-import BuildIcon from "@mui/icons-material/Build";
-import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
-import EmailIcon from "@mui/icons-material/Email";
-import InsightsIcon from "@mui/icons-material/Insights";
-import FactCheckIcon from "@mui/icons-material/FactCheck";
-import AnnouncementIcon from "@mui/icons-material/Announcement";
-import MergeTypeIcon from "@mui/icons-material/MergeType";
-import ToggleOnIcon from "@mui/icons-material/ToggleOn";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
-import SettingsIcon from "@mui/icons-material/Settings";
-import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { SIDEBAR } from "../theme";
+import { navSections } from "./navItems.jsx";
+import GlobalSearch from "./GlobalSearch";
 
 const DRAWER_WIDTH = 260;
 const DRAWER_WIDTH_COLLAPSED = 72;
 const TOP_BAR_HEIGHT = 56;
 const TOP_BAR_HEIGHT_SM = 64;
-
-const navItems = [
-  { path: "/home", label: "Dashboard", icon: HomeIcon },
-  { path: "/usuario", label: "Usuários", icon: AccountCircleIcon },
-  {
-    path: "/igreja",
-    label: "Igrejas",
-    icon: ChurchIcon,
-    children: [
-      { path: "/aprovacoes", label: "Aprovações Pendentes", icon: FactCheckIcon, badgeKey: "aprovacoes" },
-      { path: "/responsaveis", label: "Responsáveis Verificados", icon: VerifiedUserIcon, badgeKey: "responsaveis" },
-      { path: "/solicitacoes-vinculo-capela", label: "Vínculos de Capela", icon: AccountBalanceIcon },
-      { path: "/candidatos-tipo-igreja", label: "Candidatas a Reclassificação", icon: AccountBalanceIcon },
-      { path: "/reportar-problema", label: "Problemas Reportados", icon: AnnouncementIcon, badgeKey: "problemas" },
-      { path: "/mesclar-metricas", label: "Mesclar Métricas", icon: MergeTypeIcon },
-      { path: "/email-evento", label: "Divulgação", icon: EmailIcon },
-    ],
-  },
-  { path: "/dioceses", label: "Dioceses", icon: AccountBalanceIcon },
-  { path: "/notificacoes", label: "Notificações", icon: NotificationsIcon },
-  { path: "/solicitacoes", label: "Solicitações", icon: BuildIcon, badgeKey: "solicitacoes" },
-  { path: "/contribuidores", label: "Contribuidores", icon: CurrencyExchangeIcon },
-  { path: "/indicadores", label: "Indicadores", icon: InsightsIcon },
-  {
-    label: "Configurações",
-    icon: SettingsIcon,
-    children: [
-      { path: "/feature-toggles", label: "Feature Toggles", icon: ToggleOnIcon },
-    ],
-  },
-];
 
 const pageTitles = {
   "/home": "Dashboard",
@@ -110,24 +71,33 @@ const Menu = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
+  const { mode, toggleColorMode } = useColorMode();
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const drawerWidth = isMobile ? DRAWER_WIDTH : desktopOpen ? DRAWER_WIDTH : DRAWER_WIDTH_COLLAPSED;
   const pageTitle = pageTitles[location.pathname] || "Busca Missa Admin";
 
-  const [openSubmenus, setOpenSubmenus] = useState({});
-
-  useEffect(() => {
-    const parentComRotaAtiva = navItems.find((item) =>
-      item.children?.some((child) => child.path === location.pathname)
-    );
-    if (parentComRotaAtiva) {
-      setOpenSubmenus((prev) => ({ ...prev, [parentComRotaAtiva.label]: true }));
+  // Trilha: [{ label, path? }] — a seção do menu, a página e, em Nova/Editar igreja, "Igrejas" como link.
+  const trilha = (() => {
+    const caminho = location.pathname;
+    const secao = navSections.find((sec) => sec.items.some((i) => i.path === caminho));
+    if (secao) return [{ label: secao.title }, { label: pageTitle }];
+    if (caminho === "/igrejaNovo" || caminho === "/igrejaEditar") {
+      return [{ label: "Operação" }, { label: "Igrejas", path: "/igreja" }, { label: pageTitle }];
     }
-  }, [location.pathname]);
-
-  const toggleSubmenu = (label) => {
-    setOpenSubmenus((prev) => ({ ...prev, [label]: !prev[label] }));
-  };
+    return [{ label: pageTitle }];
+  })();
 
   const [pendingCounts, setPendingCounts] = useState({
     aprovacoes: 0,
@@ -220,115 +190,67 @@ const Menu = ({ children }) => {
           </IconButton>
         )}
       </Box>
-      <List sx={{ px: 1.5, py: 0 }}>
-        {navItems.map(({ path, label, icon: Icon, badgeKey, children: childItems }) => {
-          const selected = !!path && location.pathname === path;
-          const badgeCount = badgeKey ? pendingCounts[badgeKey] : 0;
+      <Box sx={{ px: 1.5, pb: 1, overflowY: "auto" }}>
+        {navSections.map((section, sectionIndex) => {
           const showLabels = desktopOpen || isMobile;
-          const hasChildren = !!childItems?.length;
-          const isOpen = hasChildren && !!openSubmenus[label];
-          const childBadgeTotal = hasChildren
-            ? childItems.reduce((total, child) => total + (child.badgeKey ? pendingCounts[child.badgeKey] || 0 : 0), 0)
-            : 0;
-
-          const handleItemClick = () => {
-            if (hasChildren && !showLabels && !isMobile) {
-              // Sidebar recolhida: expandir para mostrar o submenu.
-              setDesktopOpen(true);
-              setOpenSubmenus((prev) => ({ ...prev, [label]: true }));
-              return;
-            }
-            if (hasChildren) {
-              toggleSubmenu(label);
-            }
-            if (path) {
-              handleNavigate(path);
-            }
-          };
-
           return (
-            <Box key={label}>
-              <ListItem disablePadding sx={{ mb: 0.5 }}>
-                <ListItemButton
-                  onClick={handleItemClick}
-                  selected={selected}
-                  sx={{
-                    borderRadius: 2,
-                    py: 1.25,
-                    px: 1.5,
-                    color: SIDEBAR.text,
-                    transition: "background-color .15s ease, color .15s ease",
-                    "& .MuiListItemIcon-root": { color: "inherit" },
-                    ...(selected && {
-                      backgroundColor: SIDEBAR.bgActive,
-                      color: "#fff",
-                      boxShadow: `inset 3px 0 0 ${SIDEBAR.borderActive}`,
-                      "& .MuiListItemIcon-root": { color: "#fff" },
-                    }),
-                    "&:hover": {
-                      backgroundColor: selected ? SIDEBAR.bgActive : SIDEBAR.bgHover,
-                    },
-                    "&.Mui-selected": { "&:hover": { backgroundColor: SIDEBAR.bgActive } },
-                  }}
+            <Box key={section.title} sx={{ mt: sectionIndex === 0 ? 0 : 1.5 }}>
+              {showLabels ? (
+                <Typography
+                  variant="overline"
+                  sx={{ display: "block", px: 1.5, pb: 0.5, color: SIDEBAR.textMuted, fontWeight: 600, letterSpacing: "0.08em", lineHeight: 2 }}
                 >
-                  <ListItemIcon sx={{ minWidth: desktopOpen || isMobile ? 40 : 36 }}>
-                    <Badge badgeContent={badgeCount || childBadgeTotal} color="error" max={99} invisible={!badgeCount && !childBadgeTotal}>
-                      <Icon sx={{ fontSize: 22 }} />
-                    </Badge>
-                  </ListItemIcon>
-                  {showLabels && (
-                    <ListItemText primary={label} primaryTypographyProps={{ fontWeight: 500, fontSize: "0.9375rem" }} />
-                  )}
-                  {showLabels && hasChildren && (isOpen ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />)}
-                </ListItemButton>
-              </ListItem>
-
-              {hasChildren && showLabels && (
-                <Collapse in={isOpen} timeout="auto" unmountOnExit>
-                  <List component="div" disablePadding sx={{ pl: 2 }}>
-                    {childItems.map((child) => {
-                      const childSelected = location.pathname === child.path;
-                      const childBadgeCount = child.badgeKey ? pendingCounts[child.badgeKey] : 0;
-                      const ChildIcon = child.icon;
-                      return (
-                        <ListItem key={child.path} disablePadding sx={{ mb: 0.5 }}>
-                          <ListItemButton
-                            onClick={() => handleNavigate(child.path)}
-                            selected={childSelected}
-                            sx={{
-                              borderRadius: 2,
-                              py: 1,
-                              px: 1.5,
-                              color: SIDEBAR.text,
-                              ...(childSelected && {
-                                backgroundColor: SIDEBAR.bgActive,
-                                color: "#fff",
-                                boxShadow: `inset 3px 0 0 ${SIDEBAR.borderActive}`,
-                                "& .MuiListItemIcon-root": { color: "#fff" },
-                              }),
-                              "&:hover": {
-                                backgroundColor: childSelected ? SIDEBAR.bgActive : SIDEBAR.bgHover,
-                              },
-                              "&.Mui-selected": { "&:hover": { backgroundColor: SIDEBAR.bgActive } },
-                            }}
-                          >
-                            <ListItemIcon sx={{ minWidth: 36 }}>
-                              <Badge badgeContent={childBadgeCount} color="error" max={99} invisible={!childBadgeCount}>
-                                <ChildIcon sx={{ fontSize: 20 }} />
-                              </Badge>
-                            </ListItemIcon>
-                            <ListItemText primary={child.label} primaryTypographyProps={{ fontWeight: 500, fontSize: "0.875rem" }} />
-                          </ListItemButton>
-                        </ListItem>
-                      );
-                    })}
-                  </List>
-                </Collapse>
+                  {section.title}
+                </Typography>
+              ) : (
+                sectionIndex > 0 && <Box sx={{ mx: 1, mb: 1, borderTop: "1px solid rgba(255,255,255,0.08)" }} />
               )}
+              <List disablePadding>
+                {section.items.map(({ path, label, icon: Icon, badgeKey }) => {
+                  const selected =
+                    location.pathname === path || (path === "/igreja" && location.pathname.startsWith("/igreja"));
+                  const badgeCount = badgeKey ? pendingCounts[badgeKey] : 0;
+                  return (
+                    <ListItem key={path} disablePadding sx={{ mb: 0.25 }}>
+                      <Tooltip title={showLabels ? "" : label} placement="right">
+                        <ListItemButton
+                          onClick={() => handleNavigate(path)}
+                          selected={selected}
+                          sx={{
+                            borderRadius: 2,
+                            py: 1,
+                            px: 1.5,
+                            color: SIDEBAR.text,
+                            transition: "background-color .15s ease, color .15s ease",
+                            "& .MuiListItemIcon-root": { color: "inherit" },
+                            ...(selected && {
+                              backgroundColor: SIDEBAR.bgActive,
+                              color: "#fff",
+                              boxShadow: `inset 3px 0 0 ${SIDEBAR.borderActive}`,
+                              "& .MuiListItemIcon-root": { color: "#fff" },
+                            }),
+                            "&:hover": { backgroundColor: selected ? SIDEBAR.bgActive : SIDEBAR.bgHover },
+                            "&.Mui-selected": { "&:hover": { backgroundColor: SIDEBAR.bgActive } },
+                          }}
+                        >
+                          <ListItemIcon sx={{ minWidth: showLabels ? 40 : 36 }}>
+                            <Badge badgeContent={badgeCount} color="error" max={99} invisible={!badgeCount}>
+                              <Icon sx={{ fontSize: 21 }} />
+                            </Badge>
+                          </ListItemIcon>
+                          {showLabels && (
+                            <ListItemText primary={label} primaryTypographyProps={{ fontWeight: 500, fontSize: "0.9rem" }} />
+                          )}
+                        </ListItemButton>
+                      </Tooltip>
+                    </ListItem>
+                  );
+                })}
+              </List>
             </Box>
           );
         })}
-      </List>
+      </Box>
       <Box sx={{ flex: 1 }} />
       {(desktopOpen || isMobile) && (
         <Box sx={{ px: 2, pt: 1 }}>
@@ -336,6 +258,30 @@ const Menu = ({ children }) => {
         </Box>
       )}
       <List sx={{ px: 1.5, py: 1, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+        <ListItem disablePadding sx={{ mb: 0.25 }}>
+          <Tooltip title={desktopOpen || isMobile ? "" : mode === "dark" ? "Tema claro" : "Tema escuro"} placement="right">
+            <ListItemButton
+              onClick={toggleColorMode}
+              sx={{
+                borderRadius: 2,
+                py: 1.25,
+                px: 1.5,
+                color: SIDEBAR.text,
+                "&:hover": { backgroundColor: SIDEBAR.bgHover },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: desktopOpen || isMobile ? 40 : 36, color: "inherit" }}>
+                {mode === "dark" ? <LightModeIcon sx={{ fontSize: 22 }} /> : <DarkModeIcon sx={{ fontSize: 22 }} />}
+              </ListItemIcon>
+              {(desktopOpen || isMobile) && (
+                <ListItemText
+                  primary={mode === "dark" ? "Tema claro" : "Tema escuro"}
+                  primaryTypographyProps={{ fontWeight: 500, fontSize: "0.9375rem" }}
+                />
+              )}
+            </ListItemButton>
+          </Tooltip>
+        </ListItem>
         <ListItem disablePadding>
           <ListItemButton
             onClick={handleLogout}
@@ -380,7 +326,9 @@ const Menu = ({ children }) => {
             {mobileOpen ? <CloseIcon /> : <MenuIcon />}
           </IconButton>
           <img src={logoBM} alt="Busca Missa" style={{ height: 28, width: "auto" }} />
-          <Box sx={{ minWidth: 48 }} />
+          <IconButton color="inherit" edge="end" onClick={() => setSearchOpen(true)} aria-label="Abrir busca global" sx={{ minWidth: 48, minHeight: 48 }}>
+            <SearchIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
 
@@ -456,10 +404,70 @@ const Menu = ({ children }) => {
             boxShadow: "0 1px 2px rgba(15,23,42,0.03)",
           }}
         >
-          <Typography variant="h6" fontWeight={600} color="text.primary">
-            {pageTitle}
-          </Typography>
+          <Box sx={{ minWidth: 0 }}>
+            {trilha.length > 1 && (
+              <Breadcrumbs
+                separator={<NavigateNextIcon sx={{ fontSize: 14 }} />}
+                aria-label="Trilha de navegação"
+                sx={{ "& .MuiBreadcrumbs-li": { fontSize: "0.75rem", lineHeight: 1.3 } }}
+              >
+                {trilha.slice(0, -1).map((t) =>
+                  t.path ? (
+                    <MuiLink
+                      key={t.label}
+                      component="button"
+                      type="button"
+                      underline="hover"
+                      color="text.secondary"
+                      onClick={() => navigate(t.path)}
+                      sx={{ fontSize: "inherit" }}
+                    >
+                      {t.label}
+                    </MuiLink>
+                  ) : (
+                    <Typography key={t.label} variant="caption" color="text.secondary">
+                      {t.label}
+                    </Typography>
+                  )
+                )}
+              </Breadcrumbs>
+            )}
+            <Typography variant="subtitle1" fontWeight={600} color="text.primary" noWrap sx={{ lineHeight: 1.35 }}>
+              {pageTitle}
+            </Typography>
+          </Box>
+          <Box sx={{ flex: 1 }} />
+          <Box
+            component="button"
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            aria-label="Abrir busca global"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              width: 280,
+              px: 1.5,
+              py: 0.75,
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 2,
+              bgcolor: "background.default",
+              color: "text.secondary",
+              font: "inherit",
+              fontSize: "0.875rem",
+              cursor: "pointer",
+              "&:hover": { borderColor: "text.disabled" },
+            }}
+          >
+            <SearchIcon fontSize="small" />
+            <Box component="span" sx={{ flex: 1, textAlign: "left" }}>Buscar…</Box>
+            <Box component="kbd" sx={{ fontSize: "0.7rem", px: 0.75, py: 0.125, border: "1px solid", borderColor: "divider", borderRadius: 1, fontFamily: "inherit" }}>
+              {navigator.platform?.toLowerCase().includes("mac") ? "⌘K" : "Ctrl K"}
+            </Box>
+          </Box>
         </Box>
+        <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
         <Box
           sx={{
             flex: 1,
