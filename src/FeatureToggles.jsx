@@ -2,16 +2,8 @@ import { useState, useEffect } from "react";
 import Menu from "./Components/Menu";
 import PageHeader from "./Components/PageHeader";
 import PageContainer from "./Components/PageContainer";
-import EmptyState from "./Components/EmptyState";
-import LoadingState from "./Components/LoadingState";
+import DataTable from "./Components/DataTable";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Switch } from "@mui/material";
 import api from "./services/apiService";
 
@@ -64,51 +56,33 @@ const FeatureTogglesPage = () => {
         title="Feature Toggles"
         subtitle={`Liga/desliga features do site público sem precisar de deploy. Alterações entram em vigor em até 1 minuto (cache do site).`}
       />
-      <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
-        {isLoading ? (
-          <LoadingState />
-        ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Feature</TableCell>
-                <TableCell>Descrição</TableCell>
-                <TableCell align="center">Habilitado</TableCell>
-                <TableCell>Última alteração</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {toggles.length > 0 ? (
-                toggles.map((t) => (
-                  <TableRow key={t.chave}>
-                    <TableCell>
-                      <code>{t.chave}</code>
-                    </TableCell>
-                    <TableCell>{t.descricao}</TableCell>
-                    <TableCell align="center">
-                      <Switch
-                        checked={t.habilitado}
-                        disabled={savingChave === t.chave}
-                        onChange={() => handleToggle(t.chave, t.habilitado)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {new Date(t.atualizadoEm).toLocaleString("pt-BR")}
-                      {t.atualizadoPor ? ` — ${t.atualizadoPor}` : ""}
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4}>
-                    <EmptyState title="Nenhum feature toggle cadastrado" />
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </TableContainer>
+      <DataTable
+        loading={isLoading}
+        rows={toggles}
+        getRowKey={(t) => t.chave}
+        emptyTitle="Nenhum feature toggle cadastrado"
+        columns={[
+          { key: "chave", header: "Feature", render: (t) => <code>{t.chave}</code> },
+          { key: "descricao", header: "Descrição" },
+          {
+            key: "habilitado",
+            header: "Habilitado",
+            align: "center",
+            render: (t) => (
+              <Switch
+                checked={t.habilitado}
+                disabled={savingChave === t.chave}
+                onChange={() => handleToggle(t.chave, t.habilitado)}
+              />
+            ),
+          },
+          {
+            key: "atualizadoEm",
+            header: "Última alteração",
+            render: (t) => `${new Date(t.atualizadoEm).toLocaleString("pt-BR")}${t.atualizadoPor ? ` — ${t.atualizadoPor}` : ""}`,
+          },
+        ]}
+      />
       </PageContainer>
     </Menu>
   );

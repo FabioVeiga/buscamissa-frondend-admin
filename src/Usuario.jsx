@@ -356,6 +356,7 @@ const UsuarioPage = () => {
               fullWidth
               size="small"
               label="Email"
+              slotProps={{ htmlInput: { inputMode: "email" } }}
               value={filtros.email}
               onChange={handleFiltroChange("email")}
             />

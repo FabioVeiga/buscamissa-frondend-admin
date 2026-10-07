@@ -1,18 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import Menu from "./Components/Menu";
 import PageHeader from "./Components/PageHeader";
-import EmptyState from "./Components/EmptyState";
 import PageContainer from "./Components/PageContainer";
-import LoadingState from "./Components/LoadingState";
+import DataTable from "./Components/DataTable";
+import RowActions from "./Components/RowActions";
 import StatusChip from "./Components/StatusChip";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Box,
   Typography,
   Tabs,
@@ -26,8 +19,6 @@ import {
   MenuItem,
   FormControlLabel,
   Switch,
-  IconButton,
-  Tooltip,
   Alert } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -163,94 +154,71 @@ const DiocesesPage = () => {
           </Button>
         }
       />
-      <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
-
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
-          <Tabs value={aba} onChange={(_, v) => setAba(v)} sx={{ mb: 1 }}>
-            <Tab label={`Arquidioceses (${arquidioceses.length})`} />
-            <Tab label={`Dioceses (${dioceses.length})`} />
-          </Tabs>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <TextField
-              label="Buscar por nome"
-              size="small"
-              value={filtroNome}
-              onChange={(e) => setFiltroNome(e.target.value)}
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={incluirInativas}
-                  onChange={(e) => setIncluirInativas(e.target.checked)}
-                />
-              }
-              label="Mostrar inativas"
-            />
-          </Box>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 1, mb: 1.5 }}>
+        <Tabs value={aba} onChange={(_, v) => setAba(v)}>
+          <Tab label={`Arquidioceses (${arquidioceses.length})`} />
+          <Tab label={`Dioceses (${dioceses.length})`} />
+        </Tabs>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <TextField
+            label="Buscar por nome"
+            size="small"
+            value={filtroNome}
+            onChange={(e) => setFiltroNome(e.target.value)}
+          />
+          <FormControlLabel
+            control={
+              <Switch
+                checked={incluirInativas}
+                onChange={(e) => setIncluirInativas(e.target.checked)}
+              />
+            }
+            label="Mostrar inativas"
+          />
         </Box>
+      </Box>
 
-        {isLoading ? (
-          <LoadingState />
-        ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell align="center">ID</TableCell>
-                <TableCell>Nome</TableCell>
-                <TableCell align="center">UF</TableCell>
-                <TableCell>Cidade</TableCell>
-                {ehAbaArquidiocese ? (
-                  <TableCell align="center">Dioceses</TableCell>
-                ) : (
-                  <TableCell>Arquidiocese</TableCell>
+      <DataTable
+        loading={isLoading}
+        rows={registros}
+        getRowKey={(r) => r.id}
+        rowSx={(r) => ({ opacity: r.ativo ? 1 : 0.55 })}
+        emptyTitle={`Nenhuma ${tituloRecurso.toLowerCase()} cadastrada`}
+        columns={[
+          { key: "id", header: "ID", align: "center" },
+          {
+            key: "nome",
+            header: "Nome",
+            render: (r) => (
+              <>
+                {r.nome}
+                {r.site && (
+                  <Typography variant="caption" display="block" color="text.secondary">
+                    {r.site}
+                  </Typography>
                 )}
-                <TableCell align="center">Status</TableCell>
-                <TableCell align="center">Ações</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {registros.length > 0 ? (
-                registros.map((r) => (
-                  <TableRow key={r.id} sx={{ opacity: r.ativo ? 1 : 0.55 }}>
-                    <TableCell align="center">{r.id}</TableCell>
-                    <TableCell>
-                      {r.nome}
-                      {r.site && (
-                        <Typography variant="caption" display="block" color="text.secondary">
-                          {r.site}
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell align="center">{r.uf}</TableCell>
-                    <TableCell>{r.cidade || "—"}</TableCell>
-                    {ehAbaArquidiocese ? (
-                      <TableCell align="center">{r.quantidadeDioceses}</TableCell>
-                    ) : (
-                      <TableCell>{r.arquidioceseNome || "—"}</TableCell>
-                    )}
-                    <TableCell align="center">
-                      <StatusChip label={r.ativo ? "Ativa" : "Inativa"} color={r.ativo ? "success" : "default"} />
-                    </TableCell>
-                    <TableCell align="center">
-                      <Tooltip title="Editar">
-                        <IconButton size="small" onClick={() => abrirEdicao(r)}>
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7}>
-                    <EmptyState title={`Nenhuma ${tituloRecurso.toLowerCase()} cadastrada`} />
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </TableContainer>
+              </>
+            ),
+          },
+          { key: "uf", header: "UF", align: "center" },
+          { key: "cidade", header: "Cidade", render: (r) => r.cidade || "—" },
+          ehAbaArquidiocese
+            ? { key: "quantidadeDioceses", header: "Dioceses", align: "center" }
+            : { key: "arquidioceseNome", header: "Arquidiocese", render: (r) => r.arquidioceseNome || "—" },
+          {
+            key: "status",
+            header: "Status",
+            align: "center",
+            render: (r) => <StatusChip label={r.ativo ? "Ativa" : "Inativa"} color={r.ativo ? "success" : "default"} />,
+          },
+          {
+            key: "acoes",
+            header: "Ações",
+            align: "center",
+            render: (r) => <RowActions actions={[{ label: "Editar", icon: <EditIcon fontSize="small" />, onClick: () => abrirEdicao(r) }]} />,
+          },
+        ]}
+      />
 
       <Dialog open={dialogAberto} onClose={() => !salvando && setDialogAberto(false)} maxWidth="sm" fullWidth>
         <DialogTitle>
@@ -295,6 +263,7 @@ const DiocesesPage = () => {
             onChange={(e) => setForm({ ...form, site: e.target.value })}
             fullWidth
             placeholder="https://..."
+            slotProps={{ htmlInput: { inputMode: "url" } }}
             inputProps={{ maxLength: 255 }}
           />
           {!ehAbaArquidiocese && (

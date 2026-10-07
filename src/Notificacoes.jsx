@@ -2,18 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import Menu from "./Components/Menu";
 import PageHeader from "./Components/PageHeader";
 import PageContainer from "./Components/PageContainer";
-import EmptyState from "./Components/EmptyState";
-import LoadingState from "./Components/LoadingState";
+import DataTable from "./Components/DataTable";
 import StatusChip from "./Components/StatusChip";
 import {
   Autocomplete,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   Box,
   Typography,
   Button,
@@ -168,54 +160,31 @@ const NotificacoesPage = () => {
           </Button>
         }
       />
-      <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
-
-        {isLoading ? (
-          <LoadingState />
-        ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Título</TableCell>
-                <TableCell>Tipo</TableCell>
-                <TableCell>Enviada por</TableCell>
-                <TableCell>Data</TableCell>
-                <TableCell align="center">Destinatários</TableCell>
-                <TableCell align="center">Lidas</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {notificacoes.length > 0 ? (
-                notificacoes.map((n) => (
-                  <TableRow key={n.id}>
-                    <TableCell>
-                      {n.titulo}
-                      <Typography variant="caption" display="block" color="text.secondary">
-                        {n.mensagem}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <StatusChip label={n.tipo} color={corTipo(n.tipo)} />
-                    </TableCell>
-                    <TableCell>{n.criadaPor}</TableCell>
-                    <TableCell>{new Date(n.criadaEm).toLocaleString("pt-BR")}</TableCell>
-                    <TableCell align="center">{n.totalDestinos}</TableCell>
-                    <TableCell align="center">
-                      {n.totalLidos}/{n.totalDestinos}
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6}>
-                    <EmptyState title="Nenhuma notificação enviada ainda" />
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </TableContainer>
+      <DataTable
+        loading={isLoading}
+        rows={notificacoes}
+        getRowKey={(n) => n.id}
+        emptyTitle="Nenhuma notificação enviada ainda"
+        columns={[
+          {
+            key: "titulo",
+            header: "Título",
+            render: (n) => (
+              <>
+                {n.titulo}
+                <Typography variant="caption" display="block" color="text.secondary">
+                  {n.mensagem}
+                </Typography>
+              </>
+            ),
+          },
+          { key: "tipo", header: "Tipo", render: (n) => <StatusChip label={n.tipo} color={corTipo(n.tipo)} /> },
+          { key: "criadaPor", header: "Enviada por" },
+          { key: "criadaEm", header: "Data", render: (n) => new Date(n.criadaEm).toLocaleString("pt-BR") },
+          { key: "totalDestinos", header: "Destinatários", align: "center" },
+          { key: "lidas", header: "Lidas", align: "center", render: (n) => `${n.totalLidos}/${n.totalDestinos}` },
+        ]}
+      />
 
       <Dialog open={dialogAberto} onClose={() => !enviando && setDialogAberto(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Nova notificação</DialogTitle>

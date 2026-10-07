@@ -1,18 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import Menu from "./Components/Menu";
 import PageHeader from "./Components/PageHeader";
-import EmptyState from "./Components/EmptyState";
 import PageContainer from "./Components/PageContainer";
-import LoadingState from "./Components/LoadingState";
+import DataTable from "./Components/DataTable";
+import RowActions from "./Components/RowActions";
 import StatusChip from "./Components/StatusChip";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   CircularProgress,
   Typography,
   Tabs,
@@ -23,7 +16,6 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Tooltip,
   Alert,
   Snackbar } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -172,158 +164,95 @@ const ResponsaveisPage = () => {
         title="Responsáveis Verificados"
         subtitle={`Solicitações de responsáveis pelas igrejas (pároco/secretaria). Toda decisão notifica o usuário por e-mail. Aprovado vira perfil Dono e pode editar os dados da igreja direto pelo site.`}
       />
-      <TableContainer component={Paper} sx={{ p: 2, borderRadius: 2, overflow: "auto" }}>
+      <Tabs value={aba} onChange={(_, v) => setAba(v)} sx={{ mb: 1.5 }}>
+        <Tab label="Fila de pendentes" />
+        <Tab label="Histórico completo" />
+      </Tabs>
 
-        <Tabs value={aba} onChange={(_, v) => setAba(v)} sx={{ mb: 1 }}>
-          <Tab label="Fila de pendentes" />
-          <Tab label="Histórico completo" />
-        </Tabs>
-
-        {isLoading ? (
-          <LoadingState />
-        ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Igreja</TableCell>
-                <TableCell>Solicitante</TableCell>
-                <TableCell>Cargo / Observação</TableCell>
-                <TableCell>Solicitado em</TableCell>
-                <TableCell align="center">Status</TableCell>
-                <TableCell align="center">Ações</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {registros.length > 0 ? (
-                registros.map((r) => {
-                  const meta = STATUS_META[r.status] || { label: r.status, color: "default" };
-                  return (
-                    <TableRow key={r.id}>
-                      <TableCell>
-                        {r.igrejaNome}
-                        <Typography variant="caption" display="block" color="text.secondary">
-                          {[r.igrejaCidade, r.igrejaUf].filter(Boolean).join(" — ")}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        {r.usuarioNome}
-                        <Typography variant="caption" display="block" color="text.secondary">
-                          {r.usuarioEmail}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        {r.cargoInformado || "—"}
-                        {r.observacaoSolicitacao && (
-                          <Typography variant="caption" display="block" color="text.secondary">
-                            {r.observacaoSolicitacao}
-                          </Typography>
-                        )}
-                        {r.motivoRevisao && (
-                          <Typography variant="caption" display="block" color="error.main">
-                            Motivo: {r.motivoRevisao} ({r.revisadoPor})
-                          </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(r.dataSolicitacao).toLocaleString("pt-BR")}
-                      </TableCell>
-                      <TableCell align="center">
-                        <StatusChip label={meta.label} color={meta.color} />
-                      </TableCell>
-                      <TableCell align="center" sx={{ whiteSpace: "nowrap" }}>
-                        <Tooltip title="Ir para edição da Igreja">
-                          <span>
-                            <Button
-                              size="small"
-                              color="primary"
-                              startIcon={
-                                carregandoIgrejaId === r.igrejaId
-                                  ? <CircularProgress size={14} />
-                                  : <OpenInNewIcon />
-                              }
-                              disabled={carregandoIgrejaId === r.igrejaId}
-                              onClick={() => handleIrParaIgreja(r.igrejaId)}
-                            >
-                              Igreja
-                            </Button>
-                          </span>
-                        </Tooltip>
-                        {r.status === "PendenteVerificacao" && (
-                          <>
-                            <Tooltip title="Editar informações">
-                              <Button
-                                size="small"
-                                color="inherit"
-                                startIcon={<EditIcon />}
-                                onClick={() => abrirEdicao(r)}
-                              >
-                                Editar
-                              </Button>
-                            </Tooltip>
-                            <Tooltip title="Aprovar (envia e-mail)">
-                              <Button
-                                size="small"
-                                color="success"
-                                startIcon={<CheckCircleIcon />}
-                                onClick={() => abrirAcao(r, "aprovar")}
-                              >
-                                Aprovar
-                              </Button>
-                            </Tooltip>
-                            <Tooltip title="Rejeitar com motivo (envia e-mail)">
-                              <Button
-                                size="small"
-                                color="inherit"
-                                startIcon={<CancelIcon />}
-                                onClick={() => abrirAcao(r, "rejeitar")}
-                              >
-                                Rejeitar
-                              </Button>
-                            </Tooltip>
-                          </>
-                        )}
-                        {r.status === "Aprovado" && (
-                          <>
-                            <Tooltip title="Editar informações">
-                              <Button
-                                size="small"
-                                color="inherit"
-                                startIcon={<EditIcon />}
-                                onClick={() => abrirEdicao(r)}
-                              >
-                                Editar
-                              </Button>
-                            </Tooltip>
-                            <Tooltip title="Revogar acesso com motivo (envia e-mail)">
-                              <Button
-                                size="small"
-                                color="error"
-                                startIcon={<BlockIcon />}
-                                onClick={() => abrirAcao(r, "revogar")}
-                              >
-                                Revogar
-                              </Button>
-                            </Tooltip>
-                          </>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6}>
-                    <EmptyState
-                      title={aba === 0 ? "Nenhuma solicitação pendente" : "Nenhum registro"}
-                      description={aba === 0 ? "Tudo em dia por aqui." : undefined}
-                    />
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </TableContainer>
+      <DataTable
+        loading={isLoading}
+        rows={registros}
+        getRowKey={(r) => r.id}
+        emptyTitle={aba === 0 ? "Nenhuma solicitação pendente" : "Nenhum registro"}
+        emptyDescription={aba === 0 ? "Tudo em dia por aqui." : undefined}
+        columns={[
+          {
+            key: "igreja",
+            header: "Igreja",
+            render: (r) => (
+              <>
+                {r.igrejaNome}
+                <Typography variant="caption" display="block" color="text.secondary">
+                  {[r.igrejaCidade, r.igrejaUf].filter(Boolean).join(" — ")}
+                </Typography>
+              </>
+            ),
+          },
+          {
+            key: "usuario",
+            header: "Solicitante",
+            render: (r) => (
+              <>
+                {r.usuarioNome}
+                <Typography variant="caption" display="block" color="text.secondary">
+                  {r.usuarioEmail}
+                </Typography>
+              </>
+            ),
+          },
+          {
+            key: "cargo",
+            header: "Cargo / Observação",
+            render: (r) => (
+              <>
+                {r.cargoInformado || "—"}
+                {r.observacaoSolicitacao && (
+                  <Typography variant="caption" display="block" color="text.secondary">
+                    {r.observacaoSolicitacao}
+                  </Typography>
+                )}
+                {r.motivoRevisao && (
+                  <Typography variant="caption" display="block" color="error.main">
+                    Motivo: {r.motivoRevisao} ({r.revisadoPor})
+                  </Typography>
+                )}
+              </>
+            ),
+          },
+          { key: "dataSolicitacao", header: "Solicitado em", render: (r) => new Date(r.dataSolicitacao).toLocaleString("pt-BR") },
+          {
+            key: "status",
+            header: "Status",
+            align: "center",
+            render: (r) => {
+              const meta = STATUS_META[r.status] || { label: r.status, color: "default" };
+              return <StatusChip label={meta.label} color={meta.color} />;
+            },
+          },
+          {
+            key: "acoes",
+            header: "Ações",
+            align: "center",
+            render: (r) => (
+              <RowActions
+                actions={[
+                  {
+                    label: "Ir para edição da Igreja",
+                    icon: carregandoIgrejaId === r.igrejaId ? <CircularProgress size={16} /> : <OpenInNewIcon fontSize="small" />,
+                    color: "primary",
+                    disabled: carregandoIgrejaId === r.igrejaId,
+                    onClick: () => handleIrParaIgreja(r.igrejaId),
+                  },
+                  { label: "Editar informações", icon: <EditIcon fontSize="small" />, hidden: r.status !== "PendenteVerificacao" && r.status !== "Aprovado", onClick: () => abrirEdicao(r) },
+                  { label: "Aprovar (envia e-mail)", icon: <CheckCircleIcon fontSize="small" />, color: "success", hidden: r.status !== "PendenteVerificacao", onClick: () => abrirAcao(r, "aprovar") },
+                  { label: "Rejeitar com motivo (envia e-mail)", icon: <CancelIcon fontSize="small" />, hidden: r.status !== "PendenteVerificacao", onClick: () => abrirAcao(r, "rejeitar") },
+                  { label: "Revogar acesso com motivo (envia e-mail)", icon: <BlockIcon fontSize="small" />, color: "error", hidden: r.status !== "Aprovado", onClick: () => abrirAcao(r, "revogar") },
+                ]}
+              />
+            ),
+          },
+        ]}
+      />
 
       <Dialog
         open={!!dialogAcao}
