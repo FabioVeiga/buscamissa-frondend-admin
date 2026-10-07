@@ -182,13 +182,15 @@ const DiocesesPage = () => {
         loading={isLoading}
         rows={registros}
         getRowKey={(r) => r.id}
+        pageSize={25}
         rowSx={(r) => ({ opacity: r.ativo ? 1 : 0.55 })}
         emptyTitle={`Nenhuma ${tituloRecurso.toLowerCase()} cadastrada`}
         columns={[
-          { key: "id", header: "ID", align: "center" },
+          { key: "id", header: "ID", align: "center", sortable: true },
           {
             key: "nome",
             header: "Nome",
+            sortable: true,
             render: (r) => (
               <>
                 {r.nome}
@@ -200,15 +202,17 @@ const DiocesesPage = () => {
               </>
             ),
           },
-          { key: "uf", header: "UF", align: "center" },
-          { key: "cidade", header: "Cidade", render: (r) => r.cidade || "—" },
+          { key: "uf", header: "UF", align: "center", sortable: true },
+          { key: "cidade", header: "Cidade", sortable: true, render: (r) => r.cidade || "—" },
           ehAbaArquidiocese
-            ? { key: "quantidadeDioceses", header: "Dioceses", align: "center" }
-            : { key: "arquidioceseNome", header: "Arquidiocese", render: (r) => r.arquidioceseNome || "—" },
+            ? { key: "quantidadeDioceses", header: "Dioceses", align: "center", sortable: true }
+            : { key: "arquidioceseNome", header: "Arquidiocese", sortable: true, render: (r) => r.arquidioceseNome || "—" },
           {
             key: "status",
             header: "Status",
             align: "center",
+            sortable: true,
+            sortValue: (r) => (r.ativo ? 1 : 0),
             render: (r) => <StatusChip label={r.ativo ? "Ativa" : "Inativa"} color={r.ativo ? "success" : "default"} />,
           },
           {
@@ -232,7 +236,7 @@ const DiocesesPage = () => {
             onChange={(e) => setForm({ ...form, nome: e.target.value })}
             required
             fullWidth
-            inputProps={{ maxLength: 150 }}
+            slotProps={{ htmlInput: { maxLength: 150 } }}
           />
           <Box sx={{ display: "flex", gap: 2 }}>
             <TextField
@@ -254,7 +258,7 @@ const DiocesesPage = () => {
               value={form.cidade}
               onChange={(e) => setForm({ ...form, cidade: e.target.value })}
               fullWidth
-              inputProps={{ maxLength: 100 }}
+              slotProps={{ htmlInput: { maxLength: 100 } }}
             />
           </Box>
           <TextField
@@ -263,8 +267,7 @@ const DiocesesPage = () => {
             onChange={(e) => setForm({ ...form, site: e.target.value })}
             fullWidth
             placeholder="https://..."
-            slotProps={{ htmlInput: { inputMode: "url" } }}
-            inputProps={{ maxLength: 255 }}
+            slotProps={{ htmlInput: { inputMode: "url", maxLength: 255 } }}
           />
           {!ehAbaArquidiocese && (
             <TextField

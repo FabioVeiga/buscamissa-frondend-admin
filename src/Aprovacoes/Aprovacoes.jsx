@@ -13,7 +13,6 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  Grid,
   Paper,
   Stack,
   Table,
@@ -29,6 +28,7 @@ import {
   FormControlLabel,
   Switch,
 } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import EditIcon from "@mui/icons-material/Edit";
@@ -456,14 +456,14 @@ const Aprovacoes = () => {
                 : "Ainda não atribuído"}
             </Typography>
             <Grid container spacing={2} sx={{ mt: 0.5 }}>
-              <Grid item xs={12} md={detalhe.dadosAtuais ? 6 : 12}>
+              <Grid size={{ xs: 12, md: detalhe.dadosAtuais ? 6 : 12 }}>
                 <BlocoDados titulo="Atual (publicado)" dados={detalhe.dadosAtuais} />
               </Grid>
-              {detalhe.dadosAtuais && <Grid item xs={12} md={6}>
+              {detalhe.dadosAtuais && <Grid size={{ xs: 12, md: 6 }}>
                 <BlocoDados titulo="Proposto" dados={detalhe.dadosPropostos} />
               </Grid>}
               {!detalhe.dadosAtuais && (
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Divider sx={{ my: 1 }} />
                   <BlocoDados titulo="Dados da nova igreja" dados={detalhe.dadosPropostos} />
                 </Grid>

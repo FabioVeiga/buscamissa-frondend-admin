@@ -105,6 +105,7 @@ const Menu = ({ children }) => {
     problemas: 0,
     solicitacoes: 0,
     responsaveis: 0,
+    vinculos: 0,
   });
 
   useEffect(() => {
@@ -133,6 +134,14 @@ const Menu = ({ children }) => {
       .then((response) => {
         const total = Array.isArray(response.data?.data) ? response.data.data.length : 0;
         setPendingCounts((prev) => ({ ...prev, responsaveis: total }));
+      })
+      .catch(() => {});
+
+    api
+      .get("/api/v1/admin/solicitacoes-vinculo-capela/pendentes")
+      .then((response) => {
+        const total = Array.isArray(response.data?.data) ? response.data.data.length : 0;
+        setPendingCounts((prev) => ({ ...prev, vinculos: total }));
       })
       .catch(() => {});
 

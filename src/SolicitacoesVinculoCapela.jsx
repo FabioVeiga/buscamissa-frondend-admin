@@ -109,10 +109,11 @@ const SolicitacoesVinculoCapelaPage = () => {
         loading={isLoading}
         rows={registros}
         getRowKey={(r) => r.id}
+        pageSize={25}
         emptyTitle="Nenhuma solicitação encontrada"
         columns={[
-          { key: "capelaNome", header: "Capela/comunidade" },
-          { key: "paroquiaNome", header: "Paróquia solicitante" },
+          { key: "capelaNome", header: "Capela/comunidade", sortable: true },
+          { key: "paroquiaNome", header: "Paróquia solicitante", sortable: true },
           {
             key: "usuario",
             header: "Solicitante",
@@ -135,7 +136,7 @@ const SolicitacoesVinculoCapelaPage = () => {
               </>
             ),
           },
-          { key: "dataSolicitacao", header: "Solicitado em", render: (r) => new Date(r.dataSolicitacao).toLocaleString("pt-BR") },
+          { key: "dataSolicitacao", header: "Solicitado em", sortable: true, sortValue: (r) => new Date(r.dataSolicitacao), render: (r) => new Date(r.dataSolicitacao).toLocaleString("pt-BR") },
           {
             key: "status",
             header: "Status",

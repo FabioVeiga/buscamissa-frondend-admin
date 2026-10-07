@@ -260,7 +260,7 @@ const RedeSocialForm = ({
                       </Link>
                     </Box>
 
-                    <IconButton color="error" size="small" onClick={() => handleOpenModal(rede)}>
+                    <IconButton aria-label="Excluir rede social" color="error" size="small" onClick={() => handleOpenModal(rede)}>
                       <Delete />
                     </IconButton>
                   </ListItem>

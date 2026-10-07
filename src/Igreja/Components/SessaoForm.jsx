@@ -106,8 +106,7 @@ const SessaoForm = ({ sessoes = [], setSessoes, onError }) => {
                         value={novaSessao.horarioInicio}
                         onChange={(e) => handleChange("horarioInicio", e.target.value)}
                         sx={{ width: 130 }}
-                        InputLabelProps={{ shrink: true }}
-                        inputProps={{ step: 900 }}
+                        slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 900 } }}
                     />
 
                     <TextField
@@ -116,8 +115,7 @@ const SessaoForm = ({ sessoes = [], setSessoes, onError }) => {
                         value={novaSessao.horarioFim}
                         onChange={(e) => handleChange("horarioFim", e.target.value)}
                         sx={{ width: 130 }}
-                        InputLabelProps={{ shrink: true }}
-                        inputProps={{ step: 900 }}
+                        slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 900 } }}
                     />
 
                     <Button variant="contained" color="primary" onClick={handleAddSessao} sx={{ whiteSpace: "nowrap" }}>
@@ -154,7 +152,7 @@ const SessaoForm = ({ sessoes = [], setSessoes, onError }) => {
                                         </TableCell>
                                         <TableCell>{sessao.observacao || "Sem observação"}</TableCell>
                                         <TableCell align="center">
-                                            <IconButton color="error" onClick={() => handleDeleteSessao(index)}>
+                                            <IconButton aria-label="Excluir horário" color="error" onClick={() => handleDeleteSessao(index)}>
                                                 <Delete />
                                             </IconButton>
                                         </TableCell>

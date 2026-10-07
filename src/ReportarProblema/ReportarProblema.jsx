@@ -101,7 +101,7 @@ const ReportarProblemaPage = () => {
             value={filtroResolvido}
             onChange={(e) => setFiltroResolvido(e.target.value)}
             sx={{ minWidth: 200 }}
-            SelectProps={{ native: true }}
+            slotProps={{ select: { native: true } }}
           >
             {FILTROS_RESOLVIDO.map((f) => (
               <option key={f.label} value={f.valor}>{f.label}</option>

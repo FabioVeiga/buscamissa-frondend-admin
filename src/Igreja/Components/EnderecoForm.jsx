@@ -109,7 +109,7 @@ const EnderecoForm = ({
                         label="CEP"
                         value={endereco?.cep || ""}
                         onChange={(e) => handleChange("cep", formatarCep(e.target.value))}
-                        inputProps={{ inputMode: "numeric", maxLength: 9, placeholder: "00000-000" }}
+                        slotProps={{ htmlInput: { inputMode: "numeric", maxLength: 9, placeholder: "00000-000" } }}
                         fullWidth
                     />
                 </Grid>
@@ -128,7 +128,7 @@ const EnderecoForm = ({
                         label="Número"
                         value={endereco?.numero || ""}
                         onChange={(e) => handleChange("numero", e.target.value)}
-                        inputProps={{ inputMode: "numeric" }}
+                        slotProps={{ htmlInput: { inputMode: "numeric" } }}
                         fullWidth
                     />
                 </Grid>
@@ -289,7 +289,7 @@ const EnderecoForm = ({
                         onChange={(e) => handleChange("latitude", e.target.value)}
                         fullWidth
                         type="number"
-                        inputProps={{ step: "0.000001" }}
+                        slotProps={{ htmlInput: { step: "0.000001" } }}
                     />
                 </Grid>
 
@@ -300,7 +300,7 @@ const EnderecoForm = ({
                         onChange={(e) => handleChange("longitude", e.target.value)}
                         fullWidth
                         type="number"
-                        inputProps={{ step: "0.000001" }}
+                        slotProps={{ htmlInput: { step: "0.000001" } }}
                     />
                 </Grid>
 

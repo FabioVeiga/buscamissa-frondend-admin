@@ -71,11 +71,12 @@ const CandidatosTipoIgrejaPage = () => {
         loading={isLoading}
         rows={registros}
         getRowKey={(r) => r.id}
+        pageSize={25}
         emptyTitle="Nenhuma candidata encontrada"
         columns={[
-          { key: "id", header: "Id" },
-          { key: "nome", header: "Nome" },
-          { key: "local", header: "Cidade/UF", render: (r) => [r.cidade, r.uf].filter(Boolean).join("/") },
+          { key: "id", header: "Id", sortable: true },
+          { key: "nome", header: "Nome", sortable: true },
+          { key: "local", header: "Cidade/UF", sortable: true, sortValue: (r) => [r.cidade, r.uf].filter(Boolean).join("/"), render: (r) => [r.cidade, r.uf].filter(Boolean).join("/") },
           { key: "tipo", header: "Tipo sugerido", render: (r) => <Chip size="small" label={r.tipoIgrejaSugerido} /> },
           {
             key: "acoes",

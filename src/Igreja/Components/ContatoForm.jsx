@@ -50,7 +50,7 @@ const ContatoForm = ({ contato = {}, onChange }) => {
         visivel && (
             <InputAdornment position="end">
                 <Tooltip title="Limpar campo">
-                    <IconButton onClick={onClick} edge="end" size="small">
+                    <IconButton aria-label="Limpar campo" onClick={onClick} edge="end" size="small">
                         <Clear fontSize="small" />
                     </IconButton>
                 </Tooltip>
@@ -103,12 +103,12 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                 <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                         label="Email de Contato"
-                        inputProps={{ inputMode: "email" }}
                         value={contato.emailContato || ""}
                         onChange={(e) => handleChange("emailContato", e.target.value.replace(/\s/g, ""))}
                         fullWidth
                         size="small"
                         slotProps={{
+                            htmlInput: { inputMode: "email" },
                             input: {
                                 endAdornment: botaoLimpar(
                                     !!contato.emailContato,
@@ -123,12 +123,12 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                     <TextField
                         label="Telefone"
                         placeholder="(00) 00000-0000"
-                        inputProps={{ inputMode: "tel" }}
                         value={formatarTelefone(`${contato.ddd || ""}${contato.telefone || ""}`)}
                         onChange={handleTelefoneChange("ddd", "telefone")}
                         fullWidth
                         size="small"
                         slotProps={{
+                            htmlInput: { inputMode: "tel" },
                             input: {
                                 endAdornment: botaoLimpar(
                                     !!(contato.ddd || contato.telefone),
@@ -143,12 +143,12 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                     <TextField
                         label="Telefone WhatsApp"
                         placeholder="(00) 00000-0000"
-                        inputProps={{ inputMode: "tel" }}
                         value={formatarTelefone(`${contato.dddWhatsApp || ""}${contato.telefoneWhatsApp || ""}`)}
                         onChange={handleTelefoneChange("dddWhatsApp", "telefoneWhatsApp")}
                         fullWidth
                         size="small"
                         slotProps={{
+                            htmlInput: { inputMode: "tel" },
                             input: {
                                 endAdornment: botaoLimpar(
                                     !!(contato.dddWhatsApp || contato.telefoneWhatsApp),
@@ -174,7 +174,7 @@ const ContatoForm = ({ contato = {}, onChange }) => {
 
                                         <Tooltip title="Verificar se o site responde">
                                             <span>
-                                                <IconButton
+                                                <IconButton aria-label="Verificar se o site responde"
                                                     onClick={handleVerificarSite}
                                                     disabled={verificando}
                                                     edge="end"
@@ -186,7 +186,7 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                                         </Tooltip>
 
                                         <Tooltip title="Abrir em nova aba para conferir manualmente">
-                                            <IconButton
+                                            <IconButton aria-label="Abrir site em nova aba"
                                                 component="a"
                                                 href={normalizarUrlWebsite(contato.website)}
                                                 target="_blank"
@@ -199,7 +199,7 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                                         </Tooltip>
 
                                         <Tooltip title="Limpar campo">
-                                            <IconButton
+                                            <IconButton aria-label="Limpar campo"
                                                 onClick={handleLimparCampo("website")}
                                                 edge="end"
                                                 size="small"

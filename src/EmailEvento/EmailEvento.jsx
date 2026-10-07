@@ -348,6 +348,7 @@ const EmailEventoPage = () => {
                           indeterminate={selecionados.length > 0 && selecionados.length < igrejas.length}
                           checked={igrejas.length > 0 && selecionados.length === igrejas.length}
                           onChange={(e) => setSelecionados(e.target.checked ? igrejas.map((i) => i.id) : [])}
+                          slotProps={{ input: { "aria-label": "Selecionar todas as igrejas" } }}
                         />
                       </TableCell>
                     )}
@@ -410,6 +411,7 @@ const EmailEventoPage = () => {
                                 size="small"
                                 checked={selecionado}
                                 onChange={() => toggleSelecionado(ig.id)}
+                                slotProps={{ input: { "aria-label": `Selecionar ${ig.nome}` } }}
                               />
                             </TableCell>
                           )}

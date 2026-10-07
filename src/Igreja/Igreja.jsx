@@ -371,7 +371,7 @@ const IgrejaPage = () => {
                             >
                               {shortParoquiaText(row)}
                             </Link>
-                            <IconButton size="small" onClick={() => handleCopyUrl(buildParoquiaUrl(row))}>
+                            <IconButton aria-label="Copiar link" size="small" onClick={() => handleCopyUrl(buildParoquiaUrl(row))}>
                               <ContentCopyIcon fontSize="small" />
                             </IconButton>
                           </Stack>
@@ -476,7 +476,7 @@ const IgrejaPage = () => {
                                 </Link>
                               </Tooltip>
                             <Tooltip title="Copiar URL">
-                              <IconButton size="small" onClick={() => handleCopyUrl(buildParoquiaUrl(row))}>
+                              <IconButton aria-label="Copiar URL" size="small" onClick={() => handleCopyUrl(buildParoquiaUrl(row))}>
                                 <ContentCopyIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>

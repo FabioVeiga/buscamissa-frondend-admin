@@ -64,12 +64,14 @@ const FeatureTogglesPage = () => {
         getRowKey={(t) => t.chave}
         emptyTitle="Nenhum feature toggle cadastrado"
         columns={[
-          { key: "chave", header: "Feature", render: (t) => <code>{t.chave}</code> },
-          { key: "descricao", header: "Descrição" },
+          { key: "chave", header: "Feature", sortable: true, render: (t) => <code>{t.chave}</code> },
+          { key: "descricao", header: "Descrição", sortable: true },
           {
             key: "habilitado",
             header: "Habilitado",
             align: "center",
+            sortable: true,
+            sortValue: (t) => (t.habilitado ? 1 : 0),
             render: (t) => (
               <Switch
                 checked={t.habilitado}
@@ -81,6 +83,8 @@ const FeatureTogglesPage = () => {
           {
             key: "atualizadoEm",
             header: "Última alteração",
+            sortable: true,
+            sortValue: (t) => new Date(t.atualizadoEm),
             render: (t) => `${new Date(t.atualizadoEm).toLocaleString("pt-BR")}${t.atualizadoPor ? ` — ${t.atualizadoPor}` : ""}`,
           },
         ]}

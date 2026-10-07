@@ -164,11 +164,13 @@ const NotificacoesPage = () => {
         loading={isLoading}
         rows={notificacoes}
         getRowKey={(n) => n.id}
+        pageSize={25}
         emptyTitle="Nenhuma notificação enviada ainda"
         columns={[
           {
             key: "titulo",
             header: "Título",
+            sortable: true,
             render: (n) => (
               <>
                 {n.titulo}
@@ -178,10 +180,10 @@ const NotificacoesPage = () => {
               </>
             ),
           },
-          { key: "tipo", header: "Tipo", render: (n) => <StatusChip label={n.tipo} color={corTipo(n.tipo)} /> },
-          { key: "criadaPor", header: "Enviada por" },
-          { key: "criadaEm", header: "Data", render: (n) => new Date(n.criadaEm).toLocaleString("pt-BR") },
-          { key: "totalDestinos", header: "Destinatários", align: "center" },
+          { key: "tipo", header: "Tipo", sortable: true, render: (n) => <StatusChip label={n.tipo} color={corTipo(n.tipo)} /> },
+          { key: "criadaPor", header: "Enviada por", sortable: true },
+          { key: "criadaEm", header: "Data", sortable: true, sortValue: (n) => new Date(n.criadaEm), render: (n) => new Date(n.criadaEm).toLocaleString("pt-BR") },
+          { key: "totalDestinos", header: "Destinatários", align: "center", sortable: true },
           { key: "lidas", header: "Lidas", align: "center", render: (n) => `${n.totalLidos}/${n.totalDestinos}` },
         ]}
       />
@@ -196,7 +198,7 @@ const NotificacoesPage = () => {
             onChange={(e) => setForm({ ...form, titulo: e.target.value })}
             required
             fullWidth
-            inputProps={{ maxLength: 150 }}
+            slotProps={{ htmlInput: { maxLength: 150 } }}
           />
           <TextField
             label="Mensagem"
@@ -206,7 +208,7 @@ const NotificacoesPage = () => {
             fullWidth
             multiline
             minRows={3}
-            inputProps={{ maxLength: 1000 }}
+            slotProps={{ htmlInput: { maxLength: 1000 } }}
           />
           <TextField
             label="Tipo"
