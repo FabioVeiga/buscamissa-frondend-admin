@@ -40,6 +40,25 @@ const theme = createTheme({
     button: { textTransform: 'none', fontWeight: 600 },
   },
   components: {
+    MuiTextField: { defaultProps: { size: 'small' } },
+    MuiFormControl: { defaultProps: { size: 'small' } },
+    MuiSelect: { defaultProps: { size: 'small' } },
+    MuiAutocomplete: { defaultProps: { size: 'small' } },
+    MuiSwitch: { defaultProps: { size: 'small' } },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#ffffff',
+          borderRadius: 8,
+          '& .MuiOutlinedInput-notchedOutline': { borderColor: '#cbd5e1' },
+          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' },
+          '&.Mui-focused': { boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.15)' },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderWidth: 1, borderColor: '#3b82f6' },
+          '&.Mui-error.Mui-focused': { boxShadow: '0 0 0 3px rgba(239, 68, 68, 0.15)' },
+          '&.Mui-disabled': { backgroundColor: '#f1f5f9' },
+        },
+      },
+    },
     MuiButton: {
       styleOverrides: {
         root: {
