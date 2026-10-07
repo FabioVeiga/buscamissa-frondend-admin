@@ -4,6 +4,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api, { setAuthToken, setUnauthorizedHandler } from "../services/apiService";
+import { perfilDoToken, tokenExpirado, PERFIL_ADMIN } from "../utils/jwt";
 
 // Criação do contexto de autenticação
 const AuthContext = createContext();
@@ -13,6 +14,7 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
+  const [perfil, setPerfil] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -30,12 +32,21 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
     
-    if (token) {
+    const perfilToken = token ? perfilDoToken(token) : null;
+    const sessaoValida = !!token && perfilToken === PERFIL_ADMIN && !tokenExpirado(token);
+
+    if (sessaoValida) {
       setAuthToken(token);
       if (storedUser) {
         setUser(JSON.parse(storedUser));
+        setPerfil(perfilToken);
         setIsAuthenticated(true);
       }
+    } else if (token) {
+      // Sessão de quem não é administrador (ou token vencido): encerra
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setAuthToken(null);
     }
     setLoading(false);
   }, []);
@@ -53,8 +64,16 @@ export const AuthProvider = ({ children }) => {
       if (response.status === 200) {
         const userData = response.data.data.usuario;
         const token = userData.acessToken.token;
-        
+        const perfilToken = perfilDoToken(token);
+
+        if (perfilToken !== PERFIL_ADMIN) {
+          setError({ mensagemTela: 'Acesso restrito a administradores.' });
+          setIsAuthenticated(false);
+          return false;
+        }
+
         setUser(userData);
+        setPerfil(perfilToken);
         setIsAuthenticated(true);
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(userData));
@@ -78,6 +97,7 @@ export const AuthProvider = ({ children }) => {
   // Função para logout
   const logout = () => {
     setUser(null);
+    setPerfil(null);
     setIsAuthenticated(false);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -87,7 +107,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, error, loading }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, perfil, login, logout, error, loading }}>
       {children}
     </AuthContext.Provider>
   );
