@@ -327,7 +327,7 @@ const SolicitacoesPage = () => {
                 Resposta para e-mail
               </Typography>
               <Tooltip title="Inserir link">
-                <IconButton size="small" onClick={() => setLinkModalOpen(true)} color="primary">
+                <IconButton aria-label="Inserir link" size="small" onClick={() => setLinkModalOpen(true)} color="primary">
                   <Link fontSize="small" />
                 </IconButton>
               </Tooltip>

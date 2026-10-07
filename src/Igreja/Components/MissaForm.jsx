@@ -480,7 +480,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                         />
                         <Tooltip title="Incluir outro horário (Enter)">
                             <span>
-                                <IconButton color="primary" onClick={handleIncluirHorario} disabled={!novaMissa.horario}>
+                                <IconButton aria-label="Incluir outro horário" color="primary" onClick={handleIncluirHorario} disabled={!novaMissa.horario}>
                                     <Add />
                                 </IconButton>
                             </span>
@@ -588,6 +588,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                                                 indeterminate={selecionadas.length > 0 && selecionadas.length < missas.length}
                                                 checked={missas.length > 0 && selecionadas.length === missas.length}
                                                 onChange={handleToggleSelecionarTodas}
+                                                slotProps={{ input: { "aria-label": "Selecionar todas as missas" } }}
                                             />
                                         </TableCell>
                                         <TableCell><strong>Horário</strong></TableCell>
@@ -619,12 +620,13 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                                                                 size="small"
                                                                 checked={selecionadas.includes(index)}
                                                                 onChange={() => handleToggleSelecionada(index)}
+                                                                slotProps={{ input: { "aria-label": "Selecionar missa" } }}
                                                             />
                                                         </TableCell>
                                                         <TableCell>{formatarHorario(missa.horario)}</TableCell>
                                                         <TableCell>{missa.observacao || "Sem observação"}</TableCell>
                                                         <TableCell align="center">
-                                                            <IconButton color="error" onClick={() => handleDeleteMissa(index)}>
+                                                            <IconButton aria-label="Excluir missa" color="error" onClick={() => handleDeleteMissa(index)}>
                                                                 <Delete />
                                                             </IconButton>
                                                         </TableCell>
@@ -658,7 +660,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                                                         <TableCell>{descrever(missa)}</TableCell>
                                                         <TableCell>{missa.observacao || "Sem observação"}</TableCell>
                                                         <TableCell align="center">
-                                                            <IconButton color="error" onClick={() => handleDeleteMissa(index)}>
+                                                            <IconButton aria-label="Excluir missa" color="error" onClick={() => handleDeleteMissa(index)}>
                                                                 <Delete />
                                                             </IconButton>
                                                         </TableCell>

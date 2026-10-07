@@ -152,7 +152,7 @@ const SessaoForm = ({ sessoes = [], setSessoes, onError }) => {
                                         </TableCell>
                                         <TableCell>{sessao.observacao || "Sem observação"}</TableCell>
                                         <TableCell align="center">
-                                            <IconButton color="error" onClick={() => handleDeleteSessao(index)}>
+                                            <IconButton aria-label="Excluir horário" color="error" onClick={() => handleDeleteSessao(index)}>
                                                 <Delete />
                                             </IconButton>
                                         </TableCell>

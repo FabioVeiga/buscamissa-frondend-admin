@@ -440,7 +440,7 @@ const UsuarioPage = () => {
                 ))}
               </TextField>
               <Tooltip title={ordenacao.decrescente ? "Decrescente" : "Crescente"}>
-                <IconButton onClick={handleToggleDirecaoOrdenacao}>
+                <IconButton aria-label={ordenacao.decrescente ? "Ordem decrescente" : "Ordem crescente"} onClick={handleToggleDirecaoOrdenacao}>
                   {ordenacao.decrescente ? <ArrowDownwardIcon /> : <ArrowUpwardIcon />}
                 </IconButton>
               </Tooltip>
@@ -603,6 +603,7 @@ const UsuarioPage = () => {
                     <Checkbox
                       checked={!!selectedUser.aceitarPromocao}
                       disabled
+                      slotProps={{ input: { "aria-label": "Aceitou receber promoções" } }}
                     />
                   </TableCell>
                 </TableRow>
@@ -611,7 +612,7 @@ const UsuarioPage = () => {
                     <strong>Aceita Termo</strong>
                   </TableCell>
                   <TableCell>
-                    <Checkbox checked={!!selectedUser.aceitarTermo} disabled />
+                    <Checkbox checked={!!selectedUser.aceitarTermo} disabled slotProps={{ input: { "aria-label": "Aceitou os termos" } }} />
                   </TableCell>
                 </TableRow>
               </TableBody>

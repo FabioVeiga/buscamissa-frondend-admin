@@ -447,12 +447,12 @@ const IgrejaSearchForm = ({
             />
 
             <Tooltip title="Limpar Filtros">
-              <IconButton color="error" onClick={handleClearFilters}>
+              <IconButton aria-label="Limpar filtros" color="error" onClick={handleClearFilters}>
                 <ClearIcon />
               </IconButton>
             </Tooltip>
             <Tooltip title="Geocodificar Pendentes">
-              <IconButton
+              <IconButton aria-label="Geocodificar pendentes"
                 color="success"
                 onClick={handleGeocodificarPendentes}
                 disabled={geoLoading}
@@ -461,7 +461,7 @@ const IgrejaSearchForm = ({
               </IconButton>
             </Tooltip>
             <Tooltip title="Nova Igreja">
-              <IconButton
+              <IconButton aria-label="Nova igreja"
                 color="primary"
                 onClick={() => handleNavigate("/igrejaNovo")}
               >

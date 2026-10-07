@@ -633,7 +633,7 @@ const IgrejaAtualizar = () => {
               <OpenInNewIcon fontSize="inherit" />
             </Link>
             <Tooltip title="Copiar link">
-              <IconButton size="small" onClick={handleCopiarLink}>
+              <IconButton aria-label="Copiar link" size="small" onClick={handleCopiarLink}>
                 <ContentCopy fontSize="inherit" />
               </IconButton>
             </Tooltip>

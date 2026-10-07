@@ -50,7 +50,7 @@ const ContatoForm = ({ contato = {}, onChange }) => {
         visivel && (
             <InputAdornment position="end">
                 <Tooltip title="Limpar campo">
-                    <IconButton onClick={onClick} edge="end" size="small">
+                    <IconButton aria-label="Limpar campo" onClick={onClick} edge="end" size="small">
                         <Clear fontSize="small" />
                     </IconButton>
                 </Tooltip>
@@ -174,7 +174,7 @@ const ContatoForm = ({ contato = {}, onChange }) => {
 
                                         <Tooltip title="Verificar se o site responde">
                                             <span>
-                                                <IconButton
+                                                <IconButton aria-label="Verificar se o site responde"
                                                     onClick={handleVerificarSite}
                                                     disabled={verificando}
                                                     edge="end"
@@ -186,7 +186,7 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                                         </Tooltip>
 
                                         <Tooltip title="Abrir em nova aba para conferir manualmente">
-                                            <IconButton
+                                            <IconButton aria-label="Abrir site em nova aba"
                                                 component="a"
                                                 href={normalizarUrlWebsite(contato.website)}
                                                 target="_blank"
@@ -199,7 +199,7 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                                         </Tooltip>
 
                                         <Tooltip title="Limpar campo">
-                                            <IconButton
+                                            <IconButton aria-label="Limpar campo"
                                                 onClick={handleLimparCampo("website")}
                                                 edge="end"
                                                 size="small"
