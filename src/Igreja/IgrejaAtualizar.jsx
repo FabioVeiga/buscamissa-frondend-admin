@@ -37,6 +37,7 @@ import RedesSociaisSection from "./Components/RedesSociaisSection";
 import SectionCard from "./Components/SectionCard";
 import Grid from "@mui/material/Grid2";
 import ImagemSection from "./Components/ImagemSection";
+import useImagemIgreja from "../hooks/useImagemIgreja";
 import { useAlteracoesNaoSalvas, useNavegacaoProtegida } from "../Context/UnsavedChangesContext";
 import StatusChip from "../Components/StatusChip";
 import IgrejasCepModal from "./Components/IgrejasCepModal";
@@ -99,12 +100,10 @@ const IgrejaAtualizar = () => {
   const [confirmarSemMissaAberto, setConfirmarSemMissaAberto] = useState(false);
   const [formDatamissas, setformDataMissas] = useState(state?.row?.missas || []);
   const [formDataSessoes, setFormDataSessoes] = useState(state?.row?.sessoes || []);
-  const [missas, setMissas] = useState([]);
-  const [base64, setBase64] = useState("");
-  const [fileName, setFileName] = useState("");
-  const [urlInput, setUrlInput] = useState("");
-  const [imagemAlterada, setImagemAlterada] = useState(false);
-  const [imagemMimeType, setImagemMimeType] = useState("image/png");
+  const {
+    base64, fileName, urlInput, setUrlInput, imagemAlterada, imagemMimeType,
+    handleFileChange, blobToBase64, limparImagem, removerImagem,
+  } = useImagemIgreja();
   const [loading, setLoading] = useState(false);
   const [openCepReverso, setOpenCepReverso] = useState(false);
   const [candidatosCep, setCandidatosCep] = useState([]);
@@ -135,10 +134,7 @@ const IgrejaAtualizar = () => {
     setformDataMissas(igrejaNormalizada.missas || []);
     setFormDataSessoes(igrejaNormalizada.sessoes || []);
     setEndereco(igrejaNormalizada.endereco || {});
-    setBase64("");
-    setFileName("");
-    setUrlInput("");
-    setImagemAlterada(false);
+    limparImagem();
     setMessage(errorMensage());
   }, [state?.row]);
 
@@ -297,10 +293,6 @@ const IgrejaAtualizar = () => {
     }));
   };
 
-  const limparEndereco = () => {
-    setEndereco({});
-  };
-
   const buscarIgrejaCompletaPorId = async (id) => {
     if (!id) {
       throw new Error("Id da igreja não informado.");
@@ -342,128 +334,12 @@ const IgrejaAtualizar = () => {
     };
   };
   
-  const selecionarIgrejaPorCep = (igrejas) => {
-    if (!Array.isArray(igrejas) || igrejas.length === 0) return null;
 
-    if (igrejas.length === 1) {
-      const desejaEditar = window.confirm(
-          `Já existe uma igreja cadastrada para este CEP:\n\n${igrejas[0].nome}\n\nDeseja ser redirecionado para a edição?`
-      );
-
-      return desejaEditar ? igrejas[0] : null;
-    }
-
-    const opcoes = igrejas
-        .map((igreja, index) => `${index + 1} - ${igreja.nome}`)
-        .join("\n");
-
-    const escolha = window.prompt(
-        `Foram encontradas ${igrejas.length} igrejas para este CEP.\n\nDigite o número da igreja que deseja editar:\n\n${opcoes}`
-    );
-
-    if (!escolha) return null;
-
-    const indexSelecionado = Number(escolha) - 1;
-
-    if (Number.isNaN(indexSelecionado) || !igrejas[indexSelecionado]) {
-      setMessage({
-        mensagem: "Opção inválida.",
-        severity: "error",
-        show: true,
-      });
-      return null;
-    }
-
-    return igrejas[indexSelecionado];
-  };
-
-
-
-  const handleAddMissa = () => {
-    const { horario, diaSemana, observacao } = missas;
-    // Validação
-    if (!horario || diaSemana === "") {
-      setMessage({
-        mensagem:
-          "Os campos Horário e Dia da Semana são obrigatórios!",
-        severity: "error",
-        show: true,
-      });
-      return;
-    }
-
-    const horarioDigits = apenasNumeros(horario);
-    setformDataMissas((prev) => [
-      ...prev,
-      { horario: horarioDigits, diaSemana: diasDaSemana[diaSemana].value, observacao },
-    ]);
-
-    // Limpar os campos
-    setMissas({ horario: "", diaSemana: "", observacao: "" });
-  };
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleChangeMissa = (field, value) => {
-    setMissas((prev) => ({ ...prev, [field]: value }));
-  };
-
-
-  const handleDeleteMissa = (indexToDelete) => {
-    setformDataMissas((prev) => prev.filter((_, index) => index !== indexToDelete));
-  };
-
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        // O resultado contém a base64 da imagem
-        const fullBase64 = e.target.result;
-        const base64String = fullBase64.split(",")[1]; // Remove o cabeçalho 'data:image/jpeg;base64,'
-        setBase64(base64String);
-        setFileName(file.name);
-        setImagemMimeType(file.type || "image/png");
-        setImagemAlterada(true);
-        console.log("Imagem alterada:", { fileName: file.name, mimeType: file.type, base64Length: base64String.length });
-      };
-
-      reader.readAsDataURL(file); // Lê o arquivo como uma DataURL
-    }
-  };
-
-  // Utilitário: converte Blob para base64 e atualiza estado
-  const blobToBase64 = (blob, name) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const base64String = e.target.result.split(",")[1];
-          setBase64(base64String);
-          setFileName(name || "image");
-          setImagemMimeType(blob.type || "image/png");
-          setImagemAlterada(true);
-          console.log("Blob convertido:", { name, mimeType: blob.type, base64Length: base64String.length });
-          resolve(base64String);
-        } catch (err) {
-          reject(err);
-        }
-      };
-      reader.onerror = (err) => reject(err);
-      reader.readAsDataURL(blob);
-    });
-  };
-
-  const getDiaLabel = (dia) => {
-    if (dia === undefined || dia === null) return "";
-    const found = diasDaSemana.find((d) => d.value === dia || d.value === Number(dia));
-    if (found) return found.label;
-    // fallback: if dia is an index
-    return diasDaSemana[dia]?.label || String(dia);
-  };
 
   const handleGeocode = async () => {
     const { logradouro, numero, bairro, localidade, uf } = endereco;
@@ -556,12 +432,7 @@ const IgrejaAtualizar = () => {
   };
 
   const handleRemoverImagem = () => {
-    console.log("Removendo imagem");
-    setBase64("");
-    setFileName("");
-    setUrlInput("");
-    setImagemMimeType("image/png");
-    setImagemAlterada(true);
+    removerImagem();
     setFormData((prev) => ({ ...prev, imagemUrl: "" }));
   };
 
