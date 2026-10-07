@@ -257,11 +257,12 @@ const Menu = ({ children }) => {
                     py: 1.25,
                     px: 1.5,
                     color: SIDEBAR.text,
+                    transition: "background-color .15s ease, color .15s ease",
+                    "& .MuiListItemIcon-root": { color: "inherit" },
                     ...(selected && {
                       backgroundColor: SIDEBAR.bgActive,
                       color: "#fff",
-                      borderLeft: "3px solid",
-                      borderLeftColor: SIDEBAR.borderActive,
+                      boxShadow: `inset 3px 0 0 ${SIDEBAR.borderActive}`,
                       "& .MuiListItemIcon-root": { color: "#fff" },
                     }),
                     "&:hover": {
@@ -302,8 +303,7 @@ const Menu = ({ children }) => {
                               ...(childSelected && {
                                 backgroundColor: SIDEBAR.bgActive,
                                 color: "#fff",
-                                borderLeft: "3px solid",
-                                borderLeftColor: SIDEBAR.borderActive,
+                                boxShadow: `inset 3px 0 0 ${SIDEBAR.borderActive}`,
                                 "& .MuiListItemIcon-root": { color: "#fff" },
                               }),
                               "&:hover": {
@@ -453,6 +453,7 @@ const Menu = ({ children }) => {
             bgcolor: "background.paper",
             borderBottom: "1px solid",
             borderColor: "divider",
+            boxShadow: "0 1px 2px rgba(15,23,42,0.03)",
           }}
         >
           <Typography variant="h6" fontWeight={600} color="text.primary">
@@ -464,7 +465,7 @@ const Menu = ({ children }) => {
             flex: 1,
             minWidth: 0,
             minHeight: 0,
-            p: 2,
+            p: { xs: 1.5, md: 3 },
             overflow: "auto",
             WebkitOverflowScrolling: "touch",
           }}

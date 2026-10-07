@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from "react";
-import { Box, TextField, Switch, FormControlLabel, Button, Autocomplete, CircularProgress, Collapse, Backdrop, Typography } from "@mui/material";
+import { Box, TextField, Switch, FormControlLabel, Button, Autocomplete, CircularProgress, Collapse, Backdrop, Typography, Chip } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import api from "../services/apiService";
 import { IconButton, Tooltip } from "@mui/material";
@@ -31,6 +31,15 @@ const FILTROS_PADRAO = {
   semMissas: false,
   mostrarDeletadas: false,
 };
+
+const FILTROS_CHIP = [
+  { campo: "reportarProblema", label: "Problema reportado" },
+  { campo: "semCoordenadas", label: "Sem coordenadas" },
+  { campo: "semInstagram", label: "Sem Instagram" },
+  { campo: "semFacebook", label: "Sem Facebook" },
+  { campo: "semMissas", label: "Sem missas" },
+  { campo: "mostrarDeletadas", label: "Mostrar excluídas" },
+];
 
 const IgrejaSearchForm = ({
   onDataChange,
@@ -265,9 +274,13 @@ const IgrejaSearchForm = ({
       </Backdrop>
       <Box
         component="form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSearch();
+        }}
         display="flex"
         flexDirection="column"
-        gap={2}
+        gap={1.5}
         sx={{
           margin: "0 auto",
           padding: 2,
@@ -277,8 +290,8 @@ const IgrejaSearchForm = ({
           boxSizing: "border-box", // Garantir que padding e border sejam incluídos nas dimensões
         }}
       >
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 6, sm: 1 }}>
+        <Grid container spacing={1.5}>
+          <Grid size={{ xs: 6, sm: 2 }}>
             {/* Autocomplete UF */}
             <Autocomplete
               freeSolo
@@ -287,11 +300,11 @@ const IgrejaSearchForm = ({
               onChange={(event, newValue) => handleChange("uf", newValue || "")}
               onInputChange={(event, newInputValue) => handleChange("uf", newInputValue)}
               renderInput={(params) => (
-                <TextField {...params} label="UF" placeholder="Digite ou selecione" />
+                <TextField {...params} size="small" label="UF" placeholder="Digite ou selecione" />
               )}
             />
           </Grid>
-          <Grid size={{ xs: 6, sm: 4 }}>
+          <Grid size={{ xs: 6, sm: 3 }}>
             {/* Autocomplete Localidade */}
             <Autocomplete
               freeSolo
@@ -300,7 +313,7 @@ const IgrejaSearchForm = ({
               onChange={(event, newValue) => handleChange("localidade", newValue || "")}
               onInputChange={(event, newInputValue) => handleChange("localidade", newInputValue)}
               renderInput={(params) => (
-                <TextField {...params} label="Localidade" placeholder="Digite ou selecione" />
+                <TextField {...params} size="small" label="Localidade" placeholder="Digite ou selecione" />
               )}
             />
           </Grid>
@@ -310,6 +323,7 @@ const IgrejaSearchForm = ({
               value={formData.nome}
               onChange={(e) => handleChange("nome", e.target.value)}
               fullWidth
+              size="small"
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 2 }} display="flex" alignItems="center">
@@ -331,45 +345,50 @@ const IgrejaSearchForm = ({
         </Grid>
 
         <Collapse in={mostrarMaisFiltros}>
-          <Grid container spacing={2}>
+          <Grid container spacing={1.5}>
             <Grid size={{ xs: 6, sm: 2 }}>
               <TextField
                 label="Id"
                 value={formData.id}
                 onChange={(e) => handleChange("id", e.target.value.replace(/\D/g, ""))}
                 fullWidth
+                size="small"
               />
             </Grid>
-            <Grid size={{ xs: 6, sm: 3 }}>
+            <Grid size={{ xs: 6, sm: 2 }}>
               <TextField
                 label="CEP"
                 value={formData.cep}
                 onChange={(e) => handleChange("cep", e.target.value)}
                 fullWidth
+                size="small"
               />
             </Grid>
-            <Grid size={{ xs: 6, sm: 4 }}>
+            <Grid size={{ xs: 6, sm: 2 }}>
               <TextField
                 label="Slug"
                 value={formData.slug}
                 onChange={(e) => handleChange("slug", e.target.value)}
                 fullWidth
+                size="small"
               />
             </Grid>
-            <Grid size={{ xs: 6, sm: 4 }}>
+            <Grid size={{ xs: 6, sm: 3 }}>
               <TextField
                 label="Perfil do Instagram"
                 value={formData.instagramPerfil}
                 onChange={(e) => handleChange("instagramPerfil", e.target.value)}
                 fullWidth
+                size="small"
               />
             </Grid>
-            <Grid size={{ xs: 6, sm: 4 }}>
+            <Grid size={{ xs: 6, sm: 3 }}>
               <TextField
                 label="Perfil do Facebook"
                 value={formData.facebookPerfil}
                 onChange={(e) => handleChange("facebookPerfil", e.target.value)}
                 fullWidth
+                size="small"
               />
             </Grid>
           </Grid>
@@ -382,76 +401,33 @@ const IgrejaSearchForm = ({
           justifyContent="space-between"
           gap={2}
           sx={{
-            pt: 1.5,
-            mt: 0.5,
+            pt: 1,
+            mt: 0,
             borderTop: "1px solid",
             borderColor: "divider",
           }}
         >
-          <Box display="flex" flexWrap="wrap" alignItems="center" gap={2}>
+          <Box display="flex" flexWrap="wrap" alignItems="center" gap={1}>
             <FormControlLabel
               control={
                 <Switch
+                  size="small"
                   checked={formData.ativo}
                   onChange={(e) => handleChange("ativo", e.target.checked)}
                 />
               }
               label="Ativo"
             />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.reportarProblema}
-                  onChange={(e) => handleChange("reportarProblema", e.target.checked)}
-                />
-              }
-              label="Problema reportado"
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.semCoordenadas}
-                  onChange={(e) => handleChange("semCoordenadas", e.target.checked)}
-                />
-              }
-              label="Sem coordenadas"
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.semInstagram}
-                  onChange={(e) => handleChange("semInstagram", e.target.checked)}
-                />
-              }
-              label="Sem Instagram"
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.semFacebook}
-                  onChange={(e) => handleChange("semFacebook", e.target.checked)}
-                />
-              }
-              label="Sem Facebook"
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.semMissas}
-                  onChange={(e) => handleChange("semMissas", e.target.checked)}
-                />
-              }
-              label="Sem Missas"
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.mostrarDeletadas}
-                  onChange={(e) => handleChange("mostrarDeletadas", e.target.checked)}
-                />
-              }
-              label="Mostrar excluídas"
-            />
+            {FILTROS_CHIP.map(({ campo, label }) => (
+              <Chip
+                key={campo}
+                label={label}
+                size="small"
+                color={formData[campo] ? "primary" : "default"}
+                variant={formData[campo] ? "filled" : "outlined"}
+                onClick={() => handleChange(campo, !formData[campo])}
+              />
+            ))}
           </Box>
 
           <Box display="flex" flexWrap="wrap" alignItems="center" gap={1.5}>
@@ -493,11 +469,10 @@ const IgrejaSearchForm = ({
             </Tooltip>
 
             <Button
+              type="submit"
               variant="contained"
               color="primary"
-              size="large"
               startIcon={<SearchIcon />}
-              onClick={() => handleSearch()}
               sx={{ ml: 0.5 }}
             >
               Buscar
