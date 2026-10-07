@@ -31,6 +31,11 @@ import ImagemSection from "./Components/ImagemSection";
 import useImagemIgreja from "../hooks/useImagemIgreja";
 import { useAlteracoesNaoSalvas, useNavegacaoProtegida } from "../Context/UnsavedChangesContext";
 import StatusChip from "../Components/StatusChip";
+import { useNotificar } from "../Context/NotificationContext";
+import {
+  buscarIgrejaCompletaPorId,
+  normalizarIgrejaParaEdicao as normalizarParaEdicaoAdmin,
+} from "../services/igrejaHelpers";
 import RedesSociaisCriarSection from "./Components/RedesSociaisCriarSection";
 import IgrejasCepModal from "./Components/IgrejasCepModal";
 import AssistenteDivulgacao from "./Components/AssistenteDivulgacao";
@@ -394,10 +399,6 @@ const IgrejaCriar = () => {
     "criar"
   );
 
-  const handleNavigate = (path) => {
-    navigate(path);
-  };
-
   const _redeSocialVal = (r) => r?.url || r?.nomeDoPerfil || "";
   const urlInstagram = _redeSocialVal(
     (igrejaCriada?.redesSociais || []).find((r) => Number(r.tipoRedeSocial) === 2)
@@ -406,9 +407,27 @@ const IgrejaCriar = () => {
     (igrejaCriada?.redesSociais || []).find((r) => Number(r.tipoRedeSocial) === 1)
   );
 
+  const notificar = useNotificar();
+
+  // Depois de criar, abre a edição da igreja recém-criada (link com botão de copiar no topo,
+  // campos para ajustar) em vez de voltar para a lista, onde ela se perderia entre os resultados.
+  const irParaEdicaoDaCriada = async (igreja) => {
+    const acao = { rotulo: "Cadastrar outra", onClick: () => navegarProtegido("/igrejaNovo") };
+    try {
+      if (!igreja?.id) throw new Error("Igreja criada sem id");
+      const completa = await buscarIgrejaCompletaPorId(igreja.id);
+      navigate("/igrejaEditar", { state: { row: normalizarParaEdicaoAdmin(completa) } });
+      notificar.sucesso("Igreja criada com sucesso!", { acao });
+    } catch (error) {
+      console.error("Não foi possível abrir a edição da igreja criada:", error);
+      navigate("/igreja");
+      notificar.sucesso("Igreja criada com sucesso!", { acao });
+    }
+  };
+
   const handleFecharDivulgacao = () => {
     setDivulgacaoModalOpen(false);
-    handleNavigate("/igreja");
+    irParaEdicaoDaCriada(igrejaCriada);
   };
 
   const handleSubmit = () => {
@@ -482,7 +501,7 @@ const IgrejaCriar = () => {
          return;
        }
 
-       handleNavigate("/igreja");
+       irParaEdicaoDaCriada(igreja);
      })
      .catch((error) => {
        //console.error("Erro ao criar a igreja:", error);
