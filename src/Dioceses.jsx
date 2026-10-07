@@ -232,7 +232,7 @@ const DiocesesPage = () => {
             onChange={(e) => setForm({ ...form, nome: e.target.value })}
             required
             fullWidth
-            inputProps={{ maxLength: 150 }}
+            slotProps={{ htmlInput: { maxLength: 150 } }}
           />
           <Box sx={{ display: "flex", gap: 2 }}>
             <TextField
@@ -254,7 +254,7 @@ const DiocesesPage = () => {
               value={form.cidade}
               onChange={(e) => setForm({ ...form, cidade: e.target.value })}
               fullWidth
-              inputProps={{ maxLength: 100 }}
+              slotProps={{ htmlInput: { maxLength: 100 } }}
             />
           </Box>
           <TextField
@@ -263,8 +263,7 @@ const DiocesesPage = () => {
             onChange={(e) => setForm({ ...form, site: e.target.value })}
             fullWidth
             placeholder="https://..."
-            slotProps={{ htmlInput: { inputMode: "url" } }}
-            inputProps={{ maxLength: 255 }}
+            slotProps={{ htmlInput: { inputMode: "url", maxLength: 255 } }}
           />
           {!ehAbaArquidiocese && (
             <TextField

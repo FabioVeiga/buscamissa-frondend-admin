@@ -196,7 +196,7 @@ const NotificacoesPage = () => {
             onChange={(e) => setForm({ ...form, titulo: e.target.value })}
             required
             fullWidth
-            inputProps={{ maxLength: 150 }}
+            slotProps={{ htmlInput: { maxLength: 150 } }}
           />
           <TextField
             label="Mensagem"
@@ -206,7 +206,7 @@ const NotificacoesPage = () => {
             fullWidth
             multiline
             minRows={3}
-            inputProps={{ maxLength: 1000 }}
+            slotProps={{ htmlInput: { maxLength: 1000 } }}
           />
           <TextField
             label="Tipo"

@@ -417,7 +417,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                                 value={novaMissa.diaDoMes}
                                 onChange={(e) => handleChange("diaDoMes", e.target.value)}
                                 onKeyDown={handleEnterAdiciona}
-                                inputProps={{ min: 1, max: 31 }}
+                                slotProps={{ htmlInput: { min: 1, max: 31 } }}
                                 sx={{ width: 130 }}
                             />
                             <Typography variant="body2" color="text.secondary">
@@ -476,8 +476,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                             onChange={(e) => handleChange("horario", e.target.value)}
                             onKeyDown={handleEnterHorario}
                             sx={{ width: 150 }}
-                            InputLabelProps={{ shrink: true }}
-                            inputProps={{ step: 900 }}
+                            slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 900 } }}
                         />
                         <Tooltip title="Incluir outro horário (Enter)">
                             <span>

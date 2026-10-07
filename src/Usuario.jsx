@@ -407,7 +407,7 @@ const UsuarioPage = () => {
               size="small"
               type="date"
               label="Criado a partir de"
-              InputLabelProps={{ shrink: true }}
+              slotProps={{ inputLabel: { shrink: true } }}
               value={filtros.criacaoInicio}
               onChange={handleFiltroChange("criacaoInicio")}
             />
@@ -418,7 +418,7 @@ const UsuarioPage = () => {
               size="small"
               type="date"
               label="Criado até"
-              InputLabelProps={{ shrink: true }}
+              slotProps={{ inputLabel: { shrink: true } }}
               value={filtros.criacaoFim}
               onChange={handleFiltroChange("criacaoFim")}
             />

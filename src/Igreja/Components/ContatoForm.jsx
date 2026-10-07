@@ -103,12 +103,12 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                 <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                         label="Email de Contato"
-                        inputProps={{ inputMode: "email" }}
                         value={contato.emailContato || ""}
                         onChange={(e) => handleChange("emailContato", e.target.value.replace(/\s/g, ""))}
                         fullWidth
                         size="small"
                         slotProps={{
+                            htmlInput: { inputMode: "email" },
                             input: {
                                 endAdornment: botaoLimpar(
                                     !!contato.emailContato,
@@ -123,12 +123,12 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                     <TextField
                         label="Telefone"
                         placeholder="(00) 00000-0000"
-                        inputProps={{ inputMode: "tel" }}
                         value={formatarTelefone(`${contato.ddd || ""}${contato.telefone || ""}`)}
                         onChange={handleTelefoneChange("ddd", "telefone")}
                         fullWidth
                         size="small"
                         slotProps={{
+                            htmlInput: { inputMode: "tel" },
                             input: {
                                 endAdornment: botaoLimpar(
                                     !!(contato.ddd || contato.telefone),
@@ -143,12 +143,12 @@ const ContatoForm = ({ contato = {}, onChange }) => {
                     <TextField
                         label="Telefone WhatsApp"
                         placeholder="(00) 00000-0000"
-                        inputProps={{ inputMode: "tel" }}
                         value={formatarTelefone(`${contato.dddWhatsApp || ""}${contato.telefoneWhatsApp || ""}`)}
                         onChange={handleTelefoneChange("dddWhatsApp", "telefoneWhatsApp")}
                         fullWidth
                         size="small"
                         slotProps={{
+                            htmlInput: { inputMode: "tel" },
                             input: {
                                 endAdornment: botaoLimpar(
                                     !!(contato.dddWhatsApp || contato.telefoneWhatsApp),

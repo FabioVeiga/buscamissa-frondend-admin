@@ -290,7 +290,7 @@ const ResponsaveisPage = () => {
                   multiline
                   minRows={2}
                   fullWidth
-                  inputProps={{ maxLength: 500 }}
+                  slotProps={{ htmlInput: { maxLength: 500 } }}
                 />
               )}
             </DialogContent>

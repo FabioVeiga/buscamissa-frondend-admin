@@ -75,12 +75,14 @@ const LoginPage = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <EmailOutlinedIcon color="action" />
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailOutlinedIcon color="action" />
+                    </InputAdornment>
+                  ),
+                },
               }}
               sx={{ mb: 1.5 }}
             />
@@ -94,12 +96,14 @@ const LoginPage = () => {
               onChange={(e) => setSenha(e.target.value)}
               required
               autoComplete="current-password"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <LockOutlinedIcon color="action" />
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockOutlinedIcon color="action" />
+                    </InputAdornment>
+                  ),
+                },
               }}
               sx={{ mb: 2 }}
             />
