@@ -13,12 +13,15 @@ import {
   Typography,
   Badge,
   Tooltip,
+  Breadcrumbs,
+  Link as MuiLink,
   useTheme,
   useMediaQuery,
 } from "@mui/material";
 import { useAuth } from "../Context/AuthContext";
 import { useColorMode } from "../Context/ColorModeContext";
 import SearchIcon from "@mui/icons-material/Search";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import SessaoCountdown from "./SessaoCountdown";
@@ -84,6 +87,17 @@ const Menu = ({ children }) => {
 
   const drawerWidth = isMobile ? DRAWER_WIDTH : desktopOpen ? DRAWER_WIDTH : DRAWER_WIDTH_COLLAPSED;
   const pageTitle = pageTitles[location.pathname] || "Busca Missa Admin";
+
+  // Trilha: [{ label, path? }] — a seção do menu, a página e, em Nova/Editar igreja, "Igrejas" como link.
+  const trilha = (() => {
+    const caminho = location.pathname;
+    const secao = navSections.find((sec) => sec.items.some((i) => i.path === caminho));
+    if (secao) return [{ label: secao.title }, { label: pageTitle }];
+    if (caminho === "/igrejaNovo" || caminho === "/igrejaEditar") {
+      return [{ label: "Operação" }, { label: "Igrejas", path: "/igreja" }, { label: pageTitle }];
+    }
+    return [{ label: pageTitle }];
+  })();
 
   const [pendingCounts, setPendingCounts] = useState({
     aprovacoes: 0,
@@ -390,9 +404,38 @@ const Menu = ({ children }) => {
             boxShadow: "0 1px 2px rgba(15,23,42,0.03)",
           }}
         >
-          <Typography variant="h6" fontWeight={600} color="text.primary">
-            {pageTitle}
-          </Typography>
+          <Box sx={{ minWidth: 0 }}>
+            {trilha.length > 1 && (
+              <Breadcrumbs
+                separator={<NavigateNextIcon sx={{ fontSize: 14 }} />}
+                aria-label="Trilha de navegação"
+                sx={{ "& .MuiBreadcrumbs-li": { fontSize: "0.75rem", lineHeight: 1.3 } }}
+              >
+                {trilha.slice(0, -1).map((t) =>
+                  t.path ? (
+                    <MuiLink
+                      key={t.label}
+                      component="button"
+                      type="button"
+                      underline="hover"
+                      color="text.secondary"
+                      onClick={() => navigate(t.path)}
+                      sx={{ fontSize: "inherit" }}
+                    >
+                      {t.label}
+                    </MuiLink>
+                  ) : (
+                    <Typography key={t.label} variant="caption" color="text.secondary">
+                      {t.label}
+                    </Typography>
+                  )
+                )}
+              </Breadcrumbs>
+            )}
+            <Typography variant="subtitle1" fontWeight={600} color="text.primary" noWrap sx={{ lineHeight: 1.35 }}>
+              {pageTitle}
+            </Typography>
+          </Box>
           <Box sx={{ flex: 1 }} />
           <Box
             component="button"
