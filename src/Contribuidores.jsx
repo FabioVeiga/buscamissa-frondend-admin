@@ -3,8 +3,8 @@ import Menu from "./Components/Menu";
 import { useNotificar } from "./Context/NotificationContext";
 import PageHeader from "./Components/PageHeader";
 import PageContainer from "./Components/PageContainer";
-import LoadingState from "./Components/LoadingState";
-import {  Table,  TableBody,  TableCell,  TableContainer,  TableHead,  TableRow,  Paper,  Typography,  Button,  Dialog,  DialogActions,  DialogContent,  DialogTitle,  TextField,  TableFooter} from "@mui/material";
+import DataTable from "./Components/DataTable";
+import {  Typography,  Button,  Dialog,  DialogActions,  DialogContent,  DialogTitle,  TextField } from "@mui/material";
 import api from "./services/apiService";
 
 const ContribuidoresPage = () => {
@@ -84,47 +84,18 @@ const ContribuidoresPage = () => {
           </Button>
         }
       />
-      <TableContainer
-        component={Paper}
-        sx={{ p: 2, borderRadius: 2, overflow: "auto" }}
-      >
-        {isLoading ? (
-          <LoadingState />
-        ) : (
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Nome</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {contribuidores && contribuidores.length > 0 ? (
-                contribuidores.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell>{row.id}</TableCell>
-                    <TableCell>{row.nome}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} align="center">
-                    Não há dados disponíveis.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-            <TableFooter>
-                <TableRow>
-                  <TableCell colSpan={7} align="right">
-                    Total de registros:{" "}
-                    {contribuidores ? contribuidores.length : 0}
-                  </TableCell>
-                </TableRow>
-              </TableFooter>
-          </Table>
-        )}
-      </TableContainer>
+      <DataTable
+        loading={isLoading}
+        rows={contribuidores || []}
+        getRowKey={(row) => row.id}
+        pageSize={25}
+        emptyTitle="Não há dados disponíveis"
+        footer={`Total de registros: ${contribuidores ? contribuidores.length : 0}`}
+        columns={[
+          { key: "id", header: "ID", sortable: true },
+          { key: "nome", header: "Nome", sortable: true },
+        ]}
+      />
 
        {/* Modal */}
        <Dialog open={openModal} onClose={handleCloseModal}>

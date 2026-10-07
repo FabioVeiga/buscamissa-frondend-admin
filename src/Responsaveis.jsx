@@ -173,12 +173,15 @@ const ResponsaveisPage = () => {
         loading={isLoading}
         rows={registros}
         getRowKey={(r) => r.id}
+        pageSize={25}
         emptyTitle={aba === 0 ? "Nenhuma solicitação pendente" : "Nenhum registro"}
         emptyDescription={aba === 0 ? "Tudo em dia por aqui." : undefined}
         columns={[
           {
             key: "igreja",
             header: "Igreja",
+            sortable: true,
+            sortValue: (r) => r.igrejaNome,
             render: (r) => (
               <>
                 {r.igrejaNome}
@@ -191,6 +194,8 @@ const ResponsaveisPage = () => {
           {
             key: "usuario",
             header: "Solicitante",
+            sortable: true,
+            sortValue: (r) => r.usuarioNome,
             render: (r) => (
               <>
                 {r.usuarioNome}
@@ -219,7 +224,7 @@ const ResponsaveisPage = () => {
               </>
             ),
           },
-          { key: "dataSolicitacao", header: "Solicitado em", render: (r) => new Date(r.dataSolicitacao).toLocaleString("pt-BR") },
+          { key: "dataSolicitacao", header: "Solicitado em", sortable: true, sortValue: (r) => new Date(r.dataSolicitacao), render: (r) => new Date(r.dataSolicitacao).toLocaleString("pt-BR") },
           {
             key: "status",
             header: "Status",
