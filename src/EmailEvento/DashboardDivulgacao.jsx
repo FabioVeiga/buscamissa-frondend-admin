@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
-import { Box, Card, Grid, Typography } from "@mui/material";
+import { Box, Card, Typography } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import LoadingState from "../Components/LoadingState";
 
 const CARDS = [
