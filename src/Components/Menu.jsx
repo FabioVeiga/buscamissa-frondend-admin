@@ -52,6 +52,7 @@ const pageTitles = {
   "/mesclar-metricas": "Mesclar Métricas",
   "/solicitacoes": "Solicitações",
   "/contribuidores": "Contribuidores",
+  "/consentimentos": "Consentimentos de cookies",
   "/igrejaNovo": "Nova Igreja",
   "/igrejaEditar": "Editar Igreja",
   "/email-evento": "Divulgação das Igrejas",

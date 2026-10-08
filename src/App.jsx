@@ -8,6 +8,7 @@ import IgrejaNovo from './Igreja/IgrejaNovo';
 import IgrejaEdita from './Igreja/IgrejaEdita';
 import SolicitacoesPage from './Solicitacoes';
 import Contribuidores from './Contribuidores';
+import Consentimentos from './Consentimentos';
 import EmailEventoPage from './EmailEvento/EmailEvento';
 import Indicadores from './Indicadores/Indicadores';
 import Aprovacoes from './Aprovacoes/Aprovacoes';
@@ -82,6 +83,14 @@ const App = () => {
                 element={
                     <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
                         <Contribuidores />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/consentimentos"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <Consentimentos />
                     </PrivateRoute>
                 }
             />
