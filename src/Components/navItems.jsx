@@ -6,6 +6,7 @@ import BuildIcon from "@mui/icons-material/Build";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import EmailIcon from "@mui/icons-material/Email";
 import InsightsIcon from "@mui/icons-material/Insights";
+import PrivacyTipIcon from "@mui/icons-material/PrivacyTip";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
 import AnnouncementIcon from "@mui/icons-material/Announcement";
 import MergeTypeIcon from "@mui/icons-material/MergeType";
@@ -42,6 +43,7 @@ export const navSections = [
     items: [
       { path: "/indicadores", label: "Indicadores", icon: InsightsIcon },
       { path: "/contribuidores", label: "Contribuidores", icon: CurrencyExchangeIcon },
+      { path: "/consentimentos", label: "Consentimentos", icon: PrivacyTipIcon },
     ],
   },
   {
