@@ -200,7 +200,7 @@ const PAGINAS_CONFIG = [
   { chave: "cepRedirect", titulo: "Redirect por CEP", icon: PinDropIcon, categoria: "cadastro", novo: true },
   { chave: "enviarCodigo", titulo: "Enviar Código", icon: MarkEmailReadIcon, categoria: "cadastro", novo: true },
   { chave: "validarCodigo", titulo: "Validar Código", icon: PasswordIcon, categoria: "cadastro", novo: true },
-  { chave: "anuncios", titulo: "Anúncios", icon: CampaignIcon, categoria: "cadastro", novo: true },
+  { chave: "anuncios", titulo: "Anuncie (página)", icon: CampaignIcon, categoria: "cadastro", novo: true },
   { chave: "contribuir", titulo: "Contribuir", icon: VolunteerActivismIcon, categoria: "cadastro", novo: true },
   { chave: "solicitar", titulo: "Solicitar", icon: ContactSupportIcon, categoria: "cadastro", novo: true },
   // Painel do responsável
