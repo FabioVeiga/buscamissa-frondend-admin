@@ -12,6 +12,7 @@ import AnnouncementIcon from "@mui/icons-material/Announcement";
 import MergeTypeIcon from "@mui/icons-material/MergeType";
 import ToggleOnIcon from "@mui/icons-material/ToggleOn";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import CampaignIcon from "@mui/icons-material/Campaign";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 
@@ -33,6 +34,7 @@ export const navSections = [
     items: [
       { path: "/email-evento", label: "Divulgação", icon: EmailIcon },
       { path: "/notificacoes", label: "Notificações", icon: NotificationsIcon },
+      { path: "/campanhas", label: "Campanhas", icon: CampaignIcon },
       { path: "/dioceses", label: "Dioceses", icon: AccountBalanceIcon },
       { path: "/candidatos-tipo-igreja", label: "Candidatas a Reclassificação", icon: AccountBalanceIcon },
       { path: "/mesclar-metricas", label: "Mesclar Métricas", icon: MergeTypeIcon },
