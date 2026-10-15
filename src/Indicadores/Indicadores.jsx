@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
+import AnunciosRelatorio from "./AnunciosRelatorio";
 import {
   Box,
   Card,
@@ -517,6 +518,7 @@ const Indicadores = () => {
           <Tab value="paginas" label="Páginas do site" />
           <Tab value="igrejas" label="Igrejas" />
           <Tab value="regioes" label="Estados e Cidades" />
+          <Tab value="anuncios" label="Anúncios" />
         </Tabs>
 
         <Box>
@@ -531,7 +533,7 @@ const Indicadores = () => {
           </Typography>
         </Box>
 
-        {semDados ? (
+        {semDados && abaAtiva !== "anuncios" ? (
           <Paper sx={{ p: 4, borderRadius: 2, textAlign: "center" }}>
             <Typography variant="body1" color="text.secondary">
               Nenhum dado encontrado para o período informado.
@@ -539,7 +541,7 @@ const Indicadores = () => {
           </Paper>
         ) : (
           <>
-            {destaques.length > 0 && (
+            {destaques.length > 0 && abaAtiva !== "anuncios" && (
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                 <Typography variant="body2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
                   Destaques do período:
@@ -832,6 +834,10 @@ const Indicadores = () => {
                   />
                 </Grid>
               </Grid>
+            )}
+
+            {abaAtiva === "anuncios" && (
+              <AnunciosRelatorio dataInicial={filtros.dataInicial} dataFinal={filtros.dataFinal} />
             )}
 
             {abaAtiva === "regioes" && (
