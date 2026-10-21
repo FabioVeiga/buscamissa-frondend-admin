@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import AnunciosRelatorio from "./AnunciosRelatorio";
 import {
   Box,
@@ -399,7 +400,9 @@ const Indicadores = () => {
   const [detalheIgrejaId, setDetalheIgrejaId] = useState(null);
   const handleIgrejaClick = (igrejaId) => setDetalheIgrejaId(igrejaId);
 
-  const [abaAtiva, setAbaAtiva] = useState("geral");
+  // ?aba=anuncios abre direto a aba Anúncios (atalho "Anúncios > Desempenho" do menu).
+  const [searchParams] = useSearchParams();
+  const [abaAtiva, setAbaAtiva] = useState(searchParams.get("aba") === "anuncios" ? "anuncios" : "geral");
   const [buscaPagina, setBuscaPagina] = useState("");
 
   if (loading) {

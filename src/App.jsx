@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from "./Context/AuthContext";
 import LoginPage from './LoginPage';
 import Home from './Home';
@@ -102,6 +102,10 @@ const App = () => {
                         <EmailEventoPage />
                     </PrivateRoute>
                 }
+            />
+            <Route
+                path="/anuncios/desempenho"
+                element={<Navigate to="/indicadores?aba=anuncios" replace />}
             />
             <Route
                 path="/indicadores"

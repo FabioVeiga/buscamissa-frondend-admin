@@ -34,10 +34,17 @@ export const navSections = [
     items: [
       { path: "/email-evento", label: "Divulgação", icon: EmailIcon },
       { path: "/notificacoes", label: "Notificações", icon: NotificationsIcon },
-      { path: "/campanhas", label: "Campanhas", icon: CampaignIcon },
       { path: "/dioceses", label: "Dioceses", icon: AccountBalanceIcon },
       { path: "/candidatos-tipo-igreja", label: "Candidatas a Reclassificação", icon: AccountBalanceIcon },
       { path: "/mesclar-metricas", label: "Mesclar Métricas", icon: MergeTypeIcon },
+    ],
+  },
+  {
+    title: "Anúncios",
+    items: [
+      { path: "/campanhas", label: "Campanhas", icon: CampaignIcon },
+      // Atalho: abre a aba "Anúncios" de Indicadores (App.jsx redireciona).
+      { path: "/anuncios/desempenho", label: "Desempenho", icon: InsightsIcon },
     ],
   },
   {
