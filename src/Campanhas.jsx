@@ -35,7 +35,8 @@ const STATUS = {
 };
 
 const POSICOES = [
-  { valor: "fim_resultados", label: "Fim dos resultados (home, cidade e estado)" },
+  { valor: "fim_resultados", label: "Resultados (meio da lista na home/cidade; fim no estado)" },
+  { valor: "detalhe_igreja", label: "Página da paróquia (com aviso de conteúdo patrocinado)" },
   { valor: "home", label: "Home (sem busca)" },
 ];
 
