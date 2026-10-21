@@ -6,8 +6,13 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
+  Chip,
   CircularProgress,
   Divider,
+  FormControlLabel,
+  FormGroup,
+  Link,
   Paper,
   Stack,
   TextField,
@@ -19,14 +24,41 @@ import PageHeader from "../Components/PageHeader";
 import StatusChip from "../Components/StatusChip";
 import LoadingState from "../Components/LoadingState";
 import DeleteConfirmModal from "../Components/DeleteConfirmModal";
-import IgrejaMetricasTab from "./Components/IgrejaMetricasTab";
+import Grid from "@mui/material/Grid2";
+import KpiCard from "../Components/dashboard/KpiCard";
 import api from "../services/apiService";
 import ErrorSpan from "../ErrorSpan";
-import { buscarIgrejaCompletaPorId } from "../services/igrejaHelpers";
 
-// Busca os dados básicos de uma igreja (nome, endereço, status) para exibir como
-// confirmação visual antes de mesclar — evita mesclar/perder métricas do id errado
-// por digitação equivocada.
+const PAROQUIA_BASE = import.meta.env.VITE_PAROQUIA_BASE_URL || "";
+
+// TipoMetricaEnum (backend), todo o histórico da igreja.
+const ROTULOS_METRICA = {
+  1: "Visualizações",
+  3: "Favoritos",
+  2: "Rotas",
+  5: "Telefone",
+  6: "Instagram",
+  4: "Compartilhamentos",
+  7: "Sugestões de edição",
+};
+const ORDEM_METRICAS = [1, 3, 2, 5, 6, 4, 7];
+
+const montarUrlPagina = (r) => {
+  const base = PAROQUIA_BASE.replace(/\/+$/g, "");
+  const uf = r.endereco?.uf ? String(r.endereco.uf).toLowerCase() : "";
+  const cidade = r.endereco?.cidadeSlug
+    ? r.endereco.cidadeSlug
+    : r.endereco?.localidade
+    ? String(r.endereco.localidade).toLowerCase().replace(/\s+/g, "-")
+    : "";
+  if (!r.slug) return "";
+  return [base, uf, cidade, r.slug].filter(Boolean).join("/");
+};
+
+const formatarData = (iso) => (iso ? new Date(iso).toLocaleDateString("pt-BR") : "");
+
+// Busca o resumo para decisão (dados cadastrais, responsável, contatos enviados e
+// métricas de todo o histórico) — também serve de confirmação visual do id digitado.
 const useIgrejaPreview = (id) => {
   const [igreja, setIgreja] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -41,9 +73,10 @@ const useIgrejaPreview = (id) => {
 
     setLoading(true);
     const timeout = setTimeout(() => {
-      buscarIgrejaCompletaPorId(idNumero)
+      api
+        .get(`/api/v1/admin/igreja/${idNumero}/resumo-mesclagem`)
         .then((response) => {
-          const dados = response?.igreja || response?.item || response?.data || response;
+          const dados = response.data?.data;
           if (!dados?.id) {
             setErro("Igreja não encontrada.");
             return;
@@ -60,52 +93,162 @@ const useIgrejaPreview = (id) => {
   return { igreja, loading, erro };
 };
 
-const IgrejaPreviewCard = ({ titulo, id, igreja, loading, erro }) => (
-  <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, minHeight: 88 }}>
-    <Typography variant="overline" color="text.secondary">
-      {titulo}
+const Linha = ({ rotulo, children }) => (
+  <Typography variant="body2" sx={{ mt: 0.25 }}>
+    <Typography component="span" variant="body2" color="text.secondary">
+      {rotulo}:{" "}
     </Typography>
-
-    {loading && (
-      <LoadingState label={`Buscando igreja #${id}...`} sx={{ py: 1, flexDirection: "row", justifyContent: "flex-start" }} />
-    )}
-
-    {!loading && erro && (
-      <Typography variant="body2" color="error" sx={{ mt: 0.5 }}>
-        {erro}
-      </Typography>
-    )}
-
-    {!loading && !erro && igreja && (
-      <Box sx={{ mt: 0.5 }}>
-        <Typography variant="subtitle1" fontWeight={700}>
-          {igreja.nome}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {[igreja.endereco?.localidade, igreja.endereco?.uf].filter(Boolean).join(" - ") || "Endereço não informado"}
-        </Typography>
-        <StatusChip
-          label={igreja.ativo ? "Ativa" : "Inativa"}
-          color={igreja.ativo ? "success" : "default"}
-          icon={igreja.ativo ? undefined : <HideSourceIcon />}
-          sx={{ mt: 0.5 }}
-        />
-      </Box>
-    )}
-
-    {!loading && !erro && !igreja && (
-      <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
-        Informe o ID para visualizar.
-      </Typography>
-    )}
-  </Paper>
+    {children || <Typography component="span" variant="body2" color="text.disabled">—</Typography>}
+  </Typography>
 );
+
+const IgrejaPreviewCard = ({ titulo, id, igreja, loading, erro }) => {
+  const url = igreja ? montarUrlPagina(igreja) : "";
+  const e = igreja?.endereco;
+  const c = igreja?.contato;
+  const instagram = igreja?.contatosEnviados?.find((x) => x.canal === "Instagram");
+  const email = igreja?.contatosEnviados?.find((x) => x.canal === "Email");
+
+  return (
+    <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, minHeight: 88, height: "100%" }}>
+      <Typography variant="overline" color="text.secondary">
+        {titulo}
+      </Typography>
+
+      {loading && (
+        <LoadingState label={`Buscando igreja #${id}...`} sx={{ py: 1, flexDirection: "row", justifyContent: "flex-start" }} />
+      )}
+
+      {!loading && erro && (
+        <Typography variant="body2" color="error" sx={{ mt: 0.5 }}>
+          {erro}
+        </Typography>
+      )}
+
+      {!loading && !erro && igreja && (
+        <Box sx={{ mt: 0.5 }}>
+          <Typography variant="subtitle1" fontWeight={700}>
+            {igreja.nome}
+          </Typography>
+          <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap sx={{ my: 0.5 }}>
+            <StatusChip
+              label={igreja.ativo ? "Ativa" : "Inativa"}
+              color={igreja.ativo ? "success" : "default"}
+              icon={igreja.ativo ? undefined : <HideSourceIcon />}
+            />
+            {igreja.deletada && <StatusChip label="Excluída" color="error" />}
+            <StatusChip
+              label={igreja.temResponsavelAprovado ? "Com responsável" : "Sem responsável"}
+              color={igreja.temResponsavelAprovado ? "success" : "warning"}
+            />
+          </Stack>
+
+          <Linha rotulo="Página">
+            {url ? (
+              <Link href={url} target="_blank" rel="noopener noreferrer" sx={{ wordBreak: "break-all" }}>
+                {url}
+              </Link>
+            ) : null}
+          </Linha>
+          <Linha rotulo="Pároco">{igreja.paroco}</Linha>
+          <Linha rotulo="Endereço">
+            {e
+              ? [
+                  [e.logradouro, e.numero || null].filter(Boolean).join(", "),
+                  e.bairro,
+                  [e.localidade, e.uf].filter(Boolean).join(" - "),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")
+              : null}
+          </Linha>
+          <Linha rotulo="Missas cadastradas">{String(igreja.quantidadeMissas)}</Linha>
+          {igreja.quantidadeIgrejasFilhas > 0 && (
+            <Linha rotulo="Capelas/comunidades ativas">{String(igreja.quantidadeIgrejasFilhas)}</Linha>
+          )}
+
+          <Divider sx={{ my: 1 }} />
+          <Typography variant="caption" color="text.secondary">
+            Contatos
+          </Typography>
+          <Linha rotulo="E-mail">{c?.email}</Linha>
+          <Linha rotulo="Telefone">{c?.telefone}</Linha>
+          <Linha rotulo="WhatsApp">{c?.whatsapp}</Linha>
+          <Linha rotulo="Site">{c?.website}</Linha>
+          <Linha rotulo="Redes sociais">
+            {igreja.redesSociais?.length
+              ? igreja.redesSociais.map((r) => `${r.tipo}: ${r.perfil}`).join(", ")
+              : null}
+          </Linha>
+
+          <Divider sx={{ my: 1 }} />
+          <Typography variant="caption" color="text.secondary">
+            Responsáveis
+          </Typography>
+          {igreja.responsaveis?.length ? (
+            igreja.responsaveis.map((r, i) => (
+              <Typography key={i} variant="body2">
+                {r.nome} ({r.email}) — {r.status === "Aprovado" ? "aprovado" : "pendente"}
+              </Typography>
+            ))
+          ) : (
+            <Typography variant="body2" color="text.disabled">Nenhum</Typography>
+          )}
+
+          <Divider sx={{ my: 1 }} />
+          <Typography variant="caption" color="text.secondary">
+            Contato de divulgação feito
+          </Typography>
+          <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }} flexWrap="wrap" useFlexGap>
+            <Chip
+              size="small"
+              color={instagram ? "info" : "default"}
+              variant={instagram ? "filled" : "outlined"}
+              label={instagram ? `Instagram: ${instagram.quantidade}x (${formatarData(instagram.ultimoEnvio)})` : "Sem contato via Instagram"}
+            />
+            <Chip
+              size="small"
+              color={email ? "info" : "default"}
+              variant={email ? "filled" : "outlined"}
+              label={email ? `E-mail: ${email.quantidade}x (${formatarData(email.ultimoEnvio)})` : "Sem contato via e-mail"}
+            />
+          </Stack>
+        </Box>
+      )}
+
+      {!loading && !erro && !igreja && (
+        <Typography variant="body2" color="text.disabled" sx={{ mt: 0.5 }}>
+          Informe o ID para visualizar.
+        </Typography>
+      )}
+    </Paper>
+  );
+};
+
+const MetricasTotais = ({ igreja }) => {
+  const mapa = {};
+  (igreja.metricasTotais || []).forEach((m) => {
+    mapa[m.tipoMetrica] = m.quantidade;
+  });
+  return (
+    <Box sx={{ p: 2, border: "1px solid #ccc", borderRadius: 2, width: "100%", boxSizing: "border-box" }}>
+      <Grid container spacing={2}>
+        {ORDEM_METRICAS.map((tipo) => (
+          <Grid size={{ xs: 6, sm: 3 }} key={tipo}>
+            <KpiCard label={ROTULOS_METRICA[tipo]} value={mapa[tipo] ?? 0} />
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+  );
+};
 
 const MesclarMetricas = () => {
   const [igrejaVencedoraId, setIgrejaVencedoraId] = useState("");
   const [igrejaPerdedoraId, setIgrejaPerdedoraId] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ mensagem: "", severity: "", show: false });
+  const [opcoes, setOpcoes] = useState({ mesclarParoco: true, mesclarContatos: true, substituirEndereco: false });
 
   // Guarda os dados da perdedora usados na última mesclagem bem-sucedida —
   // independe do que o usuário digitar depois nos campos, para o passo de
@@ -138,9 +281,16 @@ const MesclarMetricas = () => {
       .put("/api/v1/Admin/igreja/mesclar-metricas", {
         igrejaVencedoraId: vencedoraId,
         igrejaPerdedoraId: perdedoraId,
+        ...opcoes,
       })
-      .then(() => {
-        setMessage({ mensagem: "Métricas mescladas com sucesso!", severity: "success", show: true });
+      .then((response) => {
+        const r = response.data?.data || {};
+        const partes = ["métricas"];
+        if (r.parocoCopiado) partes.push("pároco");
+        if (r.enderecoSubstituido) partes.push("endereço");
+        if (r.camposContatoCopiados > 0) partes.push(`${r.camposContatoCopiados} campo(s) de contato`);
+        if (r.redesSociaisCopiadas > 0) partes.push(`${r.redesSociaisCopiadas} rede(s) social(is)`);
+        setMessage({ mensagem: `Mesclagem concluída: ${partes.join(", ")}.`, severity: "success", show: true });
         setMesclagemConcluida({
           id: perdedoraId,
           nome: perdedora.igreja?.nome || `Igreja #${perdedoraId}`,
@@ -149,7 +299,7 @@ const MesclarMetricas = () => {
       .catch((error) => {
         const mensagemAplicacao = error.response?.data?.data?.messagemAplicacao;
         setMessage({
-          mensagem: mensagemAplicacao || "Erro ao mesclar métricas.",
+          mensagem: mensagemAplicacao || "Erro ao mesclar as igrejas.",
           severity: "error",
           show: true,
         });
@@ -194,10 +344,10 @@ const MesclarMetricas = () => {
 
   return (
     <Menu>
-      <Paper sx={{ p: 3, borderRadius: 2, maxWidth: 720 }}>
+      <Paper sx={{ p: 3, borderRadius: 2, maxWidth: 1100 }}>
         <PageHeader
-          title="Mesclar Métricas de Igrejas"
-          subtitle="Move as métricas (visualizações, cliques, favoritos etc.) da igreja perdedora para a vencedora. Não altera nome, endereço, status ativo ou qualquer outro dado das igrejas — só as métricas."
+          title="Mesclar Igrejas"
+          subtitle="Move todas as métricas (visualizações, cliques, favoritos etc.) da igreja perdedora para a vencedora e, se você marcar, também mescla pároco, endereço e contatos. Nome, status ativo e horários de missa da vencedora não são alterados."
           sx={{ mb: 3 }}
         />
 
@@ -241,24 +391,66 @@ const MesclarMetricas = () => {
           {vencedora.igreja && (
             <Box>
               <Typography variant="caption" color="text.secondary">
-                Métricas da vencedora (últimos 30 dias)
+                Métricas da vencedora (todo o histórico)
               </Typography>
-              <IgrejaMetricasTab igrejaId={vencedora.igreja.id} />
+              <MetricasTotais igreja={vencedora.igreja} />
             </Box>
           )}
 
           {perdedora.igreja && (
             <Box>
               <Typography variant="caption" color="text.secondary">
-                Métricas da perdedora (últimos 30 dias) — serão somadas à vencedora
+                Métricas da perdedora (todo o histórico) — serão somadas à vencedora
               </Typography>
-              <IgrejaMetricasTab igrejaId={perdedora.igreja.id} />
+              <MetricasTotais igreja={perdedora.igreja} />
             </Box>
           )}
 
           {!mesclagemConcluida && (
+            <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+              <Typography variant="subtitle2" fontWeight={700}>
+                Além das métricas, mesclar também
+              </Typography>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={opcoes.mesclarParoco}
+                      onChange={(e) => setOpcoes((o) => ({ ...o, mesclarParoco: e.target.checked }))}
+                    />
+                  }
+                  label="Pároco — copia o da perdedora só se a vencedora não tiver"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={opcoes.mesclarContatos}
+                      onChange={(e) => setOpcoes((o) => ({ ...o, mesclarContatos: e.target.checked }))}
+                    />
+                  }
+                  label="Contatos — preenche e-mail, telefone, WhatsApp e site vazios e acrescenta redes sociais que faltam"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={opcoes.substituirEndereco}
+                      onChange={(e) => setOpcoes((o) => ({ ...o, substituirEndereco: e.target.checked }))}
+                    />
+                  }
+                  label="Endereço — substitui o da vencedora pelo da perdedora (inclui coordenadas)"
+                />
+              </FormGroup>
+              {opcoes.substituirEndereco && (
+                <Alert severity="warning" sx={{ mt: 1 }}>
+                  O endereço da vencedora será sobrescrito. Se a cidade mudar, a URL da página pode mudar.
+                </Alert>
+              )}
+            </Paper>
+          )}
+
+          {!mesclagemConcluida && (
             <Button variant="contained" onClick={handleMesclar} disabled={loading || !podeMesclar}>
-              {loading ? <CircularProgress size={20} /> : "Mesclar métricas"}
+              {loading ? <CircularProgress size={20} /> : "Mesclar igrejas"}
             </Button>
           )}
 
@@ -277,8 +469,8 @@ const MesclarMetricas = () => {
                     Excluir a igreja perdedora?
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    As métricas de <strong>{mesclagemConcluida.nome}</strong> (#{mesclagemConcluida.id}) já foram
-                    movidas para a vencedora. Você pode excluí-la agora: ela também é <strong>desativada</strong>
+                    Os dados de <strong>{mesclagemConcluida.nome}</strong> (#{mesclagemConcluida.id}) já foram
+                    mesclados na vencedora. Você pode excluí-la agora: ela também é <strong>desativada</strong>
                     (soft delete — fica oculta do site público, mas os dados são mantidos; a exclusão pode ser
                     desfeita pela tela de Igrejas, e aí ela volta inativa).
                   </Typography>
