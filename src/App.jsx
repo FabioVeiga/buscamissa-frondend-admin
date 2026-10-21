@@ -20,6 +20,7 @@ import SolicitacoesVinculoCapelaPage from './SolicitacoesVinculoCapela';
 import CandidatosTipoIgrejaPage from './CandidatosTipoIgreja';
 import ResponsaveisPage from './Responsaveis';
 import NotificacoesPage from './Notificacoes';
+import CampanhasPage from './Campanhas';
 import PrivateRoute from './PrivateRoute'
 
 
@@ -147,6 +148,14 @@ const App = () => {
                 element={
                     <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
                         <ResponsaveisPage />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/campanhas"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <CampanhasPage />
                     </PrivateRoute>
                 }
             />
