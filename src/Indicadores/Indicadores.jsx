@@ -1,5 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import AnunciosRelatorio from "./AnunciosRelatorio";
 import {
   Box,
   Card,
@@ -200,7 +202,7 @@ const PAGINAS_CONFIG = [
   { chave: "cepRedirect", titulo: "Redirect por CEP", icon: PinDropIcon, categoria: "cadastro", novo: true },
   { chave: "enviarCodigo", titulo: "Enviar Código", icon: MarkEmailReadIcon, categoria: "cadastro", novo: true },
   { chave: "validarCodigo", titulo: "Validar Código", icon: PasswordIcon, categoria: "cadastro", novo: true },
-  { chave: "anuncios", titulo: "Anúncios", icon: CampaignIcon, categoria: "cadastro", novo: true },
+  { chave: "anuncios", titulo: "Anuncie (página)", icon: CampaignIcon, categoria: "cadastro", novo: true },
   { chave: "contribuir", titulo: "Contribuir", icon: VolunteerActivismIcon, categoria: "cadastro", novo: true },
   { chave: "solicitar", titulo: "Solicitar", icon: ContactSupportIcon, categoria: "cadastro", novo: true },
   // Painel do responsável
@@ -398,7 +400,9 @@ const Indicadores = () => {
   const [detalheIgrejaId, setDetalheIgrejaId] = useState(null);
   const handleIgrejaClick = (igrejaId) => setDetalheIgrejaId(igrejaId);
 
-  const [abaAtiva, setAbaAtiva] = useState("geral");
+  // ?aba=anuncios abre direto a aba Anúncios (atalho "Anúncios > Desempenho" do menu).
+  const [searchParams] = useSearchParams();
+  const [abaAtiva, setAbaAtiva] = useState(searchParams.get("aba") === "anuncios" ? "anuncios" : "geral");
   const [buscaPagina, setBuscaPagina] = useState("");
 
   if (loading) {
@@ -517,6 +521,7 @@ const Indicadores = () => {
           <Tab value="paginas" label="Páginas do site" />
           <Tab value="igrejas" label="Igrejas" />
           <Tab value="regioes" label="Estados e Cidades" />
+          <Tab value="anuncios" label="Anúncios" />
         </Tabs>
 
         <Box>
@@ -531,7 +536,7 @@ const Indicadores = () => {
           </Typography>
         </Box>
 
-        {semDados ? (
+        {semDados && abaAtiva !== "anuncios" ? (
           <Paper sx={{ p: 4, borderRadius: 2, textAlign: "center" }}>
             <Typography variant="body1" color="text.secondary">
               Nenhum dado encontrado para o período informado.
@@ -539,7 +544,7 @@ const Indicadores = () => {
           </Paper>
         ) : (
           <>
-            {destaques.length > 0 && (
+            {destaques.length > 0 && abaAtiva !== "anuncios" && (
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                 <Typography variant="body2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
                   Destaques do período:
@@ -832,6 +837,10 @@ const Indicadores = () => {
                   />
                 </Grid>
               </Grid>
+            )}
+
+            {abaAtiva === "anuncios" && (
+              <AnunciosRelatorio dataInicial={filtros.dataInicial} dataFinal={filtros.dataFinal} />
             )}
 
             {abaAtiva === "regioes" && (

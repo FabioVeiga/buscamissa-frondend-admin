@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from "./Context/AuthContext";
 import LoginPage from './LoginPage';
 import Home from './Home';
@@ -20,6 +20,7 @@ import SolicitacoesVinculoCapelaPage from './SolicitacoesVinculoCapela';
 import CandidatosTipoIgrejaPage from './CandidatosTipoIgreja';
 import ResponsaveisPage from './Responsaveis';
 import NotificacoesPage from './Notificacoes';
+import CampanhasPage from './Campanhas';
 import PrivateRoute from './PrivateRoute'
 
 
@@ -103,6 +104,10 @@ const App = () => {
                 }
             />
             <Route
+                path="/anuncios/desempenho"
+                element={<Navigate to="/indicadores?aba=anuncios" replace />}
+            />
+            <Route
                 path="/indicadores"
                 element={
                     <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
@@ -147,6 +152,14 @@ const App = () => {
                 element={
                     <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
                         <ResponsaveisPage />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/campanhas"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <CampanhasPage />
                     </PrivateRoute>
                 }
             />
