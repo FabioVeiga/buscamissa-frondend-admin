@@ -77,7 +77,7 @@ const EmailEventoPage = () => {
   const [dashboard, setDashboard] = useState(null);
   const [dashboardLoading, setDashboardLoading] = useState(true);
 
-  const [modo, setModo] = useState("SemContatoEmail");
+  const [modo, setModo] = useState("SemContatoInstagram");
   const [filtrosTexto, setFiltrosTexto] = useState(filtrosVazios);
   const [filtrosAplicados, setFiltrosAplicados] = useState(filtrosVazios);
 
