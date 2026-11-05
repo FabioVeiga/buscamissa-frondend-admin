@@ -17,6 +17,7 @@ import {
   Paper,
   Divider,
   Link as MUILink,
+  Alert,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import EmailIcon from "@mui/icons-material/Email";
@@ -25,7 +26,11 @@ import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import LanguageIcon from "@mui/icons-material/Language";
 import { useNavigate } from "react-router-dom";
 import { diaDaSemana, formatarHorario } from "../utils";
+import ContentPasteIcon from "@mui/icons-material/ContentPaste";
 import { buscarIgrejaCompletaPorId, normalizarIgrejaParaEdicao } from "../services/igrejaHelpers";
+import api from "../services/apiService";
+import { formatarErroApi, removerMissasDuplicadas } from "../utils";
+import ColarHorariosModal from "./Components/ColarHorariosModal";
 
 // Modal de detalhes da igreja, reutilizável em qualquer tela que só tenha o
 // Id da igreja à mão (Igrejas, Divulgação, Indicadores, Aprovações...).
@@ -35,6 +40,9 @@ const IgrejaDetalheModal = ({ open, handleClose, igrejaId }) => {
   const [igreja, setIgreja] = useState(null);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
+  const [colarAberto, setColarAberto] = useState(false);
+  const [salvandoHorarios, setSalvandoHorarios] = useState(false);
+  const [feedback, setFeedback] = useState(null);
 
   useEffect(() => {
     if (!open || !igrejaId) return;
@@ -42,6 +50,7 @@ const IgrejaDetalheModal = ({ open, handleClose, igrejaId }) => {
     setLoading(true);
     setErro("");
     setIgreja(null);
+    setFeedback(null);
 
     buscarIgrejaCompletaPorId(igrejaId)
       .then((response) => {
@@ -51,6 +60,24 @@ const IgrejaDetalheModal = ({ open, handleClose, igrejaId }) => {
       .catch(() => setErro("Não foi possível carregar os detalhes da igreja."))
       .finally(() => setLoading(false));
   }, [open, igrejaId]);
+
+  // Salva só as missas: o backend mantém nome, endereço, contato etc. quando o campo não vem no payload.
+  const handleSalvarHorarios = async (missas) => {
+    setSalvandoHorarios(true);
+    setFeedback(null);
+    try {
+      const lista = removerMissasDuplicadas(missas);
+      await api.put("/api/v1/Admin/igreja/atualizar", { id: igreja.id, missas: lista });
+      setIgreja((prev) => ({ ...prev, missas: lista }));
+      setFeedback({ severity: "success", texto: "Horários salvos." });
+      return true;
+    } catch (e) {
+      setFeedback({ severity: "error", texto: (e?.response?.data?.errors && formatarErroApi(e.response.data.errors)) || "Não foi possível salvar os horários." });
+      return false;
+    } finally {
+      setSalvandoHorarios(false);
+    }
+  };
 
   const handleEditar = () => {
     handleClose();
@@ -120,9 +147,20 @@ const IgrejaDetalheModal = ({ open, handleClose, igrejaId }) => {
               <strong>Status:</strong> {igreja?.ativo ? "Ativo" : "Inativo"}
             </Typography>
 
-            <Typography variant="body1" gutterBottom>
-              <strong>Missas:</strong>
-            </Typography>
+            <Box display="flex" alignItems="center" justifyContent="space-between" gap={1} mb={1}>
+              <Typography variant="body1">
+                <strong>Missas:</strong>
+              </Typography>
+              <Button size="small" variant="outlined" startIcon={<ContentPasteIcon />} onClick={() => setColarAberto(true)}>
+                Colar horários
+              </Button>
+            </Box>
+
+            {feedback && (
+              <Alert severity={feedback.severity} sx={{ mb: 1 }} onClose={() => setFeedback(null)}>
+                {feedback.texto}
+              </Alert>
+            )}
 
             <TableContainer component={Paper} sx={{ mb: 2 }}>
               <Table size="small">
@@ -226,6 +264,14 @@ const IgrejaDetalheModal = ({ open, handleClose, igrejaId }) => {
                 Editar
               </Button>
             </Stack>
+            <ColarHorariosModal
+              open={colarAberto}
+              onClose={() => setColarAberto(false)}
+              missasAtuais={igreja?.missas || []}
+              onAplicar={handleSalvarHorarios}
+              salvando={salvandoHorarios}
+              textoConfirmar="Salvar horários"
+            />
           </>
         )}
       </Box>

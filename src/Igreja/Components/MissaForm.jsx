@@ -37,6 +37,8 @@ import {
 } from "../../recorrenciaMissa";
 import { diasDaSemana, formatarHorario, apenasNumeros } from "../../utils";
 import SectionCard from "./SectionCard";
+import ColarHorariosModal from "./ColarHorariosModal";
+import { ContentPaste } from "@mui/icons-material";
 
 const OBSERVACAO_MAX = 20;
 
@@ -86,6 +88,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
         return null;
     })();
     const excecaoNova = (novaMissa.excecaoSabado ? EXCECAO_SABADO : 0) | (novaMissa.excecaoDomingo ? EXCECAO_DOMINGO : 0);
+    const [colarAberto, setColarAberto] = useState(false);
     const [apoio, setApoio] = useState("");
     const horarioRef = useRef(null);
 
@@ -294,6 +297,21 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
             subtitle="Escolha a frequência, os dias e os horários. Você pode incluir vários horários de uma vez."
         >
             <Box display="flex" flexDirection="column" gap={2}>
+                <Box>
+                    <Button size="small" variant="outlined" startIcon={<ContentPaste />} onClick={() => setColarAberto(true)}>
+                        Colar horários de um texto
+                    </Button>
+                </Box>
+                <ColarHorariosModal
+                    open={colarAberto}
+                    onClose={() => setColarAberto(false)}
+                    missasAtuais={missas}
+                    onAplicar={(lista) => {
+                        setMissas(lista);
+                        setSelecionadas([]);
+                    }}
+                />
+
                 {/* 1. Frequência */}
                 <Box display="flex" flexDirection="column" gap={0.75}>
                     <Typography variant="subtitle2" fontWeight={600}>
