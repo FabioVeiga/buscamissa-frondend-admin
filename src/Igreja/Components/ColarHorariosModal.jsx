@@ -40,7 +40,7 @@ const ColarHorariosModal = ({
     const [texto, setTexto] = useState("");
     const [substituir, setSubstituir] = useState(true);
 
-    const { missas, ignoradas } = useMemo(() => parseHorariosMissa(texto), [texto]);
+    const { missas, ignoradas, avisos } = useMemo(() => parseHorariosMissa(texto), [texto]);
     const semanaisAtuais = missasAtuais.filter(ehSemanal).length;
 
     const porDia = ORDEM_SEMANA.map((dia) => ({
@@ -107,11 +107,23 @@ const ColarHorariosModal = ({
 
                     {ignoradas.length > 0 && (
                         <Alert severity="warning">
-                            Não consegui entender {ignoradas.length === 1 ? "esta linha" : "estas linhas"}:
+                            {ignoradas.length === 1 ? "Esta linha não entrou:" : "Estas linhas não entraram:"}
                             {ignoradas.map((l, i) => (
-                                <Box key={i} component="div" sx={{ fontFamily: "monospace" }}>
-                                    {l}
+                                <Box key={i} component="div" sx={{ mt: 0.5 }}>
+                                    <Box component="span" sx={{ fontFamily: "monospace" }}>
+                                        {l.linha}
+                                    </Box>
+                                    {" — "}
+                                    {l.motivo}
                                 </Box>
+                            ))}
+                        </Alert>
+                    )}
+
+                    {avisos.length > 0 && (
+                        <Alert severity="info">
+                            {avisos.map((a, i) => (
+                                <div key={i}>{a}</div>
                             ))}
                         </Alert>
                     )}
