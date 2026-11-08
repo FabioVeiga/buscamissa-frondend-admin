@@ -29,6 +29,7 @@ const FILTROS_PADRAO = {
   semInstagram: false,
   semFacebook: false,
   semMissas: false,
+  responsavel: "", // "" = todas, "com" = com responsável aprovado, "sem" = sem
   mostrarDeletadas: false,
 };
 
@@ -39,6 +40,11 @@ const FILTROS_CHIP = [
   { campo: "semFacebook", label: "Sem Facebook" },
   { campo: "semMissas", label: "Sem missas" },
   { campo: "mostrarDeletadas", label: "Mostrar excluídas" },
+];
+
+const FILTROS_RESPONSAVEL = [
+  { valor: "com", label: "Com responsável" },
+  { valor: "sem", label: "Sem responsável" },
 ];
 
 const IgrejaSearchForm = ({
@@ -467,6 +473,16 @@ const IgrejaSearchForm = ({
                 color={formData[campo] ? "primary" : "default"}
                 variant={formData[campo] ? "filled" : "outlined"}
                 onClick={() => handleChange(campo, !formData[campo])}
+              />
+            ))}
+            {FILTROS_RESPONSAVEL.map(({ valor, label }) => (
+              <Chip
+                key={valor}
+                label={label}
+                size="small"
+                color={formData.responsavel === valor ? "primary" : "default"}
+                variant={formData.responsavel === valor ? "filled" : "outlined"}
+                onClick={() => handleChange("responsavel", formData.responsavel === valor ? "" : valor)}
               />
             ))}
           </Box>
