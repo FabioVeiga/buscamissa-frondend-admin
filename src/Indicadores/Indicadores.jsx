@@ -26,6 +26,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ShareIcon from "@mui/icons-material/Share";
 import HomeIcon from "@mui/icons-material/Home";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import FunctionsIcon from "@mui/icons-material/Functions";
 import LocationCityIcon from "@mui/icons-material/LocationCity";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -436,6 +437,7 @@ const Indicadores = () => {
     { label: "Visualizações", tendencia: calcularTendencia(totais.visualizacoes, totaisAnteriores?.visualizacoes) },
     { label: "Favoritos", tendencia: calcularTendencia(totais.favoritos, totaisAnteriores?.favoritos) },
     { label: "Compartilhamentos", tendencia: calcularTendencia(totais.compartilhamentos, totaisAnteriores?.compartilhamentos) },
+    { label: "Visitantes únicos", tendencia: calcularTendencia(totais.visitantesUnicos, totaisAnteriores?.visitantesUnicos) },
     { label: "Visualizações da Home", tendencia: calcularTendencia(totais.visualizacoesHome, totaisAnteriores?.visualizacoesHome) },
     ...PAGINAS_CONFIG.map((p) => ({
       label: p.titulo,
@@ -477,6 +479,7 @@ const Indicadores = () => {
     !totais.favoritos &&
     !totais.compartilhamentos &&
     !totais.visualizacoesHome &&
+    !totais.visitantesUnicos &&
     !(rankings.maisVisualizadas || []).length &&
     !(rankings.maisFavoritadas || []).length &&
     !(rankings.maisCompartilhadas || []).length &&
@@ -605,7 +608,7 @@ const Indicadores = () => {
                 </Paper>
 
                 <Grid container spacing={2}>
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: "grow" }}>
                     <StatCard
                       titulo="Visualizações"
                       valor={totais.visualizacoes}
@@ -615,7 +618,17 @@ const Indicadores = () => {
                       sparkline={construirSparkline(serieTemporal, "visualizacoes")}
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: "grow" }}>
+                    <StatCard
+                      titulo="Visitantes únicos"
+                      valor={totais.visitantesUnicos}
+                      icon={PeopleAltIcon}
+                      color="#f59e0b"
+                      tendencia={calcularTendencia(totais.visitantesUnicos, totaisAnteriores?.visitantesUnicos)}
+                      sparkline={construirSparkline(serieTemporal, "visitantesUnicos")}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6, md: "grow" }}>
                     <StatCard
                       titulo="Favoritos"
                       valor={totais.favoritos}
@@ -625,7 +638,7 @@ const Indicadores = () => {
                       sparkline={construirSparkline(serieTemporal, "favoritos")}
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: "grow" }}>
                     <StatCard
                       titulo="Compartilhamentos"
                       valor={totais.compartilhamentos}
@@ -635,7 +648,7 @@ const Indicadores = () => {
                       sparkline={construirSparkline(serieTemporal, "compartilhamentos")}
                     />
                   </Grid>
-                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <Grid size={{ xs: 12, sm: 6, md: "grow" }}>
                     <StatCard
                       titulo="Visualizações da Home"
                       valor={totais.visualizacoesHome}
@@ -646,14 +659,18 @@ const Indicadores = () => {
                     />
                   </Grid>
                 </Grid>
+                <Typography variant="caption" color="text.secondary">
+                  Visitantes únicos: pessoas distintas por dia (contagem anônima, sem cookie), somadas no período. Quem volta em outro dia conta de novo.
+                </Typography>
 
                 {serieTemporal.length > 0 && (
-                  <ChartCard title="Evolução diária" subtitle="Visualizações, favoritos e compartilhamentos por dia">
+                  <ChartCard title="Evolução diária" subtitle="Visualizações, visitantes únicos, favoritos e compartilhamentos por dia">
                     <LineChart
                       dataset={serieTemporal}
                       xAxis={[{ dataKey: "data", scaleType: "point", valueFormatter: formatarDataCurta }]}
                       series={[
                         { dataKey: "visualizacoes", label: "Visualizações", color: "#3b82f6", showMark: false },
+                        { dataKey: "visitantesUnicos", label: "Visitantes únicos", color: "#f59e0b", showMark: false },
                         { dataKey: "favoritos", label: "Favoritos", color: "#ec4899", showMark: false },
                         { dataKey: "compartilhamentos", label: "Compartilhamentos", color: "#8b5cf6", showMark: false },
                         { dataKey: "visualizacoesHome", label: "Visualizações da Home", color: "#10b981", showMark: false },
