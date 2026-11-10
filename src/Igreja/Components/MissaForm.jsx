@@ -324,6 +324,12 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
         setSelecionadas((prev) => (prev.length === missas.length ? [] : missas.map((_, i) => i)));
     };
 
+    const qtdPassadas = missas.filter((m) => ehEspecifica(m) && dataEspecificaPassou(m)).length;
+    const handleRemoverPassadas = () => {
+        setMissas((prev) => prev.filter((m) => !(ehEspecifica(m) && dataEspecificaPassou(m))));
+        setSelecionadas([]);
+    };
+
     const handleDeleteSelecionadas = () => {
         setMissas((prev) => prev.filter((_, index) => !selecionadas.includes(index)));
         setSelecionadas([]);
@@ -694,6 +700,16 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                                         onClick={handleDeleteSelecionadas}
                                     >
                                         Deletar selecionadas ({selecionadas.length})
+                                    </Button>
+                                )}
+                                {qtdPassadas > 0 && (
+                                    <Button
+                                        size="small"
+                                        color="warning"
+                                        startIcon={<DeleteSweep />}
+                                        onClick={handleRemoverPassadas}
+                                    >
+                                        Remover datas passadas ({qtdPassadas})
                                     </Button>
                                 )}
                                 <Button
