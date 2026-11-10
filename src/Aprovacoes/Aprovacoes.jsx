@@ -120,9 +120,11 @@ const BlocoDados = ({ titulo, dados }) => (
         {dados.missas?.length > 0 ? (
           dados.missas.map((m, i) => (
             <Typography key={i} variant="body2" color="text.secondary">
+              {m.nome ? `${m.nome} · ` : ""}
               {ehSemanal(m)
                 ? `${diasDaSemana.find((d) => d.value === m.diaSemana)?.label || m.diaSemana} às ${m.horario}`
                 : m.descricaoRecorrencia || descrever(m)}
+              {m.substituiMissasDoDia ? " (substitui as normais)" : ""}
               {m.observacao ? ` — ${m.observacao}` : ""}
             </Typography>
           ))
@@ -257,6 +259,7 @@ const Aprovacoes = () => {
         missas: (dados.dadosPropostos?.missas || []).map((m) => ({
           diaSemana: m.diaSemana, horario: m.horario, observacao: m.observacao,
           tipoRecorrencia: m.tipoRecorrencia, diaDoMes: m.diaDoMes, diasSemanaExcecao: m.diasSemanaExcecao, semanasDoMes: m.semanasDoMes,
+          data: m.data, nome: m.nome, substituiMissasDoDia: m.substituiMissasDoDia,
         })),
       });
       setAjustarAberto(true);

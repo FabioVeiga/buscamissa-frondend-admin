@@ -30,17 +30,25 @@ import {
     SEMANAS_DO_MES,
     alertaConflitoSemanal,
     chaveMissa,
+    dataEspecificaPassou,
     descrever,
+    diaSemanaDaData,
     ehSemanal,
+    hojeIso,
+    validarDataEspecifica,
     validarDiaFixo,
     validarOcorrencia,
 } from "../../recorrenciaMissa";
+import { atalhosLiturgicos } from "../../datasLiturgicas";
 import { diasDaSemana, formatarHorario, apenasNumeros } from "../../utils";
 import SectionCard from "./SectionCard";
 import ColarHorariosModal from "./ColarHorariosModal";
 import { ContentPaste } from "@mui/icons-material";
 
 const OBSERVACAO_MAX = 20;
+const NOME_MAX = 80;
+
+const ehEspecifica = (m) => Number(m?.tipoRecorrencia) === TIPO_RECORRENCIA.DataEspecifica;
 
 const OBSERVACOES_ATALHO = ["1º do mês", "Última do mês", "Pelos falecidos", "Pelas almas", "Novena"];
 
@@ -56,11 +64,16 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
         excecaoDomingo: false,
         diaOcorrencia: "",
         semanasDoMes: 0,
+        data: "",
+        nome: "",
+        substituiMissasDoDia: false,
     };
     const [novaMissa, setNovaMissa] = useState(NOVA_MISSA_VAZIA);
     const ehDiaFixo = novaMissa.tipoRecorrencia === TIPO_RECORRENCIA.DiaDoMes;
     const ehOcorrencia = novaMissa.tipoRecorrencia === TIPO_RECORRENCIA.OcorrenciaNoMes;
     const ehSemanalNova = novaMissa.tipoRecorrencia === TIPO_RECORRENCIA.Semanal;
+    const ehDataEspecifica = novaMissa.tipoRecorrencia === TIPO_RECORRENCIA.DataEspecifica;
+    const atalhosDatas = atalhosLiturgicos(hojeIso());
 
     // Horários já incluídos como chip + o que está digitado no campo (se houver):
     // um horário só continua sendo um clique em "Adicionar".
@@ -191,6 +204,10 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
             handleAddMissaOcorrencia();
             return;
         }
+        if (ehDataEspecifica) {
+            handleAddMissaDataEspecifica();
+            return;
+        }
 
         if (horariosEfetivos.length === 0 || novaMissa.diaSemana.length === 0) {
             onError?.("Informe pelo menos um Horário e um Dia da Semana!");
@@ -229,6 +246,34 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
             observacao,
             tipoRecorrencia: TIPO_RECORRENCIA.OcorrenciaNoMes,
             semanasDoMes: Number(semanasDoMes),
+        }));
+        setMissas((prev) => [...prev, ...novas.filter((nova) => !prev.some((m) => chaveMissa(m) === chaveMissa(nova)))]);
+        limparAposAdicionar();
+    };
+
+    // Data específica (ex.: Natal 2026): uma missa por horário, com data, nome e substituição opcionais.
+    const handleAddMissaDataEspecifica = () => {
+        const { observacao, data, nome, substituiMissasDoDia } = novaMissa;
+
+        if (!validarComum()) return;
+        const erro = validarDataEspecifica(data);
+        if (erro) {
+            onError?.(erro);
+            return;
+        }
+        if ((nome ?? "").length > NOME_MAX) {
+            onError?.(`O nome da missa excede o limite de ${NOME_MAX} caracteres.`);
+            return;
+        }
+
+        const novas = horariosEfetivos.map((horario) => ({
+            horario: apenasNumeros(horario),
+            diaSemana: diaSemanaDaData(data),
+            observacao,
+            tipoRecorrencia: TIPO_RECORRENCIA.DataEspecifica,
+            data,
+            nome: nome.trim() || null,
+            substituiMissasDoDia: !!substituiMissasDoDia,
         }));
         setMissas((prev) => [...prev, ...novas.filter((nova) => !prev.some((m) => chaveMissa(m) === chaveMissa(nova)))]);
         limparAposAdicionar();
@@ -327,6 +372,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                         <ToggleButton value={TIPO_RECORRENCIA.Semanal}>Toda semana</ToggleButton>
                         <ToggleButton value={TIPO_RECORRENCIA.DiaDoMes}>Dia fixo do mês</ToggleButton>
                         <ToggleButton value={TIPO_RECORRENCIA.OcorrenciaNoMes}>Dia da semana no mês</ToggleButton>
+                        <ToggleButton value={TIPO_RECORRENCIA.DataEspecifica}>Data específica</ToggleButton>
                     </ToggleButtonGroup>
                 </Box>
 
@@ -466,6 +512,71 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                         )}
                         <Typography variant="caption" color="text.secondary">
                             Em meses sem esse dia (ex.: dia 31 em abril) a missa não acontece.
+                        </Typography>
+                    </Box>
+                )}
+
+                {ehDataEspecifica && (
+                    <Box display="flex" flexDirection="column" gap={0.75}>
+                        <Typography variant="subtitle2" fontWeight={600}>
+                            2. Data e nome
+                        </Typography>
+                        <Box display="flex" alignItems="center" gap={2} flexWrap="wrap">
+                            <TextField
+                                label="Data"
+                                type="date"
+                                size="small"
+                                value={novaMissa.data}
+                                onChange={(e) => handleChange("data", e.target.value)}
+                                slotProps={{ inputLabel: { shrink: true } }}
+                                sx={{ width: 180 }}
+                            />
+                            <TextField
+                                label="Nome da missa (opcional)"
+                                size="small"
+                                value={novaMissa.nome}
+                                onChange={(e) => handleChange("nome", e.target.value)}
+                                error={novaMissa.nome.length > NOME_MAX}
+                                helperText={`${novaMissa.nome.length}/${NOME_MAX}`}
+                                sx={{ minWidth: 260, flex: 1 }}
+                            />
+                        </Box>
+                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                            {atalhosDatas.map((atalho) => (
+                                <Chip
+                                    key={atalho.nome}
+                                    label={atalho.nome}
+                                    size="small"
+                                    variant="outlined"
+                                    color="primary"
+                                    onClick={() => setNovaMissa((prev) => ({ ...prev, nome: atalho.nome, data: atalho.data }))}
+                                />
+                            ))}
+                        </Stack>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={!!novaMissa.substituiMissasDoDia}
+                                    onChange={(e) => handleChange("substituiMissasDoDia", e.target.checked)}
+                                />
+                            }
+                            label="Substitui as missas normais deste dia"
+                        />
+                        {horariosEfetivos.length > 0 && novaMissa.data && diaSemanaDaData(novaMissa.data) !== null && (
+                            <Typography variant="body2" color="primary">
+                                Prévia: {horariosEfetivos
+                                    .map((horario) =>
+                                        `${novaMissa.nome ? `${novaMissa.nome} · ` : ""}${descrever({
+                                            horario,
+                                            tipoRecorrencia: TIPO_RECORRENCIA.DataEspecifica,
+                                            data: novaMissa.data,
+                                        })}`
+                                    )
+                                    .join(" · ")}
+                            </Typography>
+                        )}
+                        <Typography variant="caption" color="text.secondary">
+                            Vale só nessa data (com ano). Sem marcar a substituição, soma às missas regulares do dia.
                         </Typography>
                     </Box>
                 )}
@@ -653,7 +764,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                                             </React.Fragment>
                                         );
                                     })}
-                                    {missas.some((m) => !ehSemanal(m)) && (
+                                    {missas.some((m) => !ehSemanal(m) && !ehEspecifica(m)) && (
                                         <React.Fragment key="grupo-dia-fixo">
                                             <TableRow>
                                                 <TableCell colSpan={4} sx={{ backgroundColor: "action.hover", py: 0.5 }}>
@@ -664,7 +775,7 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                                             </TableRow>
                                             {missas
                                                 .map((missa, index) => ({ missa, index }))
-                                                .filter(({ missa }) => !ehSemanal(missa))
+                                                .filter(({ missa }) => !ehSemanal(missa) && !ehEspecifica(missa))
                                                 .sort((a, b) => descrever(a.missa).localeCompare(descrever(b.missa)))
                                                 .map(({ missa, index }) => (
                                                     <TableRow key={`fixo-${missa.diaDoMes}-${missa.horario}-${index}`} hover selected={selecionadas.includes(index)}>
@@ -676,6 +787,49 @@ const MissaForm = ({ missas = [], setMissas, onError }) => {
                                                             />
                                                         </TableCell>
                                                         <TableCell>{descrever(missa)}</TableCell>
+                                                        <TableCell>{missa.observacao || "Sem observação"}</TableCell>
+                                                        <TableCell align="center">
+                                                            <IconButton aria-label="Excluir missa" color="error" onClick={() => handleDeleteMissa(index)}>
+                                                                <Delete />
+                                                            </IconButton>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                        </React.Fragment>
+                                    )}
+                                    {missas.some(ehEspecifica) && (
+                                        <React.Fragment key="grupo-datas-especiais">
+                                            <TableRow>
+                                                <TableCell colSpan={4} sx={{ backgroundColor: "action.hover", py: 0.5 }}>
+                                                    <Typography variant="caption" fontWeight={700}>
+                                                        Datas especiais
+                                                    </Typography>
+                                                </TableCell>
+                                            </TableRow>
+                                            {missas
+                                                .map((missa, index) => ({ missa, index }))
+                                                .filter(({ missa }) => ehEspecifica(missa))
+                                                .sort((a, b) => `${a.missa.data}${a.missa.horario}`.localeCompare(`${b.missa.data}${b.missa.horario}`))
+                                                .map(({ missa, index }) => (
+                                                    <TableRow key={`especial-${missa.data}-${missa.horario}-${index}`} hover selected={selecionadas.includes(index)}>
+                                                        <TableCell padding="checkbox">
+                                                            <Checkbox
+                                                                size="small"
+                                                                checked={selecionadas.includes(index)}
+                                                                onChange={() => handleToggleSelecionada(index)}
+                                                                slotProps={{ input: { "aria-label": "Selecionar missa" } }}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {missa.nome ? <strong>{missa.nome} · </strong> : null}
+                                                            {descrever(missa)}
+                                                            {missa.substituiMissasDoDia && (
+                                                                <Chip label="substitui as normais" size="small" sx={{ ml: 1 }} />
+                                                            )}
+                                                            {dataEspecificaPassou(missa) && (
+                                                                <Chip label="passou" size="small" color="warning" variant="outlined" sx={{ ml: 1 }} />
+                                                            )}
+                                                        </TableCell>
                                                         <TableCell>{missa.observacao || "Sem observação"}</TableCell>
                                                         <TableCell align="center">
                                                             <IconButton aria-label="Excluir missa" color="error" onClick={() => handleDeleteMissa(index)}>

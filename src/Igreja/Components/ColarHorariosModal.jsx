@@ -18,7 +18,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { ehSemanal } from "../../recorrenciaMissa";
+import { TIPO_RECORRENCIA, descrever, ehSemanal } from "../../recorrenciaMissa";
 import { diaDaSemana, formatarHorario } from "../../utils";
 import { aplicarMissasParseadas, parseHorariosMissa } from "../../services/parseHorariosMissa";
 
@@ -45,8 +45,10 @@ const ColarHorariosModal = ({
 
     const porDia = ORDEM_SEMANA.map((dia) => ({
         dia,
-        horarios: missas.filter((m) => m.diaSemana === dia).map((m) => formatarHorario(m.horario)),
+        horarios: missas.filter((m) => ehSemanal(m) && m.diaSemana === dia).map((m) => formatarHorario(m.horario)),
     })).filter((l) => l.horarios.length > 0);
+
+    const especiais = missas.filter((m) => m.tipoRecorrencia === TIPO_RECORRENCIA.DataEspecifica);
 
     const handleFechar = () => {
         if (salvando) return;
@@ -78,10 +80,10 @@ const ColarHorariosModal = ({
                         placeholder={EXEMPLO}
                         value={texto}
                         onChange={(e) => setTexto(e.target.value)}
-                        helperText="Um dia (ou intervalo de dias) por linha. Ex.: “Terça a sexta: 19h30”, “Domingo: 8h - 10h - 18h”."
+                        helperText="Um dia (ou intervalo de dias) por linha. Ex.: “Terça a sexta: 19h30”, “Domingo: 8h - 10h - 18h”. Datas: “24/12: 22h - Missa do Galo”."
                     />
 
-                    {texto.trim() && porDia.length > 0 && (
+                    {texto.trim() && (porDia.length > 0 || especiais.length > 0) && (
                         <Box>
                             <Typography variant="subtitle2" gutterBottom>
                                 O que foi entendido ({missas.length} missa{missas.length === 1 ? "" : "s"})
@@ -98,6 +100,12 @@ const ColarHorariosModal = ({
                                         <TableRow key={l.dia}>
                                             <TableCell>{diaDaSemana(l.dia)}</TableCell>
                                             <TableCell>{l.horarios.join(" | ")}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                    {especiais.map((m, i) => (
+                                        <TableRow key={`esp-${i}`}>
+                                            <TableCell>{m.nome || "Data especial"}</TableCell>
+                                            <TableCell>{descrever(m)}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
