@@ -1,11 +1,12 @@
-// Extrai missas semanais de um texto colado (WhatsApp, site da paróquia, cartaz, tabela...).
-// Só cobre recorrência semanal; missas mensais (dia fixo, 1ª sexta) ficam de fora e são avisadas.
+// Extrai missas de um texto colado (WhatsApp, site da paróquia, cartaz, tabela...).
+// Cobre a recorrência semanal e linhas com data ("24/12: 22h - Missa do Galo"); missas mensais
+// (dia fixo, 1ª sexta) ficam de fora e são avisadas.
 //
 // Como funciona: cada linha vira uma sequência de "eventos" (dias e horários) em ordem de
 // aparição. Um dia que surge depois de um horário abre um novo grupo, então tanto
 // "Terça a sexta: 19h30; Sábado: 16h" quanto "Terça a sexta às 19h30, sábado às 16h" funcionam.
 
-import { chaveMissa, ehSemanal } from "../recorrenciaMissa";
+import { TIPO_RECORRENCIA, chaveMissa, diaSemanaDaData, ehSemanal, hojeIso } from "../recorrenciaMissa";
 
 // Semana começando na segunda: facilita intervalos que "viram" o domingo ("sábado a segunda").
 const ORDEM_SEMANA = [1, 2, 3, 4, 5, 6, 0];
@@ -227,6 +228,68 @@ const analisarLinha = (linha, avisos) => {
     return grupos;
 };
 
+// ───────────── Linhas com data ─────────────
+
+const NOME_MAX = 80;
+// "24/12: 22h - Missa do Galo" · "25/12/2026 18h" · "25/12/26 — Natal, 10h e 18h"
+const REGEX_LINHA_DATA = /^\s*(\d{1,2})\/(\d{1,2})(?:\/(\d{2}|\d{4}))?(?!\d)\s*[:\-–—]?\s*(.*)$/;
+
+const dataIso = (ano, mes, dia) => {
+    const d = new Date(Date.UTC(ano, mes - 1, dia));
+    if (d.getUTCFullYear() !== ano || d.getUTCMonth() !== mes - 1 || d.getUTCDate() !== dia) return null;
+    return `${ano}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+};
+
+/** Sem o ano: a próxima ocorrência da data (hoje ou depois). */
+const resolverData = (dia, mes, anoTexto) => {
+    if (anoTexto) return dataIso(anoTexto.length === 2 ? 2000 + Number(anoTexto) : Number(anoTexto), mes, dia);
+    const hoje = hojeIso();
+    const esteAno = Number(hoje.slice(0, 4));
+    const candidata = dataIso(esteAno, mes, dia);
+    return candidata && candidata >= hoje ? candidata : dataIso(esteAno + 1, mes, dia);
+};
+
+/** Linha que começa com data → missas de data específica; null se a linha não começa com data. */
+const analisarLinhaData = (linha, avisos) => {
+    const m = REGEX_LINHA_DATA.exec(linha);
+    if (!m) return null;
+    const data = resolverData(Number(m[1]), Number(m[2]), m[3]);
+    if (!data) return { erro: "data inválida" };
+
+    const resto = m[4];
+    const n = normalizar(resto);
+    const { achados, invalidos } = encontrarHorarios(n);
+    invalidos.forEach((i) => avisos.push(`Horário inválido ignorado: “${i}”.`));
+    if (achados.length === 0) return { erro: "data sem horário" };
+
+    // Nome = o que sobra do texto sem os horários e sem conectores soltos ("e", "-", ":").
+    let nome = resto;
+    [...achados].reverse().forEach((t) => (nome = nome.slice(0, t.start) + " " + nome.slice(t.end)));
+    for (let i = 0; i < 3; i++) {
+        nome = nome
+            .replace(/\s+/g, " ")
+            .replace(/^[\s\-–—:,;|()]+|[\s\-–—:,;|()]+$/g, "")
+            .replace(/^(?:e|ou|as|às)\s+|\s+(?:e|ou|as|às)$/gi, "")
+            .trim();
+    }
+    if (nome.length > NOME_MAX) {
+        avisos.push(`Nome “${nome.slice(0, 20)}…” passa de ${NOME_MAX} caracteres e foi ignorado.`);
+        nome = "";
+    }
+
+    return {
+        missas: achados.map((t) => ({
+            horario: t.horario,
+            diaSemana: diaSemanaDaData(data),
+            observacao: "",
+            tipoRecorrencia: TIPO_RECORRENCIA.DataEspecifica,
+            data,
+            nome: nome || null,
+            substituiMissasDoDia: false,
+        })),
+    };
+};
+
 // ───────────── API ─────────────
 
 const ordenarMissas = (missas) =>
@@ -237,7 +300,8 @@ const ordenarMissas = (missas) =>
 /**
  * @param {string} texto
  * @returns {{
- *   missas: {horario: string, diaSemana: number, observacao: string}[],
+ *   missas: {horario: string, diaSemana: number, observacao: string}[] (semanais, depois as de data
+ *     específica, que trazem também tipoRecorrencia, data "yyyy-MM-dd", nome e substituiMissasDoDia),
  *   ignoradas: {linha: string, motivo: string}[],
  *   avisos: string[]
  * }} `horario` no formato HHMM (como o resto do admin grava).
@@ -245,6 +309,7 @@ const ordenarMissas = (missas) =>
 export const parseHorariosMissa = (texto) => {
     const vistas = new Set();
     const missas = [];
+    const especiais = [];
     const ignoradas = [];
     const avisos = [];
     let pendente = null; // dias numa linha, horários na seguinte ("Domingo:\n8h e 10h")
@@ -271,6 +336,22 @@ export const parseHorariosMissa = (texto) => {
         .filter(Boolean);
 
     for (const linha of linhas) {
+        const porData = analisarLinhaData(linha, avisos);
+        if (porData) {
+            fecharPendente();
+            if (porData.erro) {
+                ignoradas.push({ linha, motivo: porData.erro });
+                continue;
+            }
+            for (const missa of porData.missas) {
+                const chave = `d|${missa.data}|${missa.horario}`;
+                if (vistas.has(chave)) continue;
+                vistas.add(chave);
+                especiais.push(missa);
+            }
+            continue;
+        }
+
         const n = normalizar(linha);
         if (REGEX_NAO_MISSA.test(n)) {
             ignoradas.push({ linha, motivo: "não parece horário de missa (terço, confissão, secretaria...)" });
@@ -305,12 +386,13 @@ export const parseHorariosMissa = (texto) => {
     }
     fecharPendente();
 
-    return { missas: ordenarMissas(missas), ignoradas, avisos: [...new Set(avisos)] };
+    especiais.sort((a, b) => a.data.localeCompare(b.data) || a.horario.localeCompare(b.horario));
+    return { missas: [...ordenarMissas(missas), ...especiais], ignoradas, avisos: [...new Set(avisos)] };
 };
 
 /**
  * Junta as missas lidas do texto à lista atual.
- * - `substituir`: troca só as missas semanais (as mensais ficam); mantém a observação de
+ * - `substituir`: troca só as missas semanais (as mensais e as de data específica ficam); mantém a observação de
  *   quem continua no mesmo dia e horário.
  * - senão: acrescenta, ignorando o que já existe.
  */
@@ -321,9 +403,13 @@ export const aplicarMissasParseadas = (atuais, novas, substituir) => {
     }
     const antigasSemanais = atuais.filter(ehSemanal);
     const preservadas = atuais.filter((m) => !ehSemanal(m));
-    const mantidas = novas.map((n) => {
-        const antiga = antigasSemanais.find((a) => chaveMissa(a) === chaveMissa(n));
-        return antiga ?? n;
-    });
+    const chavesPreservadas = new Set(preservadas.map(chaveMissa));
+    const mantidas = novas
+        // Data específica já cadastrada fica como está (não duplica nem perde o nome/substituição).
+        .filter((n) => ehSemanal(n) || !chavesPreservadas.has(chaveMissa(n)))
+        .map((n) => {
+            const antiga = antigasSemanais.find((a) => chaveMissa(a) === chaveMissa(n));
+            return antiga ?? n;
+        });
     return [...preservadas, ...mantidas];
 };

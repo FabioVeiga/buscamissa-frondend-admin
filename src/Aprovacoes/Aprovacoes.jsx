@@ -95,9 +95,11 @@ const Marca = ({ label, color = "warning" }) => (
 );
 
 const textoMissa = (m) =>
-  ehSemanal(m)
-    ? `${diasDaSemana.find((d) => d.value === m.diaSemana)?.label || m.diaSemana} às ${m.horario}`
-    : m.descricaoRecorrencia || descrever(m);
+  `${m.nome ? `${m.nome} · ` : ""}${
+    ehSemanal(m)
+      ? `${diasDaSemana.find((d) => d.value === m.diaSemana)?.label || m.diaSemana} às ${m.horario}`
+      : m.descricaoRecorrencia || descrever(m)
+  }${m.substituiMissasDoDia ? " (substitui as normais)" : ""}`;
 
 // Bloco comparativo (usado tanto para "Atual" quanto "Proposto" no modal de detalhe).
 // `diff` (de compararDados) marca o que mudou; `lado` diz de que lado o bloco está.
@@ -166,7 +168,7 @@ const BlocoDados = ({ titulo, dados, diff = null, lado = null }) => {
                   {m.observacao ? ` — ${m.observacao}` : ""}
                   {nova && <Marca label="nova" color="success" />}
                   {removida && <Marca label="removida" color="error" />}
-                  {obs && <Marca label="observação alterada" />}
+                  {obs && <Marca label="detalhes alterados" />}
                 </Typography>
               );
             })
@@ -303,6 +305,7 @@ const Aprovacoes = () => {
         missas: (dados.dadosPropostos?.missas || []).map((m) => ({
           diaSemana: m.diaSemana, horario: m.horario, observacao: m.observacao,
           tipoRecorrencia: m.tipoRecorrencia, diaDoMes: m.diaDoMes, diasSemanaExcecao: m.diasSemanaExcecao, semanasDoMes: m.semanasDoMes,
+          data: m.data, nome: m.nome, substituiMissasDoDia: m.substituiMissasDoDia,
         })),
       });
       setAjustarAberto(true);

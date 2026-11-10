@@ -1,8 +1,8 @@
-// Regra de recorrência de uma missa: semanal ou dia fixo do mês ("todo dia 13").
+// Regra de recorrência de uma missa: semanal, dia fixo do mês ("todo dia 13") ou data específica (25/12/2026).
 // Espelho de RecorrenciaMissa.cs (APIs) e recorrencia-missa.ts (site), só com o que o
 // admin usa: descrever e validar. Mantenha os textos iguais.
 
-export const TIPO_RECORRENCIA = { Semanal: 0, OcorrenciaNoMes: 1, DiaDoMes: 2 };
+export const TIPO_RECORRENCIA = { Semanal: 0, OcorrenciaNoMes: 1, DiaDoMes: 2, DataEspecifica: 3 };
 
 export const EXCECAO_DOMINGO = 1 << 0;
 export const EXCECAO_SABADO = 1 << 6;
@@ -42,6 +42,30 @@ const descreverExcecao = (mask) => {
   return ` (exceto ${lista})`;
 };
 
+/** "2026-12-25" → "25/12/2026" (sem passar por Date, para não sofrer com fuso). */
+export const formatarData = (iso) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso ?? ""));
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : "";
+};
+
+/** Dia da semana (0 = domingo) de "yyyy-MM-dd", ou null se inválida. */
+export const diaSemanaDaData = (iso) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso ?? ""));
+  if (!m) return null;
+  const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  return d.getUTCMonth() === Number(m[2]) - 1 ? d.getUTCDay() : null;
+};
+
+/** Hoje em "yyyy-MM-dd" (calendário local). */
+export const hojeIso = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
+/** Missa de data específica já passou (a API deixa de exibi-la). */
+export const dataEspecificaPassou = (m) =>
+  Number(m?.tipoRecorrencia) === TIPO_RECORRENCIA.DataEspecifica && !!m?.data && String(m.data).slice(0, 10) < hojeIso();
+
 /** "Domingo, 19h" · "Todo dia 13, 19h30" · "Todo dia 13, 19h (exceto sábados e domingos)". */
 export const descrever = (m) => {
   const hora = formatarHora(m?.horario);
@@ -50,6 +74,7 @@ export const descrever = (m) => {
     return `Todo dia ${m.diaDoMes}, ${hora}${descreverExcecao(Number(m.diasSemanaExcecao) || 0)}`;
   if (Number(m.tipoRecorrencia) === TIPO_RECORRENCIA.OcorrenciaNoMes)
     return `${descreverSemanas(Number(m.diaSemana), Number(m.semanasDoMes) || 0)} do mês, ${hora}`;
+  if (Number(m.tipoRecorrencia) === TIPO_RECORRENCIA.DataEspecifica) return `${formatarData(m.data)}, ${hora}`;
   return hora;
 };
 
@@ -61,6 +86,13 @@ const descreverSemanas = (diaSemana, semanas) => {
   const lista = ordinais.length <= 1 ? ordinais[0] ?? "" : `${ordinais.slice(0, -1).join(", ")} e ${ordinais[ordinais.length - 1]}`;
   const texto = `${lista} ${DIAS_NOME[diaSemana] ?? ""}`;
   return texto.charAt(0).toUpperCase() + texto.slice(1);
+};
+
+/** Mensagem de erro da data específica (formato yyyy-MM-dd), ou null se válida. */
+export const validarDataEspecifica = (data) => {
+  if (!data) return "Informe a data da missa.";
+  if (diaSemanaDaData(data) === null) return "Data inválida.";
+  return null;
 };
 
 /** Mensagem de erro da ocorrência no mês, ou null se válida. */
@@ -78,7 +110,7 @@ export const validarOcorrencia = (diaSemana, semanasDoMes) => {
  */
 export const alertaConflitoSemanal = (missas, nova) => {
   const tipoNovo = Number(nova?.tipoRecorrencia ?? TIPO_RECORRENCIA.Semanal);
-  if (tipoNovo === TIPO_RECORRENCIA.DiaDoMes) return null;
+  if (tipoNovo === TIPO_RECORRENCIA.DiaDoMes || tipoNovo === TIPO_RECORRENCIA.DataEspecifica) return null;
   const mesmoHorario = (m) => String(m.horario).replace(/\D/g, "").slice(0, 4) === String(nova.horario).replace(/\D/g, "").slice(0, 4);
   const conflito = (missas || []).find(
     (m) =>
@@ -106,5 +138,6 @@ export const chaveMissa = (m) => {
   if (ehSemanal(m)) return `0|${Number(m.diaSemana)}|${m.horario}`;
   if (Number(m.tipoRecorrencia) === TIPO_RECORRENCIA.OcorrenciaNoMes)
     return `1|${Number(m.diaSemana)}|${Number(m.semanasDoMes)}|${m.horario}`;
+  if (Number(m.tipoRecorrencia) === TIPO_RECORRENCIA.DataEspecifica) return `3|${String(m.data).slice(0, 10)}|${m.horario}`;
   return `${Number(m.tipoRecorrencia)}|${Number(m.diaDoMes)}|${m.horario}`;
 };

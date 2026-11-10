@@ -19,6 +19,10 @@ export const chaveComparacao = (m) =>
     norm(m.data).slice(0, 10),
   ].join("|");
 
+// Observação, nome e "substitui as normais": mudam sem trocar a identidade da missa.
+const detalhesMissa = (m) =>
+  [norm(m.observacao), norm(m.nome), m.substituiMissasDoDia ? 1 : 0].join("|");
+
 /**
  * @returns {null | {
  *   nome: boolean, paroco: boolean, foto: boolean, endereco: boolean,
@@ -43,7 +47,7 @@ export const compararDados = (atuais, propostos) => {
   for (const [chave, m] of propostasPorChave) {
     const antiga = atuaisPorChave.get(chave);
     if (!antiga) adicionadas.add(chave);
-    else if (norm(antiga.observacao) !== norm(m.observacao)) obsAlteradas.add(chave);
+    else if (detalhesMissa(antiga) !== detalhesMissa(m)) obsAlteradas.add(chave);
   }
   for (const chave of atuaisPorChave.keys()) if (!propostasPorChave.has(chave)) removidas.add(chave);
 
@@ -55,7 +59,7 @@ export const compararDados = (atuais, propostos) => {
   const partesMissas = [];
   if (adicionadas.size) partesMissas.push(`${adicionadas.size} nova(s)`);
   if (removidas.size) partesMissas.push(`${removidas.size} removida(s)`);
-  if (obsAlteradas.size) partesMissas.push(`${obsAlteradas.size} com observação alterada`);
+  if (obsAlteradas.size) partesMissas.push(`${obsAlteradas.size} com detalhes alterados`);
   if (partesMissas.length) resumo.push(`Missas (${partesMissas.join(", ")})`);
 
   return { nome, paroco, foto, endereco, adicionadas, removidas, obsAlteradas, resumo };
