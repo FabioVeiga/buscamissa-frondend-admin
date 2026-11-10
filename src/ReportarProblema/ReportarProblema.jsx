@@ -25,11 +25,12 @@ import LoadingState from "../Components/LoadingState";
 import RowActions from "../Components/RowActions";
 import Pagination from "../Components/Paginacao";
 import api from "../services/apiService";
+import { formatarDataHoraBrasil } from "../utils";
 import IgrejaDetalheModal from "../Igreja/IgrejaDetalhesModal";
 import ReportarProblemaModal from "../Igreja/Components/ReportarProblemaModal";
 import { buscarIgrejaCompletaPorId, normalizarIgrejaParaEdicao } from "../services/igrejaHelpers";
 
-const formatarData = (valor) => (valor ? new Date(valor).toLocaleString("pt-BR") : "-");
+const formatarData = formatarDataHoraBrasil;
 
 const FILTROS_RESOLVIDO = [
   { valor: "false", label: "Pendentes" },
