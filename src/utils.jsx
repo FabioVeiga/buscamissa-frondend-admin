@@ -177,3 +177,14 @@ export const removerMissasDuplicadas = (missas) => {
     return true;
   });
 };
+/**
+ * Data e hora do servidor no horário de Brasília. A API devolve a data sem fuso (ex.:
+ * "2026-11-10T00:36:26"): tratamos como UTC, senão o navegador a leria como hora local.
+ */
+export const formatarDataHoraBrasil = (valor) => {
+  if (!valor) return "-";
+  const texto = String(valor);
+  const data = new Date(/(Z|[+-]\d{2}:?\d{2})$/i.test(texto) ? texto : `${texto}Z`);
+  if (Number.isNaN(data.getTime())) return "-";
+  return data.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+};

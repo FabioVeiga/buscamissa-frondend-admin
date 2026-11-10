@@ -1,7 +1,9 @@
 /* eslint-disable react/prop-types */
 import { descrever, ehSemanal } from "../recorrenciaMissa";
-import { useCallback, useEffect, useState } from "react";
+import { chaveComparacao, compararDados, enderecoTexto } from "./diferencasAprovacao";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -45,7 +47,7 @@ import Pagination from "../Components/Paginacao";
 import api from "../services/apiService";
 import ErrorSpan from "../ErrorSpan";
 import MissaForm from "../Igreja/Components/MissaForm";
-import { diasDaSemana } from "../utils";
+import { diasDaSemana, formatarDataHoraBrasil } from "../utils";
 import { buscarIgrejaCompletaPorId, normalizarIgrejaParaEdicao } from "../services/igrejaHelpers";
 
 // Espelha BuscaMissa.Enums.StatusEnum (backend) — enums são serializados como número.
@@ -84,55 +86,98 @@ const COR_STATUS = {
 };
 const corStatus = (status) => COR_STATUS[status] || "warning";
 
-const formatarData = (valor) => (valor ? new Date(valor).toLocaleString("pt-BR") : "-");
+const formatarData = formatarDataHoraBrasil;
+
+// Destaques do comparativo: o que mudou fica marcado nos dois lados.
+const DESTAQUE = { bgcolor: "rgba(255, 167, 38, 0.18)", borderRadius: 1, px: 0.75, py: 0.25, mx: -0.75 };
+const Marca = ({ label, color = "warning" }) => (
+  <Chip label={label} size="small" color={color} variant="outlined" sx={{ ml: 1, height: 20 }} />
+);
+
+const textoMissa = (m) =>
+  ehSemanal(m)
+    ? `${diasDaSemana.find((d) => d.value === m.diaSemana)?.label || m.diaSemana} às ${m.horario}`
+    : m.descricaoRecorrencia || descrever(m);
 
 // Bloco comparativo (usado tanto para "Atual" quanto "Proposto" no modal de detalhe).
-const BlocoDados = ({ titulo, dados }) => (
-  <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, height: "100%" }}>
-    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>
-      {titulo}
-    </Typography>
-    {!dados ? (
-      <Typography variant="body2" color="text.secondary">
-        Não se aplica (igreja ainda não publicada).
+// `diff` (de compararDados) marca o que mudou; `lado` diz de que lado o bloco está.
+const BlocoDados = ({ titulo, dados, diff = null, lado = null }) => {
+  const proposto = lado === "proposto";
+  const mudou = (campo) => !!diff?.[campo];
+  return (
+    <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, height: "100%" }}>
+      <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>
+        {titulo}
       </Typography>
-    ) : (
-      <Stack spacing={1}>
-        {dados.nome && <Typography variant="body2"><strong>Nome:</strong> {dados.nome}</Typography>}
-        <Typography variant="body2"><strong>Pároco:</strong> {dados.paroco || "-"}</Typography>
-        <Typography variant="body2" fontWeight={600}>Foto:</Typography>
-        {dados.imagemUrl ? (
-          <Box
-            component="img"
-            src={dados.imagemUrl}
-            alt={`Foto ${titulo.toLowerCase()}`}
-            sx={{ maxWidth: "100%", maxHeight: 220, objectFit: "contain", borderRadius: 1, border: 1, borderColor: "divider" }}
-          />
-        ) : (
-          <Typography variant="body2" color="text.secondary">{titulo === "Proposto" ? "Sem alteração de foto" : "Sem foto"}</Typography>
-        )}
-        {dados.endereco && (
-          <Typography variant="body2">
-            <strong>Endereço:</strong> {[dados.endereco.logradouro, dados.endereco.bairro, dados.endereco.localidade, dados.endereco.uf].filter(Boolean).join(", ")}
-          </Typography>
-        )}
-        <Typography variant="body2" fontWeight={600}>Missas:</Typography>
-        {dados.missas?.length > 0 ? (
-          dados.missas.map((m, i) => (
-            <Typography key={i} variant="body2" color="text.secondary">
-              {ehSemanal(m)
-                ? `${diasDaSemana.find((d) => d.value === m.diaSemana)?.label || m.diaSemana} às ${m.horario}`
-                : m.descricaoRecorrencia || descrever(m)}
-              {m.observacao ? ` — ${m.observacao}` : ""}
+      {!dados ? (
+        <Typography variant="body2" color="text.secondary">
+          Não se aplica (igreja ainda não publicada).
+        </Typography>
+      ) : (
+        <Stack spacing={1}>
+          {dados.nome && (
+            <Typography variant="body2" sx={mudou("nome") ? DESTAQUE : undefined}>
+              <strong>Nome:</strong> {dados.nome}
+              {proposto && mudou("nome") && <Marca label="alterado" />}
             </Typography>
-          ))
-        ) : (
-          <Typography variant="body2" color="text.secondary">Nenhuma missa.</Typography>
-        )}
-      </Stack>
-    )}
-  </Paper>
-);
+          )}
+          <Typography variant="body2" sx={mudou("paroco") ? DESTAQUE : undefined}>
+            <strong>Pároco:</strong> {dados.paroco || "-"}
+            {proposto && mudou("paroco") && <Marca label="alterado" />}
+          </Typography>
+          <Typography variant="body2" fontWeight={600} sx={proposto && mudou("foto") ? DESTAQUE : undefined}>
+            Foto:{proposto && mudou("foto") && <Marca label="nova foto" />}
+          </Typography>
+          {dados.imagemUrl ? (
+            <Box
+              component="img"
+              src={dados.imagemUrl}
+              alt={`Foto ${titulo.toLowerCase()}`}
+              sx={{ maxWidth: "100%", maxHeight: 220, objectFit: "contain", borderRadius: 1, border: 1, borderColor: "divider" }}
+            />
+          ) : (
+            <Typography variant="body2" color="text.secondary">{titulo === "Proposto" ? "Sem alteração de foto" : "Sem foto"}</Typography>
+          )}
+          {dados.endereco && (
+            <Typography variant="body2" sx={mudou("endereco") ? DESTAQUE : undefined}>
+              <strong>Endereço:</strong> {enderecoTexto(dados.endereco)}
+              {proposto && mudou("endereco") && <Marca label="alterado" />}
+            </Typography>
+          )}
+          <Typography variant="body2" fontWeight={600}>Missas:</Typography>
+          {dados.missas?.length > 0 ? (
+            dados.missas.map((m, i) => {
+              const chave = chaveComparacao(m);
+              const nova = proposto && diff?.adicionadas.has(chave);
+              const removida = !proposto && lado === "atual" && diff?.removidas.has(chave);
+              const obs = proposto && diff?.obsAlteradas.has(chave);
+              return (
+                <Typography
+                  key={i}
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    ...(nova ? { bgcolor: "rgba(46, 204, 113, 0.18)", borderRadius: 1, px: 0.75, mx: -0.75 } : {}),
+                    ...(removida ? { bgcolor: "rgba(244, 67, 54, 0.15)", borderRadius: 1, px: 0.75, mx: -0.75, textDecoration: "line-through" } : {}),
+                    ...(obs ? DESTAQUE : {}),
+                  }}
+                >
+                  {textoMissa(m)}
+                  {m.observacao ? ` — ${m.observacao}` : ""}
+                  {nova && <Marca label="nova" color="success" />}
+                  {removida && <Marca label="removida" color="error" />}
+                  {obs && <Marca label="observação alterada" />}
+                </Typography>
+              );
+            })
+          ) : (
+            <Typography variant="body2" color="text.secondary">Nenhuma missa.</Typography>
+          )}
+        </Stack>
+      )}
+    </Paper>
+  );
+};
 
 const Aprovacoes = () => {
   const navigate = useNavigate();
@@ -150,6 +195,7 @@ const Aprovacoes = () => {
   const [detalheAberto, setDetalheAberto] = useState(false);
   const [detalheLoading, setDetalheLoading] = useState(false);
   const [detalhe, setDetalhe] = useState(null);
+  const diferencas = useMemo(() => compararDados(detalhe?.dadosAtuais, detalhe?.dadosPropostos), [detalhe]);
   const [acaoLoading, setAcaoLoading] = useState(false);
 
   const [ajustarAberto, setAjustarAberto] = useState(false);
@@ -455,12 +501,19 @@ const Aprovacoes = () => {
                 ? `${detalhe.usuarioNome}${detalhe.usuarioEmail ? ` (${detalhe.usuarioEmail})` : ""}`
                 : "Ainda não atribuído"}
             </Typography>
+            {diferencas && (
+              <Alert severity={diferencas.resumo.length ? "warning" : "info"} sx={{ mb: 1 }}>
+                {diferencas.resumo.length
+                  ? <><strong>O que muda:</strong> {diferencas.resumo.join(" · ")}</>
+                  : "Nenhuma diferença nos dados exibidos."}
+              </Alert>
+            )}
             <Grid container spacing={2} sx={{ mt: 0.5 }}>
               <Grid size={{ xs: 12, md: detalhe.dadosAtuais ? 6 : 12 }}>
-                <BlocoDados titulo="Atual (publicado)" dados={detalhe.dadosAtuais} />
+                <BlocoDados titulo="Atual (publicado)" dados={detalhe.dadosAtuais} diff={diferencas} lado="atual" />
               </Grid>
               {detalhe.dadosAtuais && <Grid size={{ xs: 12, md: 6 }}>
-                <BlocoDados titulo="Proposto" dados={detalhe.dadosPropostos} />
+                <BlocoDados titulo="Proposto" dados={detalhe.dadosPropostos} diff={diferencas} lado="proposto" />
               </Grid>}
               {!detalhe.dadosAtuais && (
                 <Grid size={12}>
