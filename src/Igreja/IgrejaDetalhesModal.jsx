@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { descrever, ehSemanal } from "../recorrenciaMissa";
+import { TIPO_RECORRENCIA, descrever, ehSemanal } from "../recorrenciaMissa";
 import { useEffect, useState } from "react";
 import {
   Modal,
@@ -188,9 +188,11 @@ const IgrejaDetalheModal = ({ open, handleClose, igrejaId }) => {
                   )}
                   {(igreja?.missas || []).filter((missa) => !ehSemanal(missa)).map((missa, i) => (
                     <TableRow key={`fixo-${i}`}>
-                      <TableCell>Mensal</TableCell>
+                      <TableCell>{Number(missa.tipoRecorrencia) === TIPO_RECORRENCIA.DataEspecifica ? "Data" : "Mensal"}</TableCell>
                       <TableCell>
+                        {missa.nome ? <strong>{missa.nome} · </strong> : null}
                         {descrever(missa)}
+                        {missa.substituiMissasDoDia ? " (substitui as normais)" : ""}
                         {missa.observacao ? ` (${missa.observacao})` : ""}
                       </TableCell>
                     </TableRow>
