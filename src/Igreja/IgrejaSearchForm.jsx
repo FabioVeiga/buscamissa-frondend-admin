@@ -1,13 +1,12 @@
 /* eslint-disable react/prop-types */
-import { useState, useEffect, useRef } from "react";
-import { Box, TextField, Switch, FormControlLabel, Button, Autocomplete, CircularProgress, Collapse, Backdrop, Typography, Chip } from "@mui/material";
+import { useState, useEffect } from "react";
+import { Box, TextField, Switch, FormControlLabel, Button, Autocomplete, Collapse, Chip } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import api from "../services/apiService";
 import { IconButton, Tooltip } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useNavigate } from "react-router-dom";
 import { ufs } from "../utils";
@@ -68,9 +67,6 @@ const IgrejaSearchForm = ({
   const [message, setMessage] = useState(errorMensage);
   const [autoLoadEnabled, setAutoLoadEnabled] = useState(true);
   const [hasAutoLoaded, setHasAutoLoaded] = useState(false);
-  const [geoLoading, setGeoLoading] = useState(false);
-  const [geoProgresso, setGeoProgresso] = useState({ processadas: 0, total: null });
-  const geoPararRef = useRef(false);
   const [formData, setFormData] = useState({ ...FILTROS_PADRAO });
   const [mostrarMaisFiltros, setMostrarMaisFiltros] = useState(false);
 
@@ -241,83 +237,8 @@ const IgrejaSearchForm = ({
     resetLocalidades();
   };
 
-  // A API geocodifica um lote por chamada (Nominatim: 1 req/s); repetimos com o cursor
-  // `aposId` até não haver restantes, mostrando o progresso e permitindo parar.
-  const handleGeocodificarPendentes = async () => {
-    geoPararRef.current = false;
-    setGeoLoading(true);
-    setGeoProgresso({ processadas: 0, total: null });
-
-    let aposId = 0;
-    let processadas = 0;
-    let geocodificadas = 0;
-    let naoEncontradas = 0;
-    let total = null;
-    let interrompida = false;
-
-    try {
-      for (;;) {
-        const response = await api.post(
-          `/api/v2/Igreja/geocodificar-pendentes`,
-          null,
-          { params: { aposId }, timeout: 5 * 60 * 1000 }
-        );
-        const lote = response.data?.data || {};
-        processadas += lote.processadas ?? 0;
-        geocodificadas += lote.geocodificadas ?? 0;
-        naoEncontradas += lote.naoEncontradas ?? 0;
-        if (total === null) total = processadas + (lote.restantes ?? 0);
-        setGeoProgresso({ processadas, total });
-
-        if (!lote.restantes || !lote.processadas) break;
-        if (geoPararRef.current) {
-          interrompida = true;
-          break;
-        }
-        aposId = lote.ultimoId;
-      }
-
-      setMessage({
-        mensagem: `${interrompida ? "Geocodificação interrompida" : "Geocodificação concluída"}: ${geocodificadas} igreja(s) geocodificada(s), ${naoEncontradas} não encontrada(s).`,
-        severity: interrompida ? "warning" : "success",
-        show: true,
-      });
-    } catch (error) {
-      console.error("Erro ao geocodificar igrejas pendentes:", error);
-      setMessage({
-        mensagem: `${error.response?.data?.data?.mensagemAplicacao || "Erro ao geocodificar igrejas pendentes."}${
-          geocodificadas || naoEncontradas
-            ? ` Antes do erro: ${geocodificadas} geocodificada(s), ${naoEncontradas} não encontrada(s).`
-            : ""
-        }`,
-        severity: "error",
-        show: true,
-      });
-    } finally {
-      setGeoLoading(false);
-      // Recarregar a busca após geocodificar
-      setTimeout(() => handleSearch(), 500);
-    }
-  };
-
   return (
     <>
-      <Backdrop
-        open={geoLoading}
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1, flexDirection: "column", gap: 2 }}
-      >
-        <CircularProgress color="inherit" />
-        <Typography variant="body1">
-          Geocodificando igrejas pendentes
-          {geoProgresso.total ? `: ${geoProgresso.processadas} de ${geoProgresso.total}` : "..."}
-        </Typography>
-        <Typography variant="body2" sx={{ opacity: 0.8 }}>
-          Isso pode levar alguns minutos.
-        </Typography>
-        <Button variant="outlined" color="inherit" size="small" onClick={() => { geoPararRef.current = true; }}>
-          Parar após este lote
-        </Button>
-      </Backdrop>
       <Box
         component="form"
         onSubmit={(e) => {
@@ -505,15 +426,6 @@ const IgrejaSearchForm = ({
             <Tooltip title="Limpar Filtros">
               <IconButton aria-label="Limpar filtros" color="error" onClick={handleClearFilters}>
                 <ClearIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Geocodificar Pendentes">
-              <IconButton aria-label="Geocodificar pendentes"
-                color="success"
-                onClick={handleGeocodificarPendentes}
-                disabled={geoLoading}
-              >
-                {geoLoading ? <CircularProgress size={24} /> : <LocationOnIcon />}
               </IconButton>
             </Tooltip>
             <Tooltip title="Nova Igreja">

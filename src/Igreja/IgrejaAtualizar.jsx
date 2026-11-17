@@ -342,40 +342,29 @@ const IgrejaAtualizar = () => {
 
 
   const handleGeocode = async () => {
-    const { logradouro, numero, bairro, localidade, uf } = endereco;
-    const addressParts = [logradouro, numero, bairro, localidade, uf].filter(Boolean);
-    
-    if (addressParts.length < 3) {
-      setMessage({
-        mensagem: "Por favor, preencha pelo menos Logradouro, Localidade e UF para buscar coordenadas.",
-        severity: "error",
-        show: true,
-      });
-      return;
-    }
+    const { logradouro, numero, localidade, uf } = endereco;
+    const result = await geocode({ logradouro, numero, localidade, uf });
 
-    const fullAddress = addressParts.join(", ");
-    const result = await geocode(fullAddress);
-
-    if (result) {
+    if (result && !result.erro) {
       setEndereco((prev) => ({
         ...prev,
         latitude: result.lat,
         longitude: result.lon,
       }));
       setMessage({
-        mensagem: "Coordenadas encontradas com sucesso!",
+        mensagem: `Coordenadas encontradas: ${result.displayName}. Confira no mapa antes de salvar.`,
         severity: "success",
         show: true,
       });
     } else {
       setMessage({
-        mensagem: "Erro ao buscar coordenadas. Verifique o endereço.",
+        mensagem: result?.erro || "Erro ao buscar coordenadas. Verifique o endereço.",
         severity: "error",
         show: true,
       });
     }
   };
+
 
   const handleBuscarCepReverso = async () => {
     const { uf, localidade, logradouro, bairro } = endereco || {};
