@@ -251,29 +251,18 @@ const IgrejaCriar = () => {
   };
 
   const handleGeocode = async () => {
-    const { logradouro, numero, bairro, localidade, uf } = endereco || {};
-    const addressParts = [logradouro, numero, bairro, localidade, uf].filter(Boolean);
+    const { logradouro, numero, localidade, uf } = endereco || {};
+    const result = await geocode({ logradouro, numero, localidade, uf });
 
-    if (addressParts.length < 3) {
-      setMessage([
-        "Por favor, preencha pelo menos Logradouro, Localidade e UF para buscar coordenadas.",
-      ]);
-      return;
-    }
-
-    const fullAddress = addressParts.join(", ");
-    const result = await geocode(fullAddress);
-
-    if (result) {
+    if (result && !result.erro) {
       setEndereco((prev) => ({
         ...prev,
         latitude: result.lat,
         longitude: result.lon,
       }));
-
-      setMessage(["Coordenadas encontradas com sucesso!"]);
+      setMessage([`Coordenadas encontradas: ${result.displayName}. Confira no mapa antes de salvar.`]);
     } else {
-      setMessage(["Erro ao buscar coordenadas. Verifique o endereço."]);
+      setMessage([result?.erro || "Erro ao buscar coordenadas. Verifique o endereço."]);
     }
   };
 
