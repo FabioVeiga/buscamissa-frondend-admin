@@ -33,9 +33,11 @@ const MapaRevisao = ({ detalhe, ponto, onMover }) => {
 
   useEffect(() => {
     const mapa = L.map(elRef.current, { zoomControl: true });
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      attribution: "© colaboradores do OpenStreetMap",
+    // Tiles da CARTO (dados OSM): o tile.openstreetmap.org bloqueia o admin pela política de uso.
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+      maxZoom: 20,
+      subdomains: "abcd",
+      attribution: "© colaboradores do OpenStreetMap © CARTO",
     }).addTo(mapa);
     camadaRef.current = L.layerGroup().addTo(mapa);
     mapaRef.current = mapa;
