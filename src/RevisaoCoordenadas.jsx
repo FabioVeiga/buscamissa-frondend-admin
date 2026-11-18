@@ -15,6 +15,7 @@ import api from "./services/apiService";
 import { adicionarCamadasBase } from "./utils/mapaBase";
 import { construirLinkIgreja } from "./services/mensagemDivulgacao";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import MonitoramentoCoordenadas from "./Components/MonitoramentoCoordenadas";
 
 // Página pública da igreja (para conferir o mapa e os links "Como chegar" depois de aprovar).
 const linkPublico = (i) =>
@@ -189,6 +190,7 @@ const RevisaoCoordenadasPage = () => {
           title="Revisão de coordenadas"
           subtitle="Pontos propostos pela coleta (CNEFE/IBGE e OpenStreetMap). Confira no mapa, arraste o marcador vermelho se precisar e aprove. Nada é gravado sem aprovação."
         />
+        <MonitoramentoCoordenadas />
 
         <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ mb: 2 }}>
           <FormControl size="small" sx={{ minWidth: 260 }}>
