@@ -33,12 +33,18 @@ const MapaRevisao = ({ detalhe, ponto, onMover }) => {
 
   useEffect(() => {
     const mapa = L.map(elRef.current, { zoomControl: true });
-    // Tiles da CARTO (dados OSM): o tile.openstreetmap.org bloqueia o admin pela política de uso.
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-      maxZoom: 20,
-      subdomains: "abcd",
-      attribution: "© colaboradores do OpenStreetMap © CARTO",
+    // Tiles da Esri (sem chave): o tile.openstreetmap.org bloqueia o admin e a CARTO exige chave.
+    // O satélite ajuda a achar o telhado da igreja na conferência.
+    const esri = "https://server.arcgisonline.com/ArcGIS/rest/services";
+    const ruas = L.tileLayer(`${esri}/World_Street_Map/MapServer/tile/{z}/{y}/{x}`, {
+      maxZoom: 19,
+      attribution: "Tiles © Esri",
     }).addTo(mapa);
+    const satelite = L.tileLayer(`${esri}/World_Imagery/MapServer/tile/{z}/{y}/{x}`, {
+      maxZoom: 19,
+      attribution: "Tiles © Esri — Maxar, Earthstar Geographics",
+    });
+    L.control.layers({ Ruas: ruas, "Satélite": satelite }, null, { position: "topright" }).addTo(mapa);
     camadaRef.current = L.layerGroup().addTo(mapa);
     mapaRef.current = mapa;
     return () => mapa.remove();
