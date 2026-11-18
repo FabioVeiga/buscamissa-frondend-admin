@@ -63,6 +63,7 @@ const pageTitles = {
   "/responsaveis": "Responsáveis Verificados",
   "/solicitacoes-vinculo-capela": "Vínculos de Capela",
   "/candidatos-tipo-igreja": "Candidatas a Reclassificação",
+  "/revisao-coordenadas": "Revisão de Coordenadas",
 };
 
 const Menu = ({ children }) => {

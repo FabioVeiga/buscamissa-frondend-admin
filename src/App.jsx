@@ -18,6 +18,7 @@ import FeatureTogglesPage from './FeatureToggles';
 import DiocesesPage from './Dioceses';
 import SolicitacoesVinculoCapelaPage from './SolicitacoesVinculoCapela';
 import CandidatosTipoIgrejaPage from './CandidatosTipoIgreja';
+import RevisaoCoordenadasPage from './RevisaoCoordenadas';
 import ResponsaveisPage from './Responsaveis';
 import NotificacoesPage from './Notificacoes';
 import CampanhasPage from './Campanhas';
@@ -192,6 +193,14 @@ const App = () => {
                 element={
                     <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
                         <CandidatosTipoIgrejaPage />
+                    </PrivateRoute>
+                }
+            />
+            <Route
+                path="/revisao-coordenadas"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated} loading={loading}>
+                        <RevisaoCoordenadasPage />
                     </PrivateRoute>
                 }
             />
