@@ -12,6 +12,12 @@ import PageContainer from "./Components/PageContainer";
 import Paginacao from "./Components/Paginacao";
 import { useNotificar } from "./Context/NotificationContext";
 import api from "./services/apiService";
+import { construirLinkIgreja } from "./services/mensagemDivulgacao";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+
+// Página pública da igreja (para conferir o mapa e os links "Como chegar" depois de aprovar).
+const linkPublico = (i) =>
+  i?.slug && i?.cidadeSlug ? construirLinkIgreja({ slug: i.slug, endereco: { uf: i.uf, cidadeSlug: i.cidadeSlug } }) : null;
 
 /**
  * Revisão das coordenadas coletadas (staging). O admin vê o ponto atual, os candidatos das
@@ -241,7 +247,15 @@ const RevisaoCoordenadasPage = () => {
                   {(dados?.itens || []).map((i) => (
                     <TableRow key={i.igrejaId} hover selected={selecionada === i.igrejaId} onClick={() => abrir(i)} sx={{ cursor: "pointer" }}>
                       <TableCell>
-                        <Typography variant="body2">{i.nome}</Typography>
+                        <Typography variant="body2">
+                          {i.nome}
+                          {linkPublico(i) && (
+                            <a href={linkPublico(i)} target="_blank" rel="noopener noreferrer" title="Abrir página pública"
+                              onClick={(e) => e.stopPropagation()} style={{ marginLeft: 6, verticalAlign: "middle", color: "inherit" }}>
+                              <OpenInNewIcon sx={{ fontSize: 14 }} />
+                            </a>
+                          )}
+                        </Typography>
                         <Typography variant="caption" color="text.secondary">
                           #{i.igrejaId} · {i.logradouro}{i.numero ? `, ${i.numero}` : ""}
                         </Typography>
@@ -281,7 +295,15 @@ const RevisaoCoordenadasPage = () => {
             {detalhe && (
               <Stack spacing={1.5}>
                 <Box>
-                  <Typography variant="subtitle1">{detalhe.igreja.nome}</Typography>
+                  <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
+                    <Typography variant="subtitle1">{detalhe.igreja.nome}</Typography>
+                    {linkPublico(detalhe.igreja) && (
+                      <Button size="small" endIcon={<OpenInNewIcon />} href={linkPublico(detalhe.igreja)}
+                        target="_blank" rel="noopener noreferrer">
+                        Página pública
+                      </Button>
+                    )}
+                  </Stack>
                   <Typography variant="body2" color="text.secondary">
                     {detalhe.igreja.logradouro}{detalhe.igreja.numero ? `, ${detalhe.igreja.numero}` : ""}
                     {detalhe.igreja.bairro ? ` — ${detalhe.igreja.bairro}` : ""} · {detalhe.igreja.localidade}/{detalhe.igreja.uf}
