@@ -15,6 +15,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import CampaignIcon from "@mui/icons-material/Campaign";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import PlaceIcon from "@mui/icons-material/Place";
 
 export const navSections = [
   {
@@ -36,6 +37,7 @@ export const navSections = [
       { path: "/notificacoes", label: "Notificações", icon: NotificationsIcon },
       { path: "/dioceses", label: "Dioceses", icon: AccountBalanceIcon },
       { path: "/candidatos-tipo-igreja", label: "Candidatas a Reclassificação", icon: AccountBalanceIcon },
+      { path: "/revisao-coordenadas", label: "Revisão de Coordenadas", icon: PlaceIcon },
       { path: "/mesclar-metricas", label: "Mesclar Métricas", icon: MergeTypeIcon },
     ],
   },
