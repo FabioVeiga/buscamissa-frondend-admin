@@ -12,6 +12,7 @@ import PageContainer from "./Components/PageContainer";
 import Paginacao from "./Components/Paginacao";
 import { useNotificar } from "./Context/NotificationContext";
 import api from "./services/apiService";
+import { adicionarCamadasBase } from "./utils/mapaBase";
 import { construirLinkIgreja } from "./services/mensagemDivulgacao";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
@@ -39,18 +40,7 @@ const MapaRevisao = ({ detalhe, ponto, onMover }) => {
 
   useEffect(() => {
     const mapa = L.map(elRef.current, { zoomControl: true });
-    // Tiles da Esri (sem chave): o tile.openstreetmap.org bloqueia o admin e a CARTO exige chave.
-    // O satélite ajuda a achar o telhado da igreja na conferência.
-    const esri = "https://server.arcgisonline.com/ArcGIS/rest/services";
-    const ruas = L.tileLayer(`${esri}/World_Street_Map/MapServer/tile/{z}/{y}/{x}`, {
-      maxZoom: 19,
-      attribution: "Tiles © Esri",
-    }).addTo(mapa);
-    const satelite = L.tileLayer(`${esri}/World_Imagery/MapServer/tile/{z}/{y}/{x}`, {
-      maxZoom: 19,
-      attribution: "Tiles © Esri — Maxar, Earthstar Geographics",
-    });
-    L.control.layers({ Ruas: ruas, "Satélite": satelite }, null, { position: "topright" }).addTo(mapa);
+    adicionarCamadasBase(mapa);
     camadaRef.current = L.layerGroup().addTo(mapa);
     mapaRef.current = mapa;
     return () => mapa.remove();

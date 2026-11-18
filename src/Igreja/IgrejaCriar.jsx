@@ -22,7 +22,6 @@ import { normalizarNomeDoPerfil } from "../utils/redeSocialUrl";
 import ErrorSpan from "../ErrorSpan";
 import { useEndereco } from "../Context/EnderecoContext";
 import { useNavigate } from "react-router-dom";
-import { useGeocode } from "../hooks/useGeocode";
 import MissaForm from "./Components/MissaForm";
 import ContatoForm from "./Components/ContatoForm";
 import EnderecoForm from "./Components/EnderecoForm";
@@ -89,7 +88,6 @@ const IgrejaCriar = () => {
 
   const navigate = useNavigate();
   
-  const { geocode, loading: geoLoading, error: geoError } = useGeocode();
 
   const handleShowError = (mensagem) => {
     setMessage([mensagem]);
@@ -248,22 +246,6 @@ const IgrejaCriar = () => {
     preencherEndereco(enderecoResponse);
     setIgrejasCepModalOpen(false);
     setMessage(["Endereço aplicado. Confira os campos antes de salvar."]);
-  };
-
-  const handleGeocode = async () => {
-    const { logradouro, numero, localidade, uf } = endereco || {};
-    const result = await geocode({ logradouro, numero, localidade, uf });
-
-    if (result && !result.erro) {
-      setEndereco((prev) => ({
-        ...prev,
-        latitude: result.lat,
-        longitude: result.lon,
-      }));
-      setMessage([`Coordenadas encontradas: ${result.displayName}. Confira no mapa antes de salvar.`]);
-    } else {
-      setMessage([result?.erro || "Erro ao buscar coordenadas. Verifique o endereço."]);
-    }
   };
 
   const handleBuscarCepReverso = async () => {
@@ -525,9 +507,6 @@ const IgrejaCriar = () => {
               cepLoading={cepLoading}
               onBuscarCepReverso={handleBuscarCepReverso}
               cepReversoLoading={cepReversoLoading}
-              geoLoading={geoLoading}
-              onBuscarCoordenadas={handleGeocode}
-              geoError={geoError}
               openCepReverso={openCepReverso}
               onCloseCepReverso={() => setOpenCepReverso(false)}
               candidatosCep={candidatosCep}
