@@ -28,7 +28,6 @@ import { apenasNumeros, formatarErroApi, removerMissasDuplicadas } from "../util
 import ErrorSpan from "../ErrorSpan";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEndereco } from "../Context/EnderecoContext";
-import { useGeocode } from "../hooks/useGeocode";
 import MissaForm from "./Components/MissaForm";
 import SessaoForm from "./Components/SessaoForm";
 import ContatoForm from "./Components/ContatoForm";
@@ -56,7 +55,6 @@ const IgrejaAtualizar = () => {
   const location = useLocation();
   const { state } = location || {};
   const { endereco, setEndereco } = useEndereco();
-  const { geocode, loading: geoLoading, error: geoError } = useGeocode();
 
   const criarContatoVazio = () => ({
     emailContato: "",
@@ -340,30 +338,6 @@ const IgrejaAtualizar = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-
-  const handleGeocode = async () => {
-    const { logradouro, numero, localidade, uf } = endereco;
-    const result = await geocode({ logradouro, numero, localidade, uf });
-
-    if (result && !result.erro) {
-      setEndereco((prev) => ({
-        ...prev,
-        latitude: result.lat,
-        longitude: result.lon,
-      }));
-      setMessage({
-        mensagem: `Coordenadas encontradas: ${result.displayName}. Confira no mapa antes de salvar.`,
-        severity: "success",
-        show: true,
-      });
-    } else {
-      setMessage({
-        mensagem: result?.erro || "Erro ao buscar coordenadas. Verifique o endereço.",
-        severity: "error",
-        show: true,
-      });
-    }
-  };
 
 
   const handleBuscarCepReverso = async () => {
@@ -675,9 +649,6 @@ const IgrejaAtualizar = () => {
             cepLoading={cepLoading}
             onBuscarCepReverso={handleBuscarCepReverso}
             cepReversoLoading={cepReversoLoading}
-            geoLoading={geoLoading}
-            onBuscarCoordenadas={handleGeocode}
-            geoError={geoError}
             openCepReverso={openCepReverso}
             onCloseCepReverso={() => setOpenCepReverso(false)}
             candidatosCep={candidatosCep}

@@ -5,12 +5,12 @@ import {
     Button,
     CircularProgress,
     TextField,
-    Typography,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import CepReversoModal from "../../Components/CepReversoModal";
 import { formatarCep } from "../../utils";
 import SectionCard from "./SectionCard";
+import MapaCoordenada from "./MapaCoordenada";
 import api from "../../services/apiService";
 
 const EnderecoForm = ({
@@ -20,9 +20,6 @@ const EnderecoForm = ({
                           cepLoading = false,
                           onBuscarCepReverso = () => {},
                           cepReversoLoading = false,
-                          geoLoading = false,
-                          onBuscarCoordenadas = () => {},
-                          geoError,
                           openCepReverso = false,
                           onCloseCepReverso = () => {},
                           candidatosCep = [],
@@ -262,23 +259,7 @@ const EnderecoForm = ({
                         >
                             {cepReversoLoading ? "Buscando endereço..." : "Buscar endereço"}
                         </Button>
-
-                        <Button
-                            variant="outlined"
-                            color="primary"
-                            onClick={onBuscarCoordenadas}
-                            disabled={geoLoading}
-                            sx={{ minWidth: 200 }}
-                        >
-                            {geoLoading ? "Buscando..." : "Buscar Coordenadas"}
-                        </Button>
                     </Box>
-
-                    {geoError && (
-                        <Typography color="error" variant="body2" sx={{ mt: 1 }}>
-                            {geoError}
-                        </Typography>
-                    )}
                 </Grid>
 
                 {/* 5ª linha: Latitude, Longitude */}
@@ -301,6 +282,18 @@ const EnderecoForm = ({
                         fullWidth
                         type="number"
                         slotProps={{ htmlInput: { step: "0.000001" } }}
+                    />
+                </Grid>
+
+                <Grid size={{ xs: 12 }}>
+                    <MapaCoordenada
+                        latitude={endereco?.latitude}
+                        longitude={endereco?.longitude}
+                        localidade={endereco?.localidade}
+                        uf={endereco?.uf}
+                        onChange={(latitude, longitude) =>
+                            setEndereco((prev) => ({ ...prev, latitude, longitude }))
+                        }
                     />
                 </Grid>
 
