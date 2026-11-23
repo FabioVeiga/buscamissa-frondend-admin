@@ -28,7 +28,6 @@ import { apenasNumeros, formatarErroApi, removerMissasDuplicadas } from "../util
 import ErrorSpan from "../ErrorSpan";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEndereco } from "../Context/EnderecoContext";
-import { useGeocode } from "../hooks/useGeocode";
 import MissaForm from "./Components/MissaForm";
 import SessaoForm from "./Components/SessaoForm";
 import ContatoForm from "./Components/ContatoForm";
@@ -56,7 +55,6 @@ const IgrejaAtualizar = () => {
   const location = useLocation();
   const { state } = location || {};
   const { endereco, setEndereco } = useEndereco();
-  const { geocode, loading: geoLoading, error: geoError } = useGeocode();
 
   const criarContatoVazio = () => ({
     emailContato: "",
@@ -341,41 +339,6 @@ const IgrejaAtualizar = () => {
   };
 
 
-  const handleGeocode = async () => {
-    const { logradouro, numero, bairro, localidade, uf } = endereco;
-    const addressParts = [logradouro, numero, bairro, localidade, uf].filter(Boolean);
-    
-    if (addressParts.length < 3) {
-      setMessage({
-        mensagem: "Por favor, preencha pelo menos Logradouro, Localidade e UF para buscar coordenadas.",
-        severity: "error",
-        show: true,
-      });
-      return;
-    }
-
-    const fullAddress = addressParts.join(", ");
-    const result = await geocode(fullAddress);
-
-    if (result) {
-      setEndereco((prev) => ({
-        ...prev,
-        latitude: result.lat,
-        longitude: result.lon,
-      }));
-      setMessage({
-        mensagem: "Coordenadas encontradas com sucesso!",
-        severity: "success",
-        show: true,
-      });
-    } else {
-      setMessage({
-        mensagem: "Erro ao buscar coordenadas. Verifique o endereço.",
-        severity: "error",
-        show: true,
-      });
-    }
-  };
 
   const handleBuscarCepReverso = async () => {
     const { uf, localidade, logradouro, bairro } = endereco || {};
@@ -686,9 +649,6 @@ const IgrejaAtualizar = () => {
             cepLoading={cepLoading}
             onBuscarCepReverso={handleBuscarCepReverso}
             cepReversoLoading={cepReversoLoading}
-            geoLoading={geoLoading}
-            onBuscarCoordenadas={handleGeocode}
-            geoError={geoError}
             openCepReverso={openCepReverso}
             onCloseCepReverso={() => setOpenCepReverso(false)}
             candidatosCep={candidatosCep}
